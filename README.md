@@ -17,7 +17,7 @@ Home Assistant integration for Bambu Lab printers. It builds on
 - Filament management: spool inventory with remaining weight, price and color, assigned to AMS/external spool slots; used filament is deducted after each print and low stock fires an event
 - Own "3D Print Assistant" sidebar panel with totals, current print/filament and print history (updates live on print start and end)
 - Events for automations: `druck_assistant_print_started`, `druck_assistant_print_finished`,
-  `druck_assistant_print_failed`, `druck_assistant_filament_low`
+  `druck_assistant_print_failed`, `druck_assistant_filament_low`, `druck_assistant_spool_imported`, `druck_assistant_spool_empty`
 
 ## Filament management
 
@@ -28,6 +28,10 @@ Click "Import from AMS" to create spools from the loaded AMS slots. New Bambu sp
 tag are also added automatically (option "Automatically add new Bambu spools"); spools without a
 tag, such as third-party filament or the external spool, are only imported with the button.
 The remaining stock of an imported spool is estimated from the AMS percentage, so correct it by hand if needed.
+A spool whose remaining stock reaches 0 g after a print is moved to the archive automatically
+(option "Automatically archive empty spools") and fires `druck_assistant_spool_empty`. You can also
+archive spools by hand and restore them from the collapsible "Archived spools" list. Archived spools
+are not imported or assigned again automatically, even if they are still loaded in the AMS.
 Prints with several spools or materials are booked to the spool active at the start.
 
 ## Installation

@@ -28,7 +28,8 @@
           "energy_entity": "Energiezähler des Druckers (kWh, optional)",
           "power_entity": "Leistungssensor des Druckers (W, optional)",
           "filament_prices": "Filamentpreise pro kg je Sorte (eine pro Zeile, z. B. PLA=20)",
-          "auto_import": "Neue Bambu-Spulen (RFID) automatisch ins Inventar übernehmen"
+          "auto_import": "Neue Bambu-Spulen (RFID) automatisch ins Inventar übernehmen",
+          "auto_archive": "Leere Spulen automatisch archivieren"
         }
       }
     },

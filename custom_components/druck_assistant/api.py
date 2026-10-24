@@ -13,6 +13,7 @@ from .const import (
     DOMAIN,
     WS_DATA,
     WS_IMPORT_AMS,
+    WS_SPOOL_ARCHIVE,
     WS_SPOOL_ASSIGN,
     WS_SPOOL_DELETE,
     WS_SPOOL_SAVE,
@@ -28,6 +29,7 @@ def async_register(hass: HomeAssistant) -> None:
         ws_spool_delete,
         ws_spool_assign,
         ws_import_ams,
+        ws_spool_archive,
     ):
         websocket_api.async_register_command(hass, command)
 
@@ -124,3 +126,26 @@ def ws_import_ams(
         ).items():
             counts[action] += len(items)
     connection.send_result(msg["id"], counts)
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): WS_SPOOL_ARCHIVE,
+        vol.Required("spool_id"): str,
+        vol.Required("archived"): bool,
+    }
+)
+@websocket_api.require_admin
+@callback
+def ws_spool_archive(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Archive a spool or restore it from the archive."""
+    manager = hass.data[DOMAIN]["filament"]
+    try:
+        manager.store.archive(msg["spool_id"], msg["archived"])
+    except SpoolError as err:
+        connection.send_error(msg["id"], "unknown_spool", str(err))
+        return
+    manager.changed()
+    connection.send_result(msg["id"])

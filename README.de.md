@@ -27,6 +27,10 @@ Mit „Aus AMS importieren“ werden aus den belegten AMS-Slots Spulen angelegt.
 RFID-Tag werden zusätzlich automatisch übernommen (Option „Neue Bambu-Spulen automatisch übernehmen“);
 Spulen ohne Tag, etwa Fremdfilament oder die externe Spule, werden nur über den Button importiert.
 Der Restbestand wird aus der AMS-Prozentanzeige geschätzt und lässt sich von Hand korrigieren.
+Erreicht der Restbestand einer Spule nach einem Druck 0 g, kommt sie automatisch ins Archiv
+(Option „Leere Spulen automatisch archivieren“) und löst `druck_assistant_spool_empty` aus. Du kannst
+Spulen auch von Hand archivieren und in der einklappbaren Liste „Archivierte Spulen“ wiederherstellen.
+Archivierte Spulen werden nicht automatisch wieder importiert oder zugeordnet, auch wenn sie noch im AMS stecken.
 Bei Drucken mit mehreren Spulen wird alles der beim Start aktiven Spule zugerechnet.
 
 ## Installation
