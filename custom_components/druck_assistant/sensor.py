@@ -12,7 +12,7 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.const import UnitOfEnergy, UnitOfMass
+from homeassistant.const import CURRENCY_EURO, UnitOfEnergy, UnitOfMass
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
@@ -28,6 +28,7 @@ from .tracker import PrintTracker
 class DruckSensorDescription(SensorEntityDescription):
     value_fn: Callable[[PrintHistory], Any] = lambda h: None
     tracker_fn: Callable[[PrintTracker], Any] | None = None
+    tracker_attrs_fn: Callable[[PrintTracker], dict[str, Any]] | None = None
     attrs_fn: Callable[[PrintHistory], dict[str, Any]] | None = None
 
 
@@ -62,7 +63,9 @@ SENSORS: tuple[DruckSensorDescription, ...] = (
         key="total_cost",
         translation_key="total_cost",
         icon="mdi:cash",
-        state_class=SensorStateClass.TOTAL_INCREASING,
+        device_class=SensorDeviceClass.MONETARY,
+        native_unit_of_measurement=CURRENCY_EURO,
+        state_class=SensorStateClass.TOTAL,
         suggested_display_precision=2,
         value_fn=lambda h: h.total_cost,
     ),
@@ -79,7 +82,9 @@ SENSORS: tuple[DruckSensorDescription, ...] = (
         key="total_energy_cost",
         translation_key="total_energy_cost",
         icon="mdi:flash",
-        state_class=SensorStateClass.TOTAL_INCREASING,
+        device_class=SensorDeviceClass.MONETARY,
+        native_unit_of_measurement=CURRENCY_EURO,
+        state_class=SensorStateClass.TOTAL,
         suggested_display_precision=2,
         value_fn=lambda h: h.total_energy_cost,
     ),
@@ -87,9 +92,25 @@ SENSORS: tuple[DruckSensorDescription, ...] = (
         key="electricity_price",
         translation_key="electricity_price",
         icon="mdi:currency-eur",
-        native_unit_of_measurement="/kWh",
+        native_unit_of_measurement=f"{CURRENCY_EURO}/{UnitOfEnergy.KILO_WATT_HOUR}",
         suggested_display_precision=4,
         tracker_fn=lambda t: t.price_per_kwh,
+    ),
+    DruckSensorDescription(
+        key="current_filament",
+        translation_key="current_filament",
+        icon="mdi:printer-3d-nozzle",
+        tracker_fn=lambda t: (t.current_tray.attributes.get("type") if t.current_tray else None),
+        tracker_attrs_fn=lambda t: (
+            {
+                "name": t.current_tray.attributes.get("name"),
+                "color": t.current_tray.attributes.get("color"),
+                "remain": t.current_tray.attributes.get("remain"),
+                "price_per_kg": t.price_for_material(t.current_tray.attributes.get("type")),
+            }
+            if t.current_tray
+            else {}
+        ),
     ),
     DruckSensorDescription(
         key="last_print",
@@ -105,6 +126,8 @@ SENSORS: tuple[DruckSensorDescription, ...] = (
         key="last_print_cost",
         translation_key="last_print_cost",
         icon="mdi:cash-register",
+        device_class=SensorDeviceClass.MONETARY,
+        native_unit_of_measurement=CURRENCY_EURO,
         suggested_display_precision=2,
         value_fn=lambda h: (_last(h) or {}).get("cost"),
     ),
@@ -148,5 +171,8 @@ class DruckSensor(SensorEntity):
 
     @property
     def extra_state_attributes(self) -> dict[str, Any] | None:
-        fn = self.entity_description.attrs_fn
+        desc = self.entity_description
+        if desc.tracker_attrs_fn is not None:
+            return desc.tracker_attrs_fn(self._tracker)
+        fn = desc.attrs_fn
         return fn(self._tracker.history) if fn else None

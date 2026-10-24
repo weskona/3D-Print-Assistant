@@ -29,6 +29,42 @@ def calculate_energy_cost(energy_kwh: float | None, price_per_kwh: float) -> flo
     return round(energy_kwh * price_per_kwh, 2)
 
 
+def parse_prices(text: str | None) -> dict[str, float]:
+    """Parse "PLA=20" style lines (separated by newline or ';') into a dict.
+
+    Keys are upper-cased. Raises ValueError on a malformed line.
+    """
+    prices: dict[str, float] = {}
+    for part in (text or "").replace(";", "\n").splitlines():
+        part = part.strip()
+        if not part:
+            continue
+        name, sep, value = part.partition("=")
+        name = name.strip().upper()
+        if not sep or not name:
+            raise ValueError(part)
+        price = float(value.strip().replace(",", "."))
+        if price < 0:
+            raise ValueError(part)
+        prices[name] = price
+    return prices
+
+
+def price_for(
+    material: str | None, prices: dict[str, float], default: float
+) -> float:
+    """Price per kg for a filament type, falling back to the default."""
+    if material:
+        key = material.strip().upper()
+        if key in prices:
+            return prices[key]
+        # "PLA-CF" or "PLA Basic" -> try the longest matching prefix.
+        for name in sorted(prices, key=len, reverse=True):
+            if key.startswith(name):
+                return prices[name]
+    return default
+
+
 @dataclass
 class PrintRecord:
     """A completed (or failed) print."""
@@ -40,6 +76,7 @@ class PrintRecord:
     duration_min: float
     weight_g: float
     cost: float
+    price_per_kg: float = 0.0
     filament_cost: float = 0.0
     energy_kwh: float = 0.0
     energy_cost: float = 0.0
@@ -145,6 +182,7 @@ class PrintHistory:
             duration_min=round((now - session.started).total_seconds() / 60, 1),
             weight_g=weight,
             cost=round(filament_cost + energy_cost, 2),
+            price_per_kg=price_per_kg,
             filament_cost=filament_cost,
             energy_kwh=energy,
             energy_cost=energy_cost,

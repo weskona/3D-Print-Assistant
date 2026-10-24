@@ -73,3 +73,21 @@ def test_energy_from_power_integration():
     rec = h.finish("finish", T0 + timedelta(hours=2), 0, None, 20, None, None, 0.5)
     assert rec.energy_kwh == 0.3  # 100W*1h + 200W*1h
     assert rec.energy_cost == 0.15
+
+
+def test_parse_and_lookup_prices():
+    from druck_assistant.history import parse_prices, price_for
+
+    prices = parse_prices("PLA=20\npetg = 24,5; PLA-CF=32")
+    assert prices == {"PLA": 20.0, "PETG": 24.5, "PLA-CF": 32.0}
+    assert price_for("pla", prices, 25) == 20.0
+    assert price_for("PLA-CF", prices, 25) == 32.0
+    assert price_for("PLA Basic", prices, 25) == 20.0
+    assert price_for("ABS", prices, 25) == 25
+    assert price_for(None, prices, 25) == 25
+    for bad in ("PLA", "=5", "PLA=abc", "PLA=-1"):
+        try:
+            parse_prices(bad)
+        except ValueError:
+            continue
+        raise AssertionError(bad)

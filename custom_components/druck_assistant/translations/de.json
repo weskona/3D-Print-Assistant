@@ -21,14 +21,18 @@
       "init": {
         "title": "Einstellungen",
         "data": {
-          "price_per_kg": "Filamentpreis pro kg",
+          "price_per_kg": "Preis pro kg ohne Sortenpreis (Standard)",
           "filament_low_threshold": "Warnschwelle Filament-Rest (%)",
           "price_per_kwh": "Strompreis pro kWh",
           "price_entity": "Strompreis-Entität (optional, überschreibt festen Preis)",
           "energy_entity": "Energiezähler des Druckers (kWh, optional)",
-          "power_entity": "Leistungssensor des Druckers (W, optional)"
+          "power_entity": "Leistungssensor des Druckers (W, optional)",
+          "filament_prices": "Filamentpreise pro kg je Sorte (eine pro Zeile, z. B. PLA=20)"
         }
       }
+    },
+    "error": {
+      "invalid_prices": "Ungültiges Format. Erwartet: eine Zeile je Sorte, z. B. PLA=20 oder PETG=24,5."
     }
   },
   "entity": {
@@ -59,6 +63,9 @@
       },
       "electricity_price": {
         "name": "Strompreis"
+      },
+      "current_filament": {
+        "name": "Aktuelles Filament"
       }
     }
   }

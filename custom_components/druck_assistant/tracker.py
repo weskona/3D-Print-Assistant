@@ -15,6 +15,7 @@ from homeassistant.util import dt as dt_util
 from .const import (
     BAMBU_DOMAIN,
     CONF_ENERGY_ENTITY,
+    CONF_FILAMENT_PRICES,
     CONF_NOTIFY_FILAMENT_LOW,
     CONF_POWER_ENTITY,
     CONF_PRICE_ENTITY,
@@ -32,7 +33,7 @@ from .const import (
     STATUS_FAILED,
     STORAGE_VERSION,
 )
-from .history import PrintHistory
+from .history import PrintHistory, parse_prices, price_for
 
 UNAVAILABLE = ("unknown", "unavailable", None)
 
@@ -54,6 +55,18 @@ class PrintTracker:
     @property
     def price_per_kg(self) -> float:
         return self.entry.options.get(CONF_PRICE_PER_KG, DEFAULT_PRICE_PER_KG)
+
+    def price_for_material(self, material: str | None) -> float:
+        """Price per kg for a filament type (option 'PLA=20' lines, else default)."""
+        try:
+            prices = parse_prices(self.entry.options.get(CONF_FILAMENT_PRICES))
+        except ValueError:
+            prices = {}
+        return price_for(material, prices, self.price_per_kg)
+
+    @property
+    def current_tray(self):
+        return self._state("active_tray")
 
     @property
     def low_threshold(self) -> int:
@@ -151,6 +164,7 @@ class PrintTracker:
             self._on_status(old.state if old else None, new.state)
         else:
             self._on_tray(new.attributes)
+            async_dispatcher_send(self.hass, self.signal)
 
     def _on_tray(self, attrs: dict[str, Any]) -> None:
         session = self.history.session
@@ -182,7 +196,7 @@ class PrintTracker:
                 now,
                 self._float("print_weight"),
                 dict(weight_state.attributes) if weight_state else None,
-                self.price_per_kg,
+                self.price_for_material(self.history.session.material),
                 name,
                 self._external_float(CONF_ENERGY_ENTITY),
                 self.price_per_kwh,

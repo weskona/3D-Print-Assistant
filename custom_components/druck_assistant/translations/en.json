@@ -21,14 +21,18 @@
       "init": {
         "title": "Settings",
         "data": {
-          "price_per_kg": "Filament price per kg",
+          "price_per_kg": "Price per kg without a type price (default)",
           "filament_low_threshold": "Low filament threshold (%)",
           "price_per_kwh": "Electricity price per kWh",
           "price_entity": "Price entity (optional, overrides fixed price)",
           "energy_entity": "Printer energy meter (kWh, optional)",
-          "power_entity": "Printer power sensor (W, optional)"
+          "power_entity": "Printer power sensor (W, optional)",
+          "filament_prices": "Filament prices per kg by type (one per line, e.g. PLA=20)"
         }
       }
+    },
+    "error": {
+      "invalid_prices": "Invalid format. Expected one line per type, e.g. PLA=20 or PETG=24.5."
     }
   },
   "entity": {
@@ -59,6 +63,9 @@
       },
       "electricity_price": {
         "name": "Electricity price"
+      },
+      "current_filament": {
+        "name": "Current filament"
       }
     }
   }

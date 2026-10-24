@@ -19,6 +19,7 @@ from .const import (
     BAMBU_DOMAIN,
     CONF_BAMBU_ENTRY_ID,
     CONF_ENERGY_ENTITY,
+    CONF_FILAMENT_PRICES,
     CONF_NOTIFY_FILAMENT_LOW,
     CONF_POWER_ENTITY,
     CONF_PRICE_ENTITY,
@@ -30,6 +31,7 @@ from .const import (
     DEFAULT_PRICE_PER_KWH,
     DOMAIN,
 )
+from .history import parse_prices
 
 
 def _entity_selector(device_class: str | None = None) -> selector.EntitySelector:
@@ -103,7 +105,13 @@ class DruckAssistantOptionsFlow(OptionsFlow):
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
+        errors: dict[str, str] = {}
         if user_input is not None:
+            try:
+                parse_prices(user_input.get(CONF_FILAMENT_PRICES))
+            except ValueError:
+                errors[CONF_FILAMENT_PRICES] = "invalid_prices"
+        if user_input is not None and not errors:
             # Cleared optional entities are stored as None so they override the setup data.
             for key in (CONF_ENERGY_ENTITY, CONF_POWER_ENTITY, CONF_PRICE_ENTITY):
                 user_input.setdefault(key, None)
@@ -115,6 +123,10 @@ class DruckAssistantOptionsFlow(OptionsFlow):
                     CONF_PRICE_PER_KG,
                     default=opts.get(CONF_PRICE_PER_KG, DEFAULT_PRICE_PER_KG),
                 ): vol.All(vol.Coerce(float), vol.Range(min=0)),
+                vol.Optional(
+                    CONF_FILAMENT_PRICES,
+                    description={"suggested_value": opts.get(CONF_FILAMENT_PRICES, "")},
+                ): selector.TextSelector(selector.TextSelectorConfig(multiline=True)),
                 vol.Required(
                     CONF_NOTIFY_FILAMENT_LOW,
                     default=opts.get(CONF_NOTIFY_FILAMENT_LOW, DEFAULT_FILAMENT_LOW),
@@ -128,4 +140,4 @@ class DruckAssistantOptionsFlow(OptionsFlow):
                 _optional(CONF_POWER_ENTITY, opts): _entity_selector("power"),
             }
         )
-        return self.async_show_form(step_id="init", data_schema=schema)
+        return self.async_show_form(step_id="init", data_schema=schema, errors=errors)
