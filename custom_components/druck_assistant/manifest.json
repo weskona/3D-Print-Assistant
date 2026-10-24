@@ -1,13 +1,13 @@
 {
   "domain": "druck_assistant",
-  "name": "3D-Druck-Assistant",
+  "name": "3D Print Assistant",
   "codeowners": ["@weskona"],
   "config_flow": true,
-  "dependencies": ["bambu_lab"],
-  "documentation": "https://github.com/weskona/3D-Druck-Assistant",
+  "dependencies": ["bambu_lab", "frontend", "http", "panel_custom", "websocket_api"],
+  "documentation": "https://github.com/weskona/3D-Print-Assistant",
   "integration_type": "service",
   "iot_class": "local_push",
-  "issue_tracker": "https://github.com/weskona/3D-Druck-Assistant/issues",
+  "issue_tracker": "https://github.com/weskona/3D-Print-Assistant/issues",
   "requirements": [],
-  "version": "0.1.0"
+  "version": "0.2.0"
 }

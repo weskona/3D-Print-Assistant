@@ -1,4 +1,4 @@
-"""Constants for the 3D-Druck-Assistant integration."""
+"""Constants for the 3D Print Assistant integration."""
 
 DOMAIN = "druck_assistant"
 BAMBU_DOMAIN = "bambu_lab"
@@ -19,6 +19,11 @@ DEFAULT_PRICE_PER_KWH = 0.30
 MAX_HISTORY = 200
 
 STORAGE_VERSION = 1
+
+PANEL_URL_PATH = "druck-assistant"
+PANEL_COMPONENT = "druck-assistant-panel"
+STATIC_URL = "/druck_assistant_static"
+WS_DATA = f"{DOMAIN}/data"
 
 # Raw print_status values reported by ha-bambulab.
 STATUS_RUNNING = "running"

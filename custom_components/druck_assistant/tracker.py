@@ -64,6 +64,45 @@ class PrintTracker:
             prices = {}
         return price_for(material, prices, self.price_per_kg)
 
+    def panel_data(self) -> dict[str, Any]:
+        """Everything the panel needs for this printer."""
+        session = self.history.session
+        tray = self.current_tray
+        h = self.history
+        return {
+            "entry_id": self.entry.entry_id,
+            "title": self.entry.title,
+            "serial": self.serial,
+            "currency": "EUR",
+            "price_per_kwh": self.price_per_kwh,
+            "totals": {
+                "prints": h.total_prints,
+                "successful": h.successful_prints,
+                "weight_g": h.total_weight_g,
+                "cost": h.total_cost,
+                "energy_kwh": h.total_energy_kwh,
+                "energy_cost": h.total_energy_cost,
+            },
+            "session": None
+            if session is None
+            else {
+                "name": session.name,
+                "started": session.started.isoformat(),
+                "material": session.material,
+                "color": session.color,
+            },
+            "filament": None
+            if tray is None
+            else {
+                "type": tray.attributes.get("type"),
+                "name": tray.attributes.get("name"),
+                "color": tray.attributes.get("color"),
+                "remain": tray.attributes.get("remain"),
+                "price_per_kg": self.price_for_material(tray.attributes.get("type")),
+            },
+            "history": h.records[::-1],
+        }
+
     @property
     def current_tray(self):
         return self._state("active_tray")

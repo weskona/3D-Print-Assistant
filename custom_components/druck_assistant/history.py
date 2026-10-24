@@ -175,7 +175,7 @@ class PrintHistory:
         energy = round(session.energy_kwh(now, energy_end_kwh), 3)
         energy_cost = calculate_energy_cost(energy, price_per_kwh)
         record = PrintRecord(
-            name=name or session.name or "unbekannt",
+            name=name or session.name or "unknown",
             result=result,
             started=session.started.isoformat(),
             finished=now.isoformat(),
