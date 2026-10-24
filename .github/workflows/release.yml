@@ -34,7 +34,7 @@ jobs:
         run: |
           version="${{ steps.version.outputs.version }}"
           awk -v v="$version" '
-            $0 ~ "^## \\[" v "\\]" { found=1; next }
+            index($0, "## [" v "]") == 1 { found=1; next }
             found && /^## \[/ { exit }
             found && /^\[[^]]+\]: / { next }
             found { print }
@@ -59,9 +59,16 @@ jobs:
           else
             notes=(--generate-notes)
           fi
+          # Versions with a suffix (e.g. 0.2.0-beta.1) are published as pre-releases.
+          if [[ "$tag" == *-* ]]; then
+            flags=(--prerelease)
+          else
+            flags=(--latest)
+          fi
           gh release create "$tag" druck_assistant.zip \
             --target "$GITHUB_SHA" \
             --title "$tag" \
+            "${flags[@]}" \
             "${notes[@]}"
         env:
           GH_TOKEN: ${{ github.token }}

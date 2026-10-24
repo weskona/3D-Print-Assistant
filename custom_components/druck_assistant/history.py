@@ -77,6 +77,8 @@ class PrintRecord:
     weight_g: float
     cost: float
     price_per_kg: float = 0.0
+    spool_id: str | None = None
+    spool_name: str | None = None
     filament_cost: float = 0.0
     energy_kwh: float = 0.0
     energy_cost: float = 0.0
@@ -100,6 +102,9 @@ class PrintSession:
     power_w: float | None = None
     power_ts: datetime | None = None
     energy_acc_kwh: float = 0.0
+    slot_key: str | None = None
+    spool_id: str | None = None
+    spool_name: str | None = None
 
     def add_power(self, now: datetime, watts: float | None) -> None:
         """Integrate the previous power reading up to now and store the new one."""
@@ -183,6 +188,8 @@ class PrintHistory:
             weight_g=weight,
             cost=round(filament_cost + energy_cost, 2),
             price_per_kg=price_per_kg,
+            spool_id=session.spool_id,
+            spool_name=session.spool_name,
             filament_cost=filament_cost,
             energy_kwh=energy,
             energy_cost=energy_cost,

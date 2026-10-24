@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
@@ -51,6 +52,7 @@ class PrintTracker:
             hass, STORAGE_VERSION, f"{DOMAIN}.{entry.entry_id}"
         )
         self._low_notified: set[str] = set()
+        self.filament = hass.data[DOMAIN]["filament"]
 
     @property
     def price_per_kg(self) -> float:
@@ -101,7 +103,53 @@ class PrintTracker:
                 "price_per_kg": self.price_for_material(tray.attributes.get("type")),
             },
             "history": h.records[::-1],
+            "slots": self.slots(),
         }
+
+    def slots(self) -> list[dict[str, Any]]:
+        """AMS and external spool slots of this printer, from ha-bambulab tray sensors."""
+        prefix = f"_{self.serial}_"
+        slots = []
+        for entry in er.async_get(self.hass).entities.values():
+            uid = entry.unique_id
+            if (
+                entry.platform != BAMBU_DOMAIN
+                or entry.domain != "sensor"
+                or prefix not in uid
+                or not (re.search(r"_AMS_.*_tray_\d$", uid) or "_ExternalSpool" in uid)
+            ):
+                continue
+            state = self.hass.states.get(entry.entity_id)
+            if state is None or "active" not in state.attributes:
+                continue
+            attrs = state.attributes
+            key = f"{self.serial}:{uid.split(prefix, 1)[1]}"
+            spool = self.filament.store.spool_for_slot(key)
+            slots.append(
+                {
+                    "key": key,
+                    "label": attrs.get("friendly_name") or entry.entity_id,
+                    "active": bool(attrs.get("active")),
+                    "type": attrs.get("type"),
+                    "color": attrs.get("color"),
+                    "remain": attrs.get("remain"),
+                    "spool_id": spool.id if spool else None,
+                }
+            )
+        return sorted(slots, key=lambda s: s["key"])
+
+    def low_spools(self):
+        """Spools in this printer's slots that are at or below the low threshold."""
+        store = self.filament.store
+        slot_keys = {s["key"] for s in self.slots()}
+        return [
+            s
+            for s in store.low_spools(self.low_threshold)
+            if any(store.assignments.get(k) == s.id for k in slot_keys)
+        ]
+
+    def active_slot_key(self) -> str | None:
+        return next((s["key"] for s in self.slots() if s["active"]), None)
 
     @property
     def current_tray(self):
@@ -223,6 +271,13 @@ class PrintTracker:
                 self._on_tray(tray.attributes)
             session = self.history.session
             if session is not None:
+                session.slot_key = self.active_slot_key()
+                spool = self.filament.store.spool_for_slot(session.slot_key)
+                if spool is not None:
+                    session.spool_id = spool.id
+                    session.spool_name = spool.name
+                    session.material = spool.material
+                    session.color = spool.color or session.color
                 session.energy_start_kwh = self._external_float(CONF_ENERGY_ENTITY)
                 session.add_power(now, self._external_float(CONF_POWER_ENTITY))
             self.hass.bus.async_fire(
@@ -230,12 +285,24 @@ class PrintTracker:
             )
         elif outcome is not None:
             weight_state = self._state("print_weight")
+            session = self.history.session
+            spool = (
+                self.filament.store.spools.get(session.spool_id)
+                if session and session.spool_id
+                else None
+            )
+            price = (
+                spool.price_per_kg
+                if spool is not None and spool.price_per_kg is not None
+                else self.price_for_material(session.material if session else None)
+            )
+            used_g = self._float("print_weight")
             record = self.history.finish(
                 outcome,
                 now,
                 self._float("print_weight"),
                 dict(weight_state.attributes) if weight_state else None,
-                self.price_for_material(self.history.session.material),
+                price,
                 name,
                 self._external_float(CONF_ENERGY_ENTITY),
                 self.price_per_kwh,
@@ -250,8 +317,33 @@ class PrintTracker:
                 self._store.async_delay_save(
                     lambda: {"records": self.history.records}, 1
                 )
-                self._check_filament()
+                if spool is not None:
+                    self.filament.store.consume(spool.id, used_g)
+                    self.filament.changed()
+                    self._check_spool(spool)
+                else:
+                    self._check_filament()
         async_dispatcher_send(self.hass, self.signal)
+
+    def _check_spool(self, spool) -> None:
+        """Fire an event once per spool when its stock falls below the threshold."""
+        key = f"spool:{spool.id}"
+        if spool.remaining_percent > self.low_threshold:
+            self._low_notified.discard(key)
+        elif key not in self._low_notified:
+            self._low_notified.add(key)
+            self.hass.bus.async_fire(
+                EVENT_FILAMENT_LOW,
+                {
+                    "serial": self.serial,
+                    "spool_id": spool.id,
+                    "spool": spool.name,
+                    "remain": spool.remaining_percent,
+                    "remaining_g": spool.remaining_g,
+                    "type": spool.material,
+                    "color": spool.color,
+                },
+            )
 
     def _check_filament(self) -> None:
         """Fire an event once per spool when the remaining amount is low."""

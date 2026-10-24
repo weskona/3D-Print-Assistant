@@ -2,6 +2,8 @@
 
 [Deutsch](README.de.md)
 
+> **Beta:** This project is in beta. Expect changes, and please report problems as issues.
+
 Home Assistant integration for Bambu Lab printers. It builds on
 [ha-bambulab](https://github.com/greghesp/ha-bambulab) and reads its entities
 (print status, weight, active filament) instead of talking to the printer itself.
@@ -12,9 +14,17 @@ Home Assistant integration for Bambu Lab printers. It builds on
 - Filament and electricity cost per print and in total (currency: euro)
 - Filament price per type (e.g. `PLA=20`) with a default price per kg
 - Electricity cost via an energy meter (kWh) or a power sensor (W, integrated over the print duration); fixed price or price from an entity
+- Filament management: spool inventory with remaining weight, price and color, assigned to AMS/external spool slots; used filament is deducted after each print and low stock fires an event
 - Own "3D Print Assistant" sidebar panel with totals, current print/filament and print history (updates live on print start and end)
 - Events for automations: `druck_assistant_print_started`, `druck_assistant_print_finished`,
   `druck_assistant_print_failed`, `druck_assistant_filament_low`
+
+## Filament management
+
+Open the "Filament" tab of the panel (administrators can edit). Add your spools, then assign
+each spool to a slot of the printer. The slot with the active spool at print start is used:
+its spool's price replaces the type price, and the used weight is deducted when the print ends.
+Prints with several spools or materials are booked to the spool active at the start.
 
 ## Installation
 
@@ -36,4 +46,5 @@ On every push to `main`, the workflow `.github/workflows/release.yml` checks the
 `custom_components/druck_assistant/manifest.json`. If there is no tag `v<version>` yet, it creates
 the tag and a GitHub release with `druck_assistant.zip`. The release notes come from the matching
 `## [<version>]` section of `CHANGELOG.md`, otherwise they are generated automatically.
+While in beta, versions carry a `-beta.N` suffix (e.g. `0.2.0-beta.2`) and the release is marked as a pre-release.
 To publish, bump the manifest version and rename `## [Unreleased]` to `## [<version>] - <date>`.

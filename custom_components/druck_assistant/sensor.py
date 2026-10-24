@@ -113,6 +113,18 @@ SENSORS: tuple[DruckSensorDescription, ...] = (
         ),
     ),
     DruckSensorDescription(
+        key="low_spools",
+        translation_key="low_spools",
+        icon="mdi:alert-circle-outline",
+        tracker_fn=lambda t: len(t.low_spools()),
+        tracker_attrs_fn=lambda t: {
+            "spools": [
+                {"name": s.name, "material": s.material, "remaining_percent": s.remaining_percent}
+                for s in t.low_spools()
+            ]
+        },
+    ),
+    DruckSensorDescription(
         key="last_print",
         translation_key="last_print",
         icon="mdi:history",
@@ -156,11 +168,10 @@ class DruckSensor(SensorEntity):
         self._attr_device_info = DeviceInfo(identifiers={(BAMBU_DOMAIN, tracker.serial)})
 
     async def async_added_to_hass(self) -> None:
-        self.async_on_remove(
-            async_dispatcher_connect(
-                self.hass, self._tracker.signal, self.async_write_ha_state
+        for signal in (self._tracker.signal, self._tracker.filament.signal):
+            self.async_on_remove(
+                async_dispatcher_connect(self.hass, signal, self.async_write_ha_state)
             )
-        )
 
     @property
     def native_value(self) -> Any:

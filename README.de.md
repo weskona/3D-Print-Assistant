@@ -2,6 +2,8 @@
 
 [English](README.md)
 
+> **Beta:** Dieses Projekt befindet sich im Beta-Status. Änderungen sind möglich, bitte melde Probleme als Issue.
+
 Home-Assistant-Integration für Bambu-Lab-Drucker. Sie setzt auf
 [ha-bambulab](https://github.com/greghesp/ha-bambulab) auf und liest dessen Entitäten
 (Druckstatus, Gewicht, aktives Filament), statt selbst mit dem Drucker zu sprechen.
@@ -11,9 +13,17 @@ Home-Assistant-Integration für Bambu-Lab-Drucker. Sie setzt auf
 - Druckhistorie (letzte 200 Drucke, persistent) mit Dauer, Ergebnis, Gewicht, Material und Farbe
 - Filamentverbrauch und -kosten pro Druck und gesamt
 - Stromkosten pro Druck über einen Energiezähler (kWh) oder einen Leistungssensor (W, wird über die Druckdauer integriert); Strompreis fest oder aus einer Entität
+- Filamentverwaltung: Spulenbestand mit Restgewicht, Preis und Farbe, zugeordnet zu AMS-/Externe-Spule-Slots; nach jedem Druck wird das verbrauchte Filament abgezogen, bei niedrigem Bestand gibt es ein Ereignis
 - Eigenes Panel „3D Print Assistant“ in der Seitenleiste mit Kennzahlen, aktuellem Druck/Filament und Druckhistorie (aktualisiert sich live bei Druckstart und -ende)
 - Ereignisse für Automationen: `druck_assistant_print_started`, `druck_assistant_print_finished`,
   `druck_assistant_print_failed`, `druck_assistant_filament_low`
+
+## Filamentverwaltung
+
+Im Tab „Filament“ des Panels (Bearbeiten nur für Administratoren) legst du Spulen an und ordnest
+sie den Slots des Druckers zu. Verwendet wird der Slot, der beim Druckstart aktiv ist: Der Preis
+seiner Spule ersetzt den Sortenpreis, das verbrauchte Gewicht wird am Druckende abgezogen.
+Bei Drucken mit mehreren Spulen wird alles der beim Start aktiven Spule zugerechnet.
 
 ## Installation
 

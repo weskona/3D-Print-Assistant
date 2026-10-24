@@ -66,6 +66,9 @@
       },
       "current_filament": {
         "name": "Aktuelles Filament"
+      },
+      "low_spools": {
+        "name": "Spulen mit niedrigem Bestand"
       }
     }
   }

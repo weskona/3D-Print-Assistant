@@ -24,6 +24,9 @@ PANEL_URL_PATH = "druck-assistant"
 PANEL_COMPONENT = "druck-assistant-panel"
 STATIC_URL = "/druck_assistant_static"
 WS_DATA = f"{DOMAIN}/data"
+WS_SPOOL_SAVE = f"{DOMAIN}/spool_save"
+WS_SPOOL_DELETE = f"{DOMAIN}/spool_delete"
+WS_SPOOL_ASSIGN = f"{DOMAIN}/spool_assign"
 
 # Raw print_status values reported by ha-bambulab.
 STATUS_RUNNING = "running"
