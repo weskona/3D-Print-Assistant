@@ -20,6 +20,11 @@ MAX_HISTORY = 200
 
 STORAGE_VERSION = 1
 
+PANEL_URL_PATH = "druck-assistant"
+PANEL_COMPONENT = "druck-assistant-panel"
+STATIC_URL = "/druck_assistant_static"
+WS_DATA = f"{DOMAIN}/data"
+
 # Raw print_status values reported by ha-bambulab.
 STATUS_RUNNING = "running"
 STATUS_PAUSE = "pause"

@@ -15,5 +15,6 @@ und dieses Projekt hält sich an [Semantic Versioning](https://semver.org/lang/d
 - Stromkosten: optionaler Energiezähler (kWh) und Leistungssensor (W) im Config-Flow, Strompreis fest oder per Entität, neue Sensoren für Stromverbrauch, Stromkosten und Strompreis. Die Druckkosten enthalten nun Filament und Strom.
 - Filamentpreise pro Sorte (z. B. `PLA=20`) in den Optionen, Sensor für das aktuelle Filament inklusive Preis pro kg. Kostensensoren in Euro.
 - GitHub-Workflow, der nach einem Push auf `main` Tag und Release erstellt.
+- Eigenes Seitenleisten-Panel „3D-Druck“ mit Kennzahlen, aktuellem Druck und Filament sowie der Druckhistorie.
 
 [Unreleased]: https://github.com/weskona/3D-Druck-Assistant/commits/main
