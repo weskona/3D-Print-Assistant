@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0-beta.2] - 2026-10-24
+
+### Added
+
+- Spool archive: spools can be archived and restored in the Filament tab; archived spools leave their slot and are listed in a collapsible "Archived spools" section.
+- Empty spools (remaining stock 0 g after a print) are archived automatically. Can be turned off in the options.
+- `druck_assistant_spool_empty` event when a spool is archived because it ran empty.
+
+### Changed
+
+- An archived spool that is still detected in the AMS is not imported again or restored automatically; restore it from the archive.
+
 ## [0.4.0-beta.1] - 2026-10-24
 
 ### Added
@@ -55,7 +67,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Filament prices per type (e.g. `PLA=20`) in the options, sensor for the current filament including price per kg. Cost sensors in euro.
 - GitHub workflow that creates a tag and release after a push to `main`.
 
-[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.1...HEAD
+[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.2...HEAD
+[0.4.0-beta.2]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.1...v0.4.0-beta.2
 [0.4.0-beta.1]: https://github.com/weskona/3D-Print-Assistant/compare/v0.3.0-beta.1...v0.4.0-beta.1
 [0.3.0-beta.1]: https://github.com/weskona/3D-Print-Assistant/compare/v0.2.0...v0.3.0-beta.1
 [0.2.0]: https://github.com/weskona/3D-Print-Assistant/compare/v0.1.0...v0.2.0

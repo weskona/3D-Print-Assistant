@@ -48,6 +48,7 @@ class Spool:
     remaining_g: float = 1000.0
     notes: str = ""
     rfid: str = ""
+    archived: bool = False
 
     @property
     def remaining_percent(self) -> float:
@@ -141,6 +142,7 @@ class SpoolStore:
             notes=str(data.get("notes") or "").strip(),
             rfid=valid_rfid(data["rfid"]) if "rfid" in data
             else (existing.rfid if existing else ""),
+            archived=existing.archived if existing else False,
         )
         self.spools[spool.id] = spool
         return spool
@@ -170,6 +172,10 @@ class SpoolStore:
             if known is not None:
                 if current is not None and current.id == known.id:
                     return "skipped", known
+                if known.archived:
+                    # An archived spool is still in the AMS (e.g. just ran empty).
+                    # Never bring it back automatically: restore it from the archive.
+                    return "skipped", known
                 self.assign(slot, known.id)
                 return "assigned", known
             if current is not None and not current.rfid:
@@ -188,6 +194,16 @@ class SpoolStore:
             raise SpoolError("unknown spool")
         self.assignments = {k: v for k, v in self.assignments.items() if v != spool_id}
 
+    def archive(self, spool_id: str, archived: bool = True) -> Spool:
+        """Move a spool to the archive (or back). Archived spools leave their slot."""
+        spool = self.spools.get(spool_id)
+        if spool is None:
+            raise SpoolError("unknown spool")
+        spool.archived = archived
+        if archived:
+            self.assignments = {k: v for k, v in self.assignments.items() if v != spool_id}
+        return spool
+
     def assign(self, slot: str, spool_id: str | None) -> None:
         """Assign a spool to a slot (a spool sits in one slot only); None clears it."""
         if spool_id is None:
@@ -195,6 +211,8 @@ class SpoolStore:
             return
         if spool_id not in self.spools:
             raise SpoolError("unknown spool")
+        if self.spools[spool_id].archived:
+            raise SpoolError("spool is archived")
         self.assignments = {k: v for k, v in self.assignments.items() if v != spool_id}
         self.assignments[slot] = spool_id
 
@@ -216,5 +234,5 @@ class SpoolStore:
         return [
             s
             for s in self.spools.values()
-            if s.id in assigned and s.remaining_percent <= threshold_percent
+            if s.id in assigned and not s.archived and s.remaining_percent <= threshold_percent
         ]

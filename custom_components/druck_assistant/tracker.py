@@ -15,6 +15,7 @@ from homeassistant.util import dt as dt_util
 
 from .const import (
     BAMBU_DOMAIN,
+    CONF_AUTO_ARCHIVE,
     CONF_AUTO_IMPORT,
     CONF_ENERGY_ENTITY,
     CONF_FILAMENT_PRICES,
@@ -32,6 +33,7 @@ from .const import (
     EVENT_PRINT_FAILED,
     EVENT_PRINT_FINISHED,
     EVENT_PRINT_STARTED,
+    EVENT_SPOOL_EMPTY,
     EVENT_SPOOL_IMPORTED,
     STATUS_FAILED,
     STORAGE_VERSION,
@@ -363,8 +365,8 @@ class PrintTracker:
                 )
                 if spool is not None:
                     self.filament.store.consume(spool.id, used_g)
-                    self.filament.changed()
                     self._check_spool(spool)
+                    self.filament.changed()
                 else:
                     self._check_filament()
         async_dispatcher_send(self.hass, self.signal)
@@ -372,6 +374,20 @@ class PrintTracker:
     def _check_spool(self, spool) -> None:
         """Fire an event once per spool when its stock falls below the threshold."""
         key = f"spool:{spool.id}"
+        if spool.remaining_g <= 0 and self.entry.options.get(CONF_AUTO_ARCHIVE, True):
+            self.filament.store.archive(spool.id)
+            self._low_notified.discard(key)
+            self.hass.bus.async_fire(
+                EVENT_SPOOL_EMPTY,
+                {
+                    "serial": self.serial,
+                    "spool_id": spool.id,
+                    "spool": spool.name,
+                    "type": spool.material,
+                    "color": spool.color,
+                },
+            )
+            return
         if spool.remaining_percent > self.low_threshold:
             self._low_notified.discard(key)
         elif key not in self._low_notified:

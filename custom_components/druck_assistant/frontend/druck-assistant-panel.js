@@ -49,6 +49,10 @@ const TRANSLATIONS = {
     none: "none",
     admin_only: "Only administrators can change the filament inventory.",
     price: "Price",
+    archive: "Archive",
+    restore: "Restore",
+    archived_spools: "Archived spools ({count})",
+    no_archived: "No archived spools. Empty spools are archived automatically.",
     import_ams: "Import from AMS",
     import_result: "Imported from AMS: {created} created, {assigned} assigned, {adopted} linked.",
     import_nothing: "Nothing to import: all loaded slots already have a spool.",
@@ -101,6 +105,10 @@ const TRANSLATIONS = {
     none: "keine",
     admin_only: "Nur Administratoren können den Filamentbestand ändern.",
     price: "Preis",
+    archive: "Archivieren",
+    restore: "Wiederherstellen",
+    archived_spools: "Archivierte Spulen ({count})",
+    no_archived: "Keine archivierten Spulen. Leere Spulen werden automatisch archiviert.",
     import_ams: "Aus AMS importieren",
     import_result: "Aus AMS importiert: {created} angelegt, {assigned} zugeordnet, {adopted} verknüpft.",
     import_nothing: "Nichts zu importieren: alle belegten Slots haben schon eine Spule.",
@@ -255,6 +263,8 @@ class DruckAssistantPanel extends HTMLElement {
     const slotOf = {};
     for (const p of this._data.printers) for (const sl of p.slots || []) if (sl.spool_id) slotOf[sl.spool_id] = sl.label;
 
+    const activeSpools = this._spools.filter((sp) => !sp.archived);
+    const archivedSpools = this._spools.filter((sp) => sp.archived);
     const card = this._el("div", { class: "card" }, this._el("h2", {}, this._t("spools")));
     if (admin) {
       card.append(
@@ -264,13 +274,13 @@ class DruckAssistantPanel extends HTMLElement {
             ? this._t("import_result", r)
             : this._t("import_nothing")) }, this._t("import_ams")));
     }
-    if (!this._spools.length) {
+    if (!activeSpools.length) {
       card.append(this._el("div", { class: "empty" }, this._t("no_spools")));
     } else {
       const table = this._el("table", {});
       const heads = ["name", "material", "brand", "stock", "price", "slot"].map((k) => this._t(k));
       table.append(this._el("tr", {}, ...heads.map((h) => this._el("th", {}, h)), this._el("th", {}, "")));
-      for (const sp of this._spools) {
+      for (const sp of activeSpools) {
         const dot = this._el("span", { class: "dot", style: `background:${/^#[0-9a-f]{6,8}$/i.test(sp.color) ? sp.color : "transparent"}` });
         const pct = Math.max(0, Math.min(100, sp.remaining_percent));
         const bar = this._el("div", { class: "bar" }, this._el("div", { class: "fill" + (pct <= 15 ? " low" : ""), style: `width:${pct}%` }));
@@ -278,6 +288,7 @@ class DruckAssistantPanel extends HTMLElement {
         if (admin) {
           actions.append(
             this._el("button", { onclick: () => { this._editing = sp; this._render(); } }, this._t("edit")),
+            this._el("button", { onclick: () => this._call({ type: "druck_assistant/spool_archive", spool_id: sp.id, archived: true }) }, this._t("archive")),
             this._el("button", { onclick: () => { if (confirm(this._t("confirm_delete", { name: sp.name }))) this._call({ type: "druck_assistant/spool_delete", spool_id: sp.id }); } }, this._t("delete")));
         }
         table.append(this._el("tr", {},
@@ -293,6 +304,33 @@ class DruckAssistantPanel extends HTMLElement {
     }
     main.append(card);
 
+    const details = this._el("details", { class: "card" },
+      this._el("summary", {}, this._t("archived_spools", { count: archivedSpools.length })));
+    if (this._archiveOpen) details.open = true;
+    details.addEventListener("toggle", () => { this._archiveOpen = details.open; });
+    if (!archivedSpools.length) {
+      details.append(this._el("div", { class: "empty" }, this._t("no_archived")));
+    } else {
+      const table = this._el("table", {});
+      table.append(this._el("tr", {}, ...["name", "material", "brand", "stock"].map((k) => this._el("th", {}, this._t(k))), this._el("th", {}, "")));
+      for (const sp of archivedSpools) {
+        const actions = this._el("td", {});
+        if (admin) {
+          actions.append(
+            this._el("button", { onclick: () => this._call({ type: "druck_assistant/spool_archive", spool_id: sp.id, archived: false }) }, this._t("restore")),
+            this._el("button", { onclick: () => { if (confirm(this._t("confirm_delete", { name: sp.name }))) this._call({ type: "druck_assistant/spool_delete", spool_id: sp.id }); } }, this._t("delete")));
+        }
+        table.append(this._el("tr", {},
+          this._el("td", {}, sp.name, sp.rfid ? this._el("span", { class: "badge", title: sp.rfid }, "RFID") : ""),
+          this._el("td", {}, sp.material),
+          this._el("td", {}, sp.brand || "–"),
+          this._el("td", {}, `${this._fmtNum(sp.remaining_g, 0)} / ${this._fmtNum(sp.initial_weight_g, 0)} g`),
+          actions));
+      }
+      details.append(table);
+    }
+    main.append(details);
+
     const slotsCard = this._el("div", { class: "card" }, this._el("h2", {}, this._t("slots")));
     const slots = printer?.slots || [];
     if (!slots.length) {
@@ -303,7 +341,7 @@ class DruckAssistantPanel extends HTMLElement {
       for (const sl of slots) {
         const sel = this._el("select", { onchange: (e) => this._call({ type: "druck_assistant/spool_assign", slot_key: sl.key, spool_id: e.target.value || null }) },
           this._el("option", { value: "" }, this._t("none")),
-          ...this._spools.map((sp) => {
+          ...activeSpools.map((sp) => {
             const o = this._el("option", { value: sp.id }, `${sp.name} (${sp.material})`);
             if (sp.id === sl.spool_id) o.selected = true;
             return o;
@@ -356,6 +394,8 @@ class DruckAssistantPanel extends HTMLElement {
       .field { display: flex; flex-direction: column; gap: 2px; margin-bottom: 10px; font-size: 13px; color: var(--secondary-text-color); }
       .field input { font: inherit; padding: 6px 8px; color: var(--primary-text-color); background: var(--card-background-color); border: 1px solid var(--divider-color); border-radius: 6px; }
       .form { max-width: 480px; }
+      summary { cursor: pointer; font-weight: 500; }
+      details.card[open] summary { margin-bottom: 8px; }
       .badge { margin-left: 6px; padding: 0 6px; border-radius: 8px; font-size: 11px; background: var(--divider-color); color: var(--secondary-text-color); }
       .notice { padding: 0 0 12px; }
       .bar { width: 120px; height: 6px; border-radius: 3px; background: var(--divider-color); margin-bottom: 4px; }

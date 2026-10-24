@@ -13,6 +13,7 @@ CONF_PRICE_PER_KWH = "price_per_kwh"
 CONF_PRICE_ENTITY = "price_entity"
 CONF_NOTIFY_FILAMENT_LOW = "filament_low_threshold"
 CONF_AUTO_IMPORT = "auto_import"
+CONF_AUTO_ARCHIVE = "auto_archive"
 
 DEFAULT_PRICE_PER_KG = 25.0
 DEFAULT_FILAMENT_LOW = 15
@@ -29,6 +30,7 @@ WS_SPOOL_SAVE = f"{DOMAIN}/spool_save"
 WS_SPOOL_DELETE = f"{DOMAIN}/spool_delete"
 WS_SPOOL_ASSIGN = f"{DOMAIN}/spool_assign"
 WS_IMPORT_AMS = f"{DOMAIN}/import_ams"
+WS_SPOOL_ARCHIVE = f"{DOMAIN}/spool_archive"
 
 # Raw print_status values reported by ha-bambulab.
 STATUS_RUNNING = "running"
@@ -43,3 +45,4 @@ EVENT_PRINT_FINISHED = f"{DOMAIN}_print_finished"
 EVENT_PRINT_FAILED = f"{DOMAIN}_print_failed"
 EVENT_FILAMENT_LOW = f"{DOMAIN}_filament_low"
 EVENT_SPOOL_IMPORTED = f"{DOMAIN}_spool_imported"
+EVENT_SPOOL_EMPTY = f"{DOMAIN}_spool_empty"

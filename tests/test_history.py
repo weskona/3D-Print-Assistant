@@ -199,3 +199,42 @@ def test_import_unknown_remaining_uses_full_spool():
     store = m.SpoolStore()
     _, spool = store.import_slot("p:t1", {**TRAY, "remain": -1}, include_untagged=False)
     assert spool.remaining_g == 1000.0
+
+
+def test_archive_and_restore():
+    m = _spools_module()
+    store = m.SpoolStore()
+    spool = store.save_spool({"name": "Empty", "material": "PLA", "initial_weight_g": 100})
+    store.assign("p:t1", spool.id)
+    store.consume(spool.id, 100)
+    assert store.spools[spool.id].remaining_g == 0
+
+    store.archive(spool.id)
+    assert store.spools[spool.id].archived and not store.assignments  # leaves its slot
+    assert not store.low_spools(15)
+    try:
+        store.assign("p:t1", spool.id)
+    except m.SpoolError:
+        pass
+    else:
+        raise AssertionError("archived spools cannot be assigned")
+
+    # editing keeps the archive flag and survives a storage round trip
+    store.save_spool({"id": spool.id, "name": "Empty 2", "material": "PLA"})
+    assert store.spools[spool.id].archived
+    assert m.SpoolStore(**store.to_dict()).spools[spool.id].archived
+
+    store.archive(spool.id, False)
+    store.assign("p:t1", spool.id)
+    assert store.assignments == {"p:t1": spool.id}
+
+
+def test_archived_rfid_spool_is_not_restored_or_duplicated_by_import():
+    m = _spools_module()
+    store = m.SpoolStore()
+    _, spool = store.import_slot("p:t1", TRAY, include_untagged=True)
+    store.archive(spool.id)
+    # the emptied spool is still in the AMS: neither auto nor manual import brings it back
+    for manual in (False, True):
+        assert store.import_slot("p:t1", TRAY, include_untagged=manual) == ("skipped", spool)
+    assert len(store.spools) == 1 and spool.archived and not store.assignments
