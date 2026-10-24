@@ -1,0 +1,50 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "3D-Druck-Assistant",
+        "description": "Wähle den Bambu-Lab-Drucker aus ha-bambulab.",
+        "data": {
+          "bambu_entry_id": "Drucker"
+        }
+      }
+    },
+    "abort": {
+      "no_bambu_lab": "Keine Bambu-Lab-Integration gefunden. Installiere und konfiguriere zuerst ha-bambulab.",
+      "already_configured": "Drucker ist bereits eingerichtet."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Einstellungen",
+        "data": {
+          "price_per_kg": "Filamentpreis pro kg",
+          "filament_low_threshold": "Warnschwelle Filament-Rest (%)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "total_prints": {
+        "name": "Drucke gesamt"
+      },
+      "successful_prints": {
+        "name": "Erfolgreiche Drucke"
+      },
+      "total_filament": {
+        "name": "Filamentverbrauch gesamt"
+      },
+      "total_cost": {
+        "name": "Filamentkosten gesamt"
+      },
+      "last_print": {
+        "name": "Letzter Druck"
+      },
+      "last_print_cost": {
+        "name": "Kosten letzter Druck"
+      }
+    }
+  }
+}
