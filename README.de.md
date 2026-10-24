@@ -23,6 +23,10 @@ Home-Assistant-Integration für Bambu-Lab-Drucker. Sie setzt auf
 Im Tab „Filament“ des Panels (Bearbeiten nur für Administratoren) legst du Spulen an und ordnest
 sie den Slots des Druckers zu. Verwendet wird der Slot, der beim Druckstart aktiv ist: Der Preis
 seiner Spule ersetzt den Sortenpreis, das verbrauchte Gewicht wird am Druckende abgezogen.
+Mit „Aus AMS importieren“ werden aus den belegten AMS-Slots Spulen angelegt. Neue Bambu-Spulen mit
+RFID-Tag werden zusätzlich automatisch übernommen (Option „Neue Bambu-Spulen automatisch übernehmen“);
+Spulen ohne Tag, etwa Fremdfilament oder die externe Spule, werden nur über den Button importiert.
+Der Restbestand wird aus der AMS-Prozentanzeige geschätzt und lässt sich von Hand korrigieren.
 Bei Drucken mit mehreren Spulen wird alles der beim Start aktiven Spule zugerechnet.
 
 ## Installation

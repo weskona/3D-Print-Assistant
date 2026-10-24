@@ -24,6 +24,10 @@ Home Assistant integration for Bambu Lab printers. It builds on
 Open the "Filament" tab of the panel (administrators can edit). Add your spools, then assign
 each spool to a slot of the printer. The slot with the active spool at print start is used:
 its spool's price replaces the type price, and the used weight is deducted when the print ends.
+Click "Import from AMS" to create spools from the loaded AMS slots. New Bambu spools with an RFID
+tag are also added automatically (option "Automatically add new Bambu spools"); spools without a
+tag, such as third-party filament or the external spool, are only imported with the button.
+The remaining stock of an imported spool is estimated from the AMS percentage, so correct it by hand if needed.
 Prints with several spools or materials are booked to the spool active at the start.
 
 ## Installation

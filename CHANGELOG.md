@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0-beta.1] - 2026-10-24
+
+### Added
+
+- Import spools from the AMS: new "Import from AMS" button in the Filament tab creates a spool for every loaded slot without a spool (type, name, color, weight and remaining stock are taken from the tray).
+- Automatic import: a new Bambu spool with an RFID tag is added to the inventory and assigned to its slot as soon as it is detected. The tag is stored, so the same spool is recognized when it moves to another slot. A spool you assigned by hand to the slot is tagged instead of duplicated. Can be turned off in the options.
+- `druck_assistant_spool_imported` event.
+
 ## [0.3.0-beta.1] - 2026-10-24
 
 ### Added
@@ -47,7 +55,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Filament prices per type (e.g. `PLA=20`) in the options, sensor for the current filament including price per kg. Cost sensors in euro.
 - GitHub workflow that creates a tag and release after a push to `main`.
 
-[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.3.0-beta.1...HEAD
+[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.1...HEAD
+[0.4.0-beta.1]: https://github.com/weskona/3D-Print-Assistant/compare/v0.3.0-beta.1...v0.4.0-beta.1
 [0.3.0-beta.1]: https://github.com/weskona/3D-Print-Assistant/compare/v0.2.0...v0.3.0-beta.1
 [0.2.0]: https://github.com/weskona/3D-Print-Assistant/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/weskona/3D-Print-Assistant/releases/tag/v0.1.0

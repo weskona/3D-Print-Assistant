@@ -17,6 +17,7 @@ from homeassistant.helpers import selector
 
 from .const import (
     BAMBU_DOMAIN,
+    CONF_AUTO_IMPORT,
     CONF_BAMBU_ENTRY_ID,
     CONF_ENERGY_ENTITY,
     CONF_FILAMENT_PRICES,
@@ -131,6 +132,9 @@ class DruckAssistantOptionsFlow(OptionsFlow):
                     CONF_NOTIFY_FILAMENT_LOW,
                     default=opts.get(CONF_NOTIFY_FILAMENT_LOW, DEFAULT_FILAMENT_LOW),
                 ): vol.All(vol.Coerce(int), vol.Range(min=0, max=100)),
+                vol.Required(
+                    CONF_AUTO_IMPORT, default=opts.get(CONF_AUTO_IMPORT, True)
+                ): bool,
                 vol.Required(
                     CONF_PRICE_PER_KWH,
                     default=opts.get(CONF_PRICE_PER_KWH, DEFAULT_PRICE_PER_KWH),

@@ -19,7 +19,7 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import DruckAssistantConfigEntry
-from .const import BAMBU_DOMAIN, DOMAIN
+from .const import BAMBU_DOMAIN
 from .history import PrintHistory
 from .tracker import PrintTracker
 
