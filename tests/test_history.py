@@ -51,3 +51,25 @@ def test_finish_without_session_ignored():
     h = PrintHistory()
     assert h.update_status("idle", "finish", T0) is None
     assert h.finish("finish", T0, 1, None, 1) is None
+
+
+def test_energy_from_meter_delta():
+    h = PrintHistory()
+    h.update_status("idle", "running", T0, "x")
+    h.session.energy_start_kwh = 10.0
+    rec = h.finish("finish", T0 + timedelta(hours=1), 100, None, 20, None, 10.5, 0.30)
+    assert rec.energy_kwh == 0.5
+    assert rec.energy_cost == 0.15
+    assert rec.filament_cost == 2.0
+    assert rec.cost == 2.15
+    assert h.total_energy_kwh == 0.5
+
+
+def test_energy_from_power_integration():
+    h = PrintHistory()
+    h.update_status("idle", "running", T0, "x")
+    h.session.add_power(T0, 100)
+    h.session.add_power(T0 + timedelta(hours=1), 200)
+    rec = h.finish("finish", T0 + timedelta(hours=2), 0, None, 20, None, None, 0.5)
+    assert rec.energy_kwh == 0.3  # 100W*1h + 200W*1h
+    assert rec.energy_cost == 0.15

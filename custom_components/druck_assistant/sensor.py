@@ -12,7 +12,7 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.const import UnitOfMass
+from homeassistant.const import UnitOfEnergy, UnitOfMass
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
@@ -26,7 +26,8 @@ from .tracker import PrintTracker
 
 @dataclass(frozen=True, kw_only=True)
 class DruckSensorDescription(SensorEntityDescription):
-    value_fn: Callable[[PrintHistory], Any]
+    value_fn: Callable[[PrintHistory], Any] = lambda h: None
+    tracker_fn: Callable[[PrintTracker], Any] | None = None
     attrs_fn: Callable[[PrintHistory], dict[str, Any]] | None = None
 
 
@@ -64,6 +65,31 @@ SENSORS: tuple[DruckSensorDescription, ...] = (
         state_class=SensorStateClass.TOTAL_INCREASING,
         suggested_display_precision=2,
         value_fn=lambda h: h.total_cost,
+    ),
+    DruckSensorDescription(
+        key="total_energy",
+        translation_key="total_energy",
+        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        suggested_display_precision=2,
+        value_fn=lambda h: h.total_energy_kwh,
+    ),
+    DruckSensorDescription(
+        key="total_energy_cost",
+        translation_key="total_energy_cost",
+        icon="mdi:flash",
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        suggested_display_precision=2,
+        value_fn=lambda h: h.total_energy_cost,
+    ),
+    DruckSensorDescription(
+        key="electricity_price",
+        translation_key="electricity_price",
+        icon="mdi:currency-eur",
+        native_unit_of_measurement="/kWh",
+        suggested_display_precision=4,
+        tracker_fn=lambda t: t.price_per_kwh,
     ),
     DruckSensorDescription(
         key="last_print",
@@ -115,7 +141,10 @@ class DruckSensor(SensorEntity):
 
     @property
     def native_value(self) -> Any:
-        return self.entity_description.value_fn(self._tracker.history)
+        desc = self.entity_description
+        if desc.tracker_fn is not None:
+            return desc.tracker_fn(self._tracker)
+        return desc.value_fn(self._tracker.history)
 
     @property
     def extra_state_attributes(self) -> dict[str, Any] | None:

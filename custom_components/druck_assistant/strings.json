@@ -3,9 +3,11 @@
     "step": {
       "user": {
         "title": "3D-Druck-Assistant",
-        "description": "Select the Bambu Lab printer from ha-bambulab.",
+        "description": "Select the Bambu Lab printer from ha-bambulab. Energy and power sensors (e.g. from a smart plug) are optional and are added to the costs. Without an energy meter, power is integrated over the print duration.",
         "data": {
-          "bambu_entry_id": "Printer"
+          "bambu_entry_id": "Printer",
+          "energy_entity": "Printer energy meter (kWh, optional)",
+          "power_entity": "Printer power sensor (W, optional)"
         }
       }
     },
@@ -20,7 +22,11 @@
         "title": "Settings",
         "data": {
           "price_per_kg": "Filament price per kg",
-          "filament_low_threshold": "Low filament threshold (%)"
+          "filament_low_threshold": "Low filament threshold (%)",
+          "price_per_kwh": "Electricity price per kWh",
+          "price_entity": "Price entity (optional, overrides fixed price)",
+          "energy_entity": "Printer energy meter (kWh, optional)",
+          "power_entity": "Printer power sensor (W, optional)"
         }
       }
     }
@@ -44,6 +50,15 @@
       },
       "last_print_cost": {
         "name": "Last print cost"
+      },
+      "total_energy": {
+        "name": "Total energy used"
+      },
+      "total_energy_cost": {
+        "name": "Total energy cost"
+      },
+      "electricity_price": {
+        "name": "Electricity price"
       }
     }
   }

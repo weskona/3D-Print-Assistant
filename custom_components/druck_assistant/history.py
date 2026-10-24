@@ -22,6 +22,13 @@ def calculate_cost(weight_g: float | None, price_per_kg: float) -> float:
     return round(weight_g / 1000 * price_per_kg, 2)
 
 
+def calculate_energy_cost(energy_kwh: float | None, price_per_kwh: float) -> float:
+    """Return the electricity cost for a print."""
+    if not energy_kwh or energy_kwh < 0:
+        return 0.0
+    return round(energy_kwh * price_per_kwh, 2)
+
+
 @dataclass
 class PrintRecord:
     """A completed (or failed) print."""
@@ -33,6 +40,9 @@ class PrintRecord:
     duration_min: float
     weight_g: float
     cost: float
+    filament_cost: float = 0.0
+    energy_kwh: float = 0.0
+    energy_cost: float = 0.0
     material: str | None = None
     color: str | None = None
     filament: dict[str, float] = field(default_factory=dict)
@@ -49,6 +59,29 @@ class PrintSession:
     name: str | None = None
     material: str | None = None
     color: str | None = None
+    energy_start_kwh: float | None = None
+    power_w: float | None = None
+    power_ts: datetime | None = None
+    energy_acc_kwh: float = 0.0
+
+    def add_power(self, now: datetime, watts: float | None) -> None:
+        """Integrate the previous power reading up to now and store the new one."""
+        if self.power_w is not None and self.power_ts is not None:
+            hours = (now - self.power_ts).total_seconds() / 3600
+            self.energy_acc_kwh += self.power_w * hours / 1000
+        self.power_w = watts
+        self.power_ts = now
+
+    def energy_kwh(self, now: datetime, energy_end_kwh: float | None) -> float:
+        """Energy used so far: meter delta if available, else integrated power."""
+        if (
+            self.energy_start_kwh is not None
+            and energy_end_kwh is not None
+            and energy_end_kwh >= self.energy_start_kwh
+        ):
+            return energy_end_kwh - self.energy_start_kwh
+        self.add_power(now, self.power_w)
+        return self.energy_acc_kwh
 
 
 class PrintHistory:
@@ -93,12 +126,17 @@ class PrintHistory:
         filament: dict[str, float] | None,
         price_per_kg: float,
         name: str | None = None,
+        energy_end_kwh: float | None = None,
+        price_per_kwh: float = 0.0,
     ) -> PrintRecord | None:
         """Close the session and store the record."""
         session, self.session = self.session, None
         if session is None:
             return None
         weight = float(weight_g or 0)
+        filament_cost = calculate_cost(weight, price_per_kg)
+        energy = round(session.energy_kwh(now, energy_end_kwh), 3)
+        energy_cost = calculate_energy_cost(energy, price_per_kwh)
         record = PrintRecord(
             name=name or session.name or "unbekannt",
             result=result,
@@ -106,7 +144,10 @@ class PrintHistory:
             finished=now.isoformat(),
             duration_min=round((now - session.started).total_seconds() / 60, 1),
             weight_g=weight,
-            cost=calculate_cost(weight, price_per_kg),
+            cost=round(filament_cost + energy_cost, 2),
+            filament_cost=filament_cost,
+            energy_kwh=energy,
+            energy_cost=energy_cost,
             material=session.material,
             color=session.color,
             filament=dict(filament or {}),
@@ -126,6 +167,14 @@ class PrintHistory:
     @property
     def total_weight_g(self) -> float:
         return round(sum(r["weight_g"] for r in self.records), 1)
+
+    @property
+    def total_energy_kwh(self) -> float:
+        return round(sum(r.get("energy_kwh", 0) for r in self.records), 3)
+
+    @property
+    def total_energy_cost(self) -> float:
+        return round(sum(r.get("energy_cost", 0) for r in self.records), 2)
 
     @property
     def total_cost(self) -> float:

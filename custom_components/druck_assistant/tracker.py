@@ -14,11 +14,16 @@ from homeassistant.util import dt as dt_util
 
 from .const import (
     BAMBU_DOMAIN,
+    CONF_ENERGY_ENTITY,
     CONF_NOTIFY_FILAMENT_LOW,
+    CONF_POWER_ENTITY,
+    CONF_PRICE_ENTITY,
     CONF_PRICE_PER_KG,
+    CONF_PRICE_PER_KWH,
     CONF_SERIAL,
     DEFAULT_FILAMENT_LOW,
     DEFAULT_PRICE_PER_KG,
+    DEFAULT_PRICE_PER_KWH,
     DOMAIN,
     EVENT_FILAMENT_LOW,
     EVENT_PRINT_FAILED,
@@ -54,6 +59,34 @@ class PrintTracker:
     def low_threshold(self) -> int:
         return self.entry.options.get(CONF_NOTIFY_FILAMENT_LOW, DEFAULT_FILAMENT_LOW)
 
+    def _conf(self, key: str) -> Any:
+        """Option value, falling back to the initial config data."""
+        if key in self.entry.options:
+            return self.entry.options[key]
+        return self.entry.data.get(key)
+
+    @property
+    def price_per_kwh(self) -> float:
+        """Electricity price from the price entity, else the fixed option."""
+        entity_id = self._conf(CONF_PRICE_ENTITY)
+        state = self.hass.states.get(entity_id) if entity_id else None
+        if state is not None:
+            try:
+                return float(state.state)
+            except ValueError:
+                pass
+        return self.entry.options.get(CONF_PRICE_PER_KWH, DEFAULT_PRICE_PER_KWH)
+
+    def _external_float(self, conf_key: str) -> float | None:
+        entity_id = self._conf(conf_key)
+        state = self.hass.states.get(entity_id) if entity_id else None
+        if state is None or state.state in UNAVAILABLE:
+            return None
+        try:
+            return float(state.state)
+        except ValueError:
+            return None
+
     def entity_id(self, key: str, domain: str = "sensor") -> str | None:
         """Resolve a ha-bambulab entity by its unique id."""
         return er.async_get(self.hass).async_get_entity_id(
@@ -87,6 +120,26 @@ class PrintTracker:
         self.entry.async_on_unload(
             async_track_state_change_event(self.hass, watched, self._on_change)
         )
+        extra = [
+            eid
+            for eid in (self._conf(CONF_POWER_ENTITY), self._conf(CONF_PRICE_ENTITY))
+            if eid
+        ]
+        if extra:
+            self.entry.async_on_unload(
+                async_track_state_change_event(self.hass, extra, self._on_external)
+            )
+
+    @callback
+    def _on_external(self, event: Event) -> None:
+        """Power or price entity changed."""
+        if event.data["entity_id"] == self._conf(CONF_POWER_ENTITY):
+            session = self.history.session
+            if session is not None:
+                session.add_power(
+                    dt_util.utcnow(), self._external_float(CONF_POWER_ENTITY)
+                )
+        async_dispatcher_send(self.hass, self.signal)
 
     @callback
     def _on_change(self, event: Event) -> None:
@@ -115,6 +168,10 @@ class PrintTracker:
             tray = self._state("active_tray")
             if tray is not None:
                 self._on_tray(tray.attributes)
+            session = self.history.session
+            if session is not None:
+                session.energy_start_kwh = self._external_float(CONF_ENERGY_ENTITY)
+                session.add_power(now, self._external_float(CONF_POWER_ENTITY))
             self.hass.bus.async_fire(
                 EVENT_PRINT_STARTED, {"serial": self.serial, "name": name}
             )
@@ -127,6 +184,8 @@ class PrintTracker:
                 dict(weight_state.attributes) if weight_state else None,
                 self.price_per_kg,
                 name,
+                self._external_float(CONF_ENERGY_ENTITY),
+                self.price_per_kwh,
             )
             if record is not None:
                 self.hass.bus.async_fire(

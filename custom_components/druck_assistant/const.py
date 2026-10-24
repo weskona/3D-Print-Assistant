@@ -6,10 +6,15 @@ BAMBU_DOMAIN = "bambu_lab"
 CONF_BAMBU_ENTRY_ID = "bambu_entry_id"
 CONF_SERIAL = "serial"
 CONF_PRICE_PER_KG = "price_per_kg"
+CONF_ENERGY_ENTITY = "energy_entity"
+CONF_POWER_ENTITY = "power_entity"
+CONF_PRICE_PER_KWH = "price_per_kwh"
+CONF_PRICE_ENTITY = "price_entity"
 CONF_NOTIFY_FILAMENT_LOW = "filament_low_threshold"
 
 DEFAULT_PRICE_PER_KG = 25.0
 DEFAULT_FILAMENT_LOW = 15
+DEFAULT_PRICE_PER_KWH = 0.30
 MAX_HISTORY = 200
 
 STORAGE_VERSION = 1

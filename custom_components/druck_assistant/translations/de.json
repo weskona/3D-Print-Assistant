@@ -3,9 +3,11 @@
     "step": {
       "user": {
         "title": "3D-Druck-Assistant",
-        "description": "Wähle den Bambu-Lab-Drucker aus ha-bambulab.",
+        "description": "Wähle den Bambu-Lab-Drucker aus ha-bambulab. Energie- und Leistungssensor (z. B. einer Smart-Steckdose) sind optional und fließen in die Kosten ein. Ohne Energiezähler wird die Leistung über die Druckdauer integriert.",
         "data": {
-          "bambu_entry_id": "Drucker"
+          "bambu_entry_id": "Drucker",
+          "energy_entity": "Energiezähler des Druckers (kWh, optional)",
+          "power_entity": "Leistungssensor des Druckers (W, optional)"
         }
       }
     },
@@ -20,7 +22,11 @@
         "title": "Einstellungen",
         "data": {
           "price_per_kg": "Filamentpreis pro kg",
-          "filament_low_threshold": "Warnschwelle Filament-Rest (%)"
+          "filament_low_threshold": "Warnschwelle Filament-Rest (%)",
+          "price_per_kwh": "Strompreis pro kWh",
+          "price_entity": "Strompreis-Entität (optional, überschreibt festen Preis)",
+          "energy_entity": "Energiezähler des Druckers (kWh, optional)",
+          "power_entity": "Leistungssensor des Druckers (W, optional)"
         }
       }
     }
@@ -44,6 +50,15 @@
       },
       "last_print_cost": {
         "name": "Kosten letzter Druck"
+      },
+      "total_energy": {
+        "name": "Stromverbrauch gesamt"
+      },
+      "total_energy_cost": {
+        "name": "Stromkosten gesamt"
+      },
+      "electricity_price": {
+        "name": "Strompreis"
       }
     }
   }
