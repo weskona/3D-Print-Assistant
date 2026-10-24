@@ -1,4 +1,4 @@
-# 3D-Druck-Assistant
+# 3D Print Assistant
 
 [English](README.md)
 
@@ -11,7 +11,7 @@ Home-Assistant-Integration für Bambu-Lab-Drucker. Sie setzt auf
 - Druckhistorie (letzte 200 Drucke, persistent) mit Dauer, Ergebnis, Gewicht, Material und Farbe
 - Filamentverbrauch und -kosten pro Druck und gesamt
 - Stromkosten pro Druck über einen Energiezähler (kWh) oder einen Leistungssensor (W, wird über die Druckdauer integriert); Strompreis fest oder aus einer Entität
-- Eigenes Panel „3D-Druck“ in der Seitenleiste mit Kennzahlen, aktuellem Druck/Filament und Druckhistorie (aktualisiert sich live bei Druckstart und -ende)
+- Eigenes Panel „3D Print Assistant“ in der Seitenleiste mit Kennzahlen, aktuellem Druck/Filament und Druckhistorie (aktualisiert sich live bei Druckstart und -ende)
 - Ereignisse für Automationen: `druck_assistant_print_started`, `druck_assistant_print_finished`,
   `druck_assistant_print_failed`, `druck_assistant_filament_low`
 
@@ -19,7 +19,7 @@ Home-Assistant-Integration für Bambu-Lab-Drucker. Sie setzt auf
 
 1. ha-bambulab installieren und den Drucker einrichten.
 2. `custom_components/druck_assistant` nach `config/custom_components/` kopieren (oder per HACS als Custom Repository).
-3. Home Assistant neu starten, Integration „3D-Druck-Assistant“ hinzufügen und den Drucker wählen.
+3. Home Assistant neu starten, Integration „3D Print Assistant“ hinzufügen und den Drucker wählen.
 4. In den Optionen Filamentpreis pro kg und Warnschwelle einstellen.
 
 ## Release

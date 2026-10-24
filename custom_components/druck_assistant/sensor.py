@@ -1,4 +1,4 @@
-"""Sensors for the 3D-Druck-Assistant integration."""
+"""Sensors for the 3D Print Assistant integration."""
 
 from __future__ import annotations
 

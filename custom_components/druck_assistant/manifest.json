@@ -1,6 +1,6 @@
 {
   "domain": "druck_assistant",
-  "name": "3D-Druck-Assistant",
+  "name": "3D Print Assistant",
   "codeowners": ["@weskona"],
   "config_flow": true,
   "dependencies": ["bambu_lab", "frontend", "http", "panel_custom", "websocket_api"],

@@ -1,4 +1,4 @@
-// Sidebar panel of the 3D-Druck-Assistant integration (no external dependencies).
+// Sidebar panel of the 3D Print Assistant integration (no external dependencies).
 // English is the source language; add further languages to TRANSLATIONS.
 const TRANSLATIONS = {
   en: {
@@ -174,7 +174,7 @@ class DruckAssistantPanel extends HTMLElement {
     const printers = this._data?.printers || [];
     const printer = printers.find((p) => p.entry_id === this._selected);
 
-    const header = this._el("header", {}, this._el("h1", {}, "3D-Druck-Assistant"));
+    const header = this._el("header", {}, this._el("h1", {}, "3D Print Assistant"));
     if (printers.length > 1) {
       const sel = this._el("select", { onchange: (e) => { this._selected = e.target.value; this._render(); } },
         ...printers.map((p) => {

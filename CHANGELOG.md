@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Electricity cost: optional energy meter (kWh) and power sensor (W) in the config flow, fixed or entity-based electricity price, new sensors for energy usage, energy cost and electricity price. Print cost now includes filament and electricity.
 - Filament prices per type (e.g. `PLA=20`) in the options, sensor for the current filament including price per kg. Cost sensors in euro.
 - GitHub workflow that creates a tag and release after a push to `main`.
-- Own sidebar panel "3D Printing" with totals, current print and filament, and print history.
+- Own sidebar panel "3D Print Assistant" with totals, current print and filament, and print history.
 - German language pack (config flow, entities and panel); English is the source language.
 - German README (`README.de.md`).
 

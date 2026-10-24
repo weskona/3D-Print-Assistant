@@ -1,4 +1,4 @@
-"""Constants for the 3D-Druck-Assistant integration."""
+"""Constants for the 3D Print Assistant integration."""
 
 DOMAIN = "druck_assistant"
 BAMBU_DOMAIN = "bambu_lab"

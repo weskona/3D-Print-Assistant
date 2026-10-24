@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "title": "3D-Druck-Assistant",
+        "title": "3D Print Assistant",
         "description": "Wähle den Bambu-Lab-Drucker aus ha-bambulab. Energie- und Leistungssensor (z. B. einer Smart-Steckdose) sind optional und fließen in die Kosten ein. Ohne Energiezähler wird die Leistung über die Druckdauer integriert.",
         "data": {
           "bambu_entry_id": "Drucker",

@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "title": "3D-Druck-Assistant",
+        "title": "3D Print Assistant",
         "description": "Select the Bambu Lab printer from ha-bambulab. Energy and power sensors (e.g. from a smart plug) are optional and are added to the costs. Without an energy meter, power is integrated over the print duration.",
         "data": {
           "bambu_entry_id": "Printer",

@@ -1,4 +1,4 @@
-"""Config flow for the 3D-Druck-Assistant integration."""
+"""Config flow for the 3D Print Assistant integration."""
 
 from __future__ import annotations
 

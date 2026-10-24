@@ -1,4 +1,4 @@
-# 3D-Druck-Assistant
+# 3D Print Assistant
 
 [Deutsch](README.de.md)
 
@@ -12,7 +12,7 @@ Home Assistant integration for Bambu Lab printers. It builds on
 - Filament and electricity cost per print and in total (currency: euro)
 - Filament price per type (e.g. `PLA=20`) with a default price per kg
 - Electricity cost via an energy meter (kWh) or a power sensor (W, integrated over the print duration); fixed price or price from an entity
-- Own "3D Printing" sidebar panel with totals, current print/filament and print history (updates live on print start and end)
+- Own "3D Print Assistant" sidebar panel with totals, current print/filament and print history (updates live on print start and end)
 - Events for automations: `druck_assistant_print_started`, `druck_assistant_print_finished`,
   `druck_assistant_print_failed`, `druck_assistant_filament_low`
 
@@ -20,7 +20,7 @@ Home Assistant integration for Bambu Lab printers. It builds on
 
 1. Install ha-bambulab and set up your printer.
 2. Copy `custom_components/druck_assistant` to `config/custom_components/` (or add this repository as a custom repository in HACS).
-3. Restart Home Assistant, add the "3D-Druck-Assistant" integration and select the printer.
+3. Restart Home Assistant, add the "3D Print Assistant" integration and select the printer.
 4. Set filament prices, electricity price and the low filament threshold in the integration options.
 
 ## Languages

@@ -1,4 +1,4 @@
-"""3D-Druck-Assistant: print history, filament cost and events on top of ha-bambulab."""
+"""3D Print Assistant: print history, filament cost and events on top of ha-bambulab."""
 
 from __future__ import annotations
 
@@ -80,7 +80,7 @@ async def _async_register_panel(hass: HomeAssistant) -> None:
         webcomponent_name=PANEL_COMPONENT,
         frontend_url_path=PANEL_URL_PATH,
         module_url=f"{STATIC_URL}/{PANEL_COMPONENT}.js?v={version}",
-        sidebar_title="3D Printing",
+        sidebar_title="3D Print Assistant",
         sidebar_icon="mdi:printer-3d",
         require_admin=False,
         config={},
