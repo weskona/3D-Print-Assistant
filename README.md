@@ -18,3 +18,12 @@ Home-Assistant-Integration für Bambu-Lab-Drucker. Sie setzt auf
 2. `custom_components/druck_assistant` nach `config/custom_components/` kopieren (oder per HACS als Custom Repository).
 3. Home Assistant neu starten, Integration „3D-Druck-Assistant“ hinzufügen und den Drucker wählen.
 4. In den Optionen Filamentpreis pro kg und Warnschwelle einstellen.
+
+## Release
+
+Bei jedem Push auf `main` prüft der Workflow `.github/workflows/release.yml` die Version in
+`custom_components/druck_assistant/manifest.json`. Gibt es für `v<version>` noch keinen Tag,
+wird er angelegt und ein GitHub Release mit `druck_assistant.zip` erstellt. Die Release Notes
+stammen aus dem passenden Abschnitt `## [<version>]` der `CHANGELOG.md`, sonst werden sie
+automatisch erzeugt. Zum Veröffentlichen also Version im Manifest erhöhen und den
+`[Unreleased]`-Abschnitt in `## [<version>] - <Datum>` umbenennen.
