@@ -303,3 +303,47 @@ def test_add_spools_validates_quantity():
             continue
         raise AssertionError(bad)
     assert len(store.add_spools({"name": "x", "material": "PLA"}, 1)) == 1
+
+
+def test_manual_correction_moves_the_tag_and_survives_auto_import():
+    m = _spools_module()
+    store = m.SpoolStore()
+    pack = store.add_spools({"name": "Black", "material": "PETG", "color": "#101010"}, 2)
+    right = store.save_spool({"name": "Black Matte", "material": "PETG", "color": "#202020"})
+    tray = {**TRAY, "type": "PETG", "color": "#000000FF", "tray_uuid": "D" * 32}
+
+    _, wrong = store.import_slot("p:t1", tray, include_untagged=False)
+    assert wrong.id == pack[0].id and wrong.rfid == "D" * 32
+
+    # the user corrects it in the panel: the tag follows the chosen spool
+    store.assign("p:t1", right.id, tray["tray_uuid"])
+    assert right.rfid == "D" * 32 and wrong.rfid == "" and store.assignments == {"p:t1": right.id}
+    # the wrongly matched spool is plain stock again and a later import keeps the correction
+    assert store.import_slot("p:t1", tray, include_untagged=False) == ("skipped", right)
+    assert store.assignments == {"p:t1": right.id}
+
+
+def test_clearing_a_slot_stops_auto_assignment_until_manual_import():
+    m = _spools_module()
+    store = m.SpoolStore()
+    tray = {**TRAY, "tray_uuid": "E" * 32}
+    _, spool = store.import_slot("p:t1", tray, include_untagged=False)
+    store.assign("p:t1", None, tray["tray_uuid"])
+    assert not store.assignments
+    assert store.import_slot("p:t1", tray, include_untagged=False) == ("skipped", None)
+    assert not store.assignments and len(store.spools) == 1
+    assert m.SpoolStore(**store.to_dict()).dismissed_rfids == {"E" * 32}  # persisted
+
+    action, again = store.import_slot("p:t1", tray, include_untagged=True)  # button overrides
+    assert action == "assigned" and again.id == spool.id and not store.dismissed_rfids
+
+
+def test_editing_the_tag_keeps_it_unique():
+    m = _spools_module()
+    store = m.SpoolStore()
+    a = store.save_spool({"name": "A", "material": "PLA", "rfid": "F" * 32})
+    b = store.save_spool({"name": "B", "material": "PLA"})
+    store.save_spool({"id": b.id, "name": "B", "material": "PLA", "rfid": "F" * 32})
+    assert store.spools[b.id].rfid == "F" * 32 and store.spools[a.id].rfid == ""
+    store.save_spool({"id": b.id, "name": "B", "material": "PLA", "rfid": ""})  # unlink
+    assert store.spools[b.id].rfid == "" and store.find_by_rfid("F" * 32) is None

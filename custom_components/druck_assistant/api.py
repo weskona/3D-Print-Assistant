@@ -111,7 +111,15 @@ def ws_spool_assign(
 ) -> None:
     manager = hass.data[DOMAIN]["filament"]
     try:
-        manager.store.assign(msg["slot_key"], msg["spool_id"])
+        tag = next(
+            (
+                entry.runtime_data.slot_tag(msg["slot_key"])
+                for entry in hass.config_entries.async_loaded_entries(DOMAIN)
+                if msg["slot_key"] in entry.runtime_data.slot_entities()
+            ),
+            "",
+        )
+        manager.store.assign(msg["slot_key"], msg["spool_id"], tag)
     except SpoolError as err:
         connection.send_error(msg["id"], "unknown_spool", str(err))
         return

@@ -39,6 +39,7 @@ from .const import (
     STORAGE_VERSION,
 )
 from .history import PrintHistory, parse_prices, price_for
+from .spools import valid_rfid
 
 UNAVAILABLE = ("unknown", "unavailable", None)
 
@@ -142,6 +143,9 @@ class PrintTracker:
                     "type": attrs.get("type"),
                     "color": attrs.get("color"),
                     "remain": attrs.get("remain"),
+                    "tagged": bool(
+                        valid_rfid(attrs.get("tray_uuid")) or valid_rfid(attrs.get("tag_uid"))
+                    ),
                     "spool_id": spool.id if spool else None,
                 }
             )
@@ -178,6 +182,15 @@ class PrintTracker:
             for s in store.low_spools(self.low_threshold)
             if any(store.assignments.get(k) == s.id for k in slot_keys)
         ]
+
+    def slot_tag(self, slot_key: str) -> str:
+        """RFID tag the tray in this slot currently reports ("" if none)."""
+        entity_id = self.slot_entities().get(slot_key)
+        state = self.hass.states.get(entity_id) if entity_id else None
+        if state is None:
+            return ""
+        attrs = state.attributes
+        return valid_rfid(attrs.get("tray_uuid")) or valid_rfid(attrs.get("tag_uid"))
 
     def active_slot_key(self) -> str | None:
         return next((s["key"] for s in self.slots() if s["active"]), None)

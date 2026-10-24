@@ -110,6 +110,7 @@ class SpoolStore:
         self,
         spools: list[dict[str, Any]] | None = None,
         assignments: dict[str, str] | None = None,
+        dismissed_rfids: list[str] | None = None,
     ) -> None:
         self.spools: dict[str, Spool] = {}
         for item in spools or []:
@@ -118,11 +119,14 @@ class SpoolStore:
         self.assignments: dict[str, str] = {
             k: v for k, v in (assignments or {}).items() if v in self.spools
         }
+        # Tags the user cleared from a slot by hand: not auto-assigned again.
+        self.dismissed_rfids: set[str] = set(dismissed_rfids or [])
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "spools": [asdict(s) for s in self.spools.values()],
             "assignments": dict(self.assignments),
+            "dismissed_rfids": sorted(self.dismissed_rfids),
         }
 
     def save_spool(self, data: dict[str, Any]) -> Spool:
@@ -162,6 +166,8 @@ class SpoolStore:
             archived=existing.archived if existing else False,
         )
         self.spools[spool.id] = spool
+        if spool.rfid:
+            self._move_tag(spool.rfid, spool)
         return spool
 
     def add_spools(self, data: dict[str, Any], quantity: int = 1) -> list[Spool]:
@@ -228,6 +234,11 @@ class SpoolStore:
             return "skipped", None
         current = self.spool_for_slot(slot)
 
+        if rfid and rfid in self.dismissed_rfids:
+            if not include_untagged:  # manual import overrides an earlier dismissal
+                return "skipped", None
+            self.dismissed_rfids.discard(rfid)
+
         if rfid:
             known = self.find_by_rfid(rfid)
             if known is not None:
@@ -272,17 +283,37 @@ class SpoolStore:
             self.assignments = {k: v for k, v in self.assignments.items() if v != spool_id}
         return spool
 
-    def assign(self, slot: str, spool_id: str | None) -> None:
-        """Assign a spool to a slot (a spool sits in one slot only); None clears it."""
+    def assign(self, slot: str, spool_id: str | None, tag: str = "") -> None:
+        """Assign a spool to a slot (a spool sits in one slot only); None clears it.
+
+        tag is the RFID tag the tray currently reports. When given, a manual
+        correction wins over the automatic match: the tag moves to the chosen
+        spool (so the automatic import keeps agreeing with you), and clearing the
+        slot makes the automatic import leave this tag alone.
+        """
+        tag = valid_rfid(tag)
         if spool_id is None:
             self.assignments.pop(slot, None)
+            if tag:
+                self.dismissed_rfids.add(tag)
             return
         if spool_id not in self.spools:
             raise SpoolError("unknown spool")
-        if self.spools[spool_id].archived:
+        spool = self.spools[spool_id]
+        if spool.archived:
             raise SpoolError("spool is archived")
         self.assignments = {k: v for k, v in self.assignments.items() if v != spool_id}
         self.assignments[slot] = spool_id
+        if tag:
+            self._move_tag(tag, spool)
+            self.dismissed_rfids.discard(tag)
+
+    def _move_tag(self, tag: str, target: Spool) -> None:
+        """Make target the only spool carrying tag."""
+        for other in self.spools.values():
+            if other.id != target.id and other.rfid == tag:
+                other.rfid = ""
+        target.rfid = tag
 
     def spool_for_slot(self, slot: str | None) -> Spool | None:
         spool_id = self.assignments.get(slot) if slot else None

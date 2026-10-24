@@ -32,6 +32,10 @@ The remaining stock of an imported spool is estimated from the AMS percentage, s
 When a new Bambu spool is detected, the integration first looks for a matching spool in your stock
 (not in a slot, no tag yet, same material, similar color) and uses it instead of creating a new one.
 So the stock goes from 4 to 3 and the loaded spool is tracked from then on. Without a match, a new spool is created.
+If the match is wrong, pick the right spool in the slot list of the Filament tab: the RFID tag moves to
+it and the correction sticks. Choosing "none" stops the automatic assignment for the spool currently in
+the slot (the "Import from AMS" button overrides this). You can also edit or clear a spool's RFID tag
+in its form. A stock spool that lost its tag simply stays in stock.
 
 A spool whose remaining stock reaches 0 g after a print is moved to the archive automatically
 (option "Automatically archive empty spools") and fires `druck_assistant_spool_empty`. You can also
