@@ -49,6 +49,7 @@ const TRANSLATIONS = {
     none: "none",
     admin_only: "Only administrators can change the filament inventory.",
     price: "Price",
+    quantity: "Quantity (e.g. 4 for a 4-pack)",
     archive: "Archive",
     restore: "Restore",
     archived_spools: "Archived spools ({count})",
@@ -105,6 +106,7 @@ const TRANSLATIONS = {
     none: "keine",
     admin_only: "Nur Administratoren können den Filamentbestand ändern.",
     price: "Preis",
+    quantity: "Anzahl (z. B. 4 für ein 4er-Pack)",
     archive: "Archivieren",
     restore: "Wiederherstellen",
     archived_spools: "Archivierte Spulen ({count})",
@@ -228,6 +230,7 @@ class DruckAssistantPanel extends HTMLElement {
   _renderForm(spool) {
     const v = { name: "", material: "", brand: "", color: "#808080", price_per_kg: "", initial_weight_g: 1000, remaining_g: 1000, notes: "", ...spool };
     const inputs = {};
+    const qty = this._el("input", { type: "number", min: "1", max: "50", step: "1", value: "1" });
     const mk = (key, type = "text", extra = {}) => {
       inputs[key] = this._el("input", { type, value: v[key] ?? "", ...extra });
       return inputs[key];
@@ -242,12 +245,13 @@ class DruckAssistantPanel extends HTMLElement {
       this._field(this._t("initial_weight"), mk("initial_weight_g", "number", { min: "1", step: "1" })),
       this._field(this._t("remaining_weight"), mk("remaining_g", "number", { min: "0", step: "1" })),
       this._field(this._t("notes"), mk("notes")),
+      spool.id ? "" : this._field(this._t("quantity"), qty),
       this._el("div", { class: "actions" },
         this._el("button", { class: "primary", onclick: () => {
           const out = {};
           for (const [k, el] of Object.entries(inputs)) out[k] = el.value;
           if (spool.id) out.id = spool.id;
-          this._call({ type: "druck_assistant/spool_save", spool: out });
+          this._call({ type: "druck_assistant/spool_save", spool: out, ...(spool.id ? {} : { quantity: parseInt(qty.value, 10) || 1 }) });
         } }, this._t("save")),
         this._el("button", { onclick: () => { this._editing = null; this._render(); } }, this._t("cancel"))));
     return form;

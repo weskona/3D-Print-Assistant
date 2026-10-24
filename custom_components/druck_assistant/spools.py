@@ -10,6 +10,23 @@ from typing import Any
 HEX_COLOR = re.compile(r"^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$")
 
 
+MAX_COLOR_DISTANCE = 90  # RGB distance (0-441) up to which two colors count as the same
+
+
+def _rgb(color: str) -> tuple[int, int, int] | None:
+    if not HEX_COLOR.match(color or ""):
+        return None
+    return int(color[1:3], 16), int(color[3:5], 16), int(color[5:7], 16)
+
+
+def color_distance(a: str, b: str) -> float | None:
+    """Euclidean RGB distance of two #rrggbb[aa] colors, None if either is missing."""
+    ca, cb = _rgb(a), _rgb(b)
+    if ca is None or cb is None:
+        return None
+    return sum((x - y) ** 2 for x, y in zip(ca, cb)) ** 0.5
+
+
 def valid_rfid(value: Any) -> str:
     """Return a usable spool tag id, or "" (Bambu reports all zeros for non-RFID spools)."""
     text = str(value or "").strip()
@@ -147,6 +164,49 @@ class SpoolStore:
         self.spools[spool.id] = spool
         return spool
 
+    def add_spools(self, data: dict[str, Any], quantity: int = 1) -> list[Spool]:
+        """Add several identical spools at once (e.g. a 4-pack); numbered if more than one."""
+        if not 1 <= quantity <= 50:
+            raise SpoolError("quantity must be between 1 and 50")
+        if quantity == 1:
+            return [self.save_spool(data)]
+        base = {k: v for k, v in data.items() if k != "id"}
+        name = str(base.get("name", "")).strip()
+        return [
+            self.save_spool({**base, "name": f"{name} #{i}" if name else name})
+            for i in range(1, quantity + 1)
+        ]
+
+    def find_stock(self, attrs: dict[str, Any]) -> Spool | None:
+        """Best matching spool that is in stock: not in a slot, untagged, same material.
+
+        The color must be close to the tray color (or unknown on the stock spool);
+        among matches the closest color wins, then the fullest spool.
+        """
+        material = str(attrs.get("type") or "").strip().lower()
+        color = str(attrs.get("color") or "")
+        assigned = set(self.assignments.values())
+        best: tuple[float, float] | None = None
+        found: Spool | None = None
+        for spool in self.spools.values():
+            if (
+                spool.archived
+                or spool.rfid
+                or spool.id in assigned
+                or spool.material.strip().lower() != material
+            ):
+                continue
+            distance = color_distance(spool.color, color)
+            if distance is None:
+                # No usable color on one side: a weaker match than any close color.
+                distance = MAX_COLOR_DISTANCE + 1
+            elif distance > MAX_COLOR_DISTANCE:
+                continue
+            rank = (distance, -spool.remaining_g)
+            if best is None or rank < best:
+                best, found = rank, spool
+        return found
+
     def find_by_rfid(self, rfid: str) -> Spool | None:
         rfid = valid_rfid(rfid)
         return next((s for s in self.spools.values() if rfid and s.rfid == rfid), None)
@@ -157,7 +217,8 @@ class SpoolStore:
         """Create or link a spool for an AMS slot from ha-bambulab tray attributes.
 
         Returns (action, spool) with action one of "created", "assigned",
-        "adopted", "skipped". Spools with an RFID tag are matched by tag, so the
+        "adopted", "skipped". New spools are matched against the stock first
+        (see find_stock), so a pre-entered 4-pack is used up instead of duplicated. Spools with an RFID tag are matched by tag, so the
         same spool is recognized when it moves to another slot. Untagged spools
         are only imported when include_untagged is set (manual import).
         """
@@ -184,6 +245,13 @@ class SpoolStore:
                 return "adopted", current
         elif current is not None or not include_untagged:
             return "skipped", current
+
+        stock = self.find_stock(attrs)
+        if stock is not None:
+            # A spool bought earlier and added by hand: this is it.
+            stock.rfid = rfid
+            self.assign(slot, stock.id)
+            return ("adopted" if rfid else "assigned"), stock
 
         spool = self.save_spool(spool_data_from_tray(attrs, rfid))
         self.assign(slot, spool.id)

@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0-beta.3] - 2026-10-24
+
+### Added
+
+- Quantity when adding a spool: add a multi-pack (e.g. 4x PETG black) at once; the spools are numbered ("PETG Basic Black #1" to "#4").
+- Stock matching: when a new spool is detected in the AMS, it is matched against spools you entered earlier (not in a slot, no RFID tag yet, same material, similar color) instead of creating a new one. The tag is stored on the matched spool, so a 4-pack goes from 4 to 3 spools in stock when the first one is loaded. Closest color wins, then the fullest spool; a stock spool without a color is a weaker match.
+
 ## [0.4.0-beta.2] - 2026-10-24
 
 ### Added
@@ -67,7 +74,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Filament prices per type (e.g. `PLA=20`) in the options, sensor for the current filament including price per kg. Cost sensors in euro.
 - GitHub workflow that creates a tag and release after a push to `main`.
 
-[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.2...HEAD
+[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.3...HEAD
+[0.4.0-beta.3]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.2...v0.4.0-beta.3
 [0.4.0-beta.2]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.1...v0.4.0-beta.2
 [0.4.0-beta.1]: https://github.com/weskona/3D-Print-Assistant/compare/v0.3.0-beta.1...v0.4.0-beta.1
 [0.3.0-beta.1]: https://github.com/weskona/3D-Print-Assistant/compare/v0.2.0...v0.3.0-beta.1

@@ -28,6 +28,11 @@ Click "Import from AMS" to create spools from the loaded AMS slots. New Bambu sp
 tag are also added automatically (option "Automatically add new Bambu spools"); spools without a
 tag, such as third-party filament or the external spool, are only imported with the button.
 The remaining stock of an imported spool is estimated from the AMS percentage, so correct it by hand if needed.
+**Buying in bulk:** add the pack with the quantity field (e.g. 4 x "PETG Basic Black", color black).
+When a new Bambu spool is detected, the integration first looks for a matching spool in your stock
+(not in a slot, no tag yet, same material, similar color) and uses it instead of creating a new one.
+So the stock goes from 4 to 3 and the loaded spool is tracked from then on. Without a match, a new spool is created.
+
 A spool whose remaining stock reaches 0 g after a print is moved to the archive automatically
 (option "Automatically archive empty spools") and fires `druck_assistant_spool_empty`. You can also
 archive spools by hand and restore them from the collapsible "Archived spools" list. Archived spools
