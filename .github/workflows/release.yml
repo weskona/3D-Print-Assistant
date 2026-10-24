@@ -1,7 +1,7 @@
 name: Release
 
-# Bei jedem Push auf main: Wenn die Version in manifest.json noch keinen Tag hat,
-# wird der Tag v<version> angelegt und ein GitHub Release erstellt.
+# On every push to main: if the version in manifest.json has no tag yet,
+# create the tag v<version> and a GitHub release.
 on:
   push:
     branches: [main]
@@ -15,21 +15,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Version lesen
+      - name: Read version
         id: version
         run: |
           version=$(jq -r .version custom_components/druck_assistant/manifest.json)
           echo "version=$version" >> "$GITHUB_OUTPUT"
           if gh release view "v$version" >/dev/null 2>&1 || git ls-remote --exit-code --tags origin "refs/tags/v$version" >/dev/null 2>&1; then
             echo "exists=true" >> "$GITHUB_OUTPUT"
-            echo "v$version existiert bereits, nichts zu tun."
+            echo "v$version already exists, nothing to do."
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
         env:
           GH_TOKEN: ${{ github.token }}
 
-      - name: Release Notes aus CHANGELOG.md extrahieren
+      - name: Extract release notes from CHANGELOG.md
         if: steps.version.outputs.exists == 'false'
         run: |
           version="${{ steps.version.outputs.version }}"
@@ -40,17 +40,17 @@ jobs:
             found { print }
           ' CHANGELOG.md > notes.md
           if [ ! -s notes.md ]; then
-            echo "Kein Abschnitt [$version] im CHANGELOG, Notes werden automatisch erzeugt."
+            echo "No [$version] section in CHANGELOG, generating notes automatically."
             rm -f notes.md
           fi
 
-      - name: Zip für HACS erstellen
+      - name: Create zip for HACS
         if: steps.version.outputs.exists == 'false'
         run: |
           cd custom_components/druck_assistant
           zip -r ../../druck_assistant.zip . -x "__pycache__/*" "*.pyc"
 
-      - name: Tag und Release erstellen
+      - name: Create tag and release
         if: steps.version.outputs.exists == 'false'
         run: |
           tag="v${{ steps.version.outputs.version }}"
