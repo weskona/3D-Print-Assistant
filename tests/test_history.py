@@ -91,3 +91,47 @@ def test_parse_and_lookup_prices():
         except ValueError:
             continue
         raise AssertionError(bad)
+
+
+def test_spool_store():
+    import importlib.util as iu
+
+    spec = iu.spec_from_file_location("druck_assistant.spools", PKG / "spools.py")
+    spools = iu.module_from_spec(spec)
+    sys.modules["druck_assistant.spools"] = spools
+    spec.loader.exec_module(spools)
+
+    store = spools.SpoolStore()
+    a = store.save_spool({"name": "Red PLA", "material": "PLA", "price_per_kg": "20", "color": "#ff0000"})
+    b = store.save_spool({"name": "Black PETG", "material": "PETG", "initial_weight_g": 500})
+    assert a.remaining_g == 1000 and b.remaining_g == 500 and b.price_per_kg is None
+
+    store.assign("p:ams1:tray_1", a.id)
+    store.assign("p:ams1:tray_2", a.id)  # a spool sits in one slot only
+    assert list(store.assignments) == ["p:ams1:tray_2"]
+    assert store.spool_for_slot("p:ams1:tray_2").id == a.id
+    assert store.spool_for_slot("nope") is None
+
+    store.consume(a.id, 950)
+    assert store.spools[a.id].remaining_g == 50
+    store.consume(a.id, 500)
+    assert store.spools[a.id].remaining_g == 0
+    assert [s.id for s in store.low_spools(15)] == [a.id]
+
+    updated = store.save_spool({"id": a.id, "name": "Red PLA", "material": "PLA", "remaining_g": 800})
+    assert updated.remaining_g == 800
+    assert not store.low_spools(15)
+
+    restored = spools.SpoolStore(**store.to_dict())
+    assert restored.assignments == store.assignments
+
+    store.delete_spool(a.id)
+    assert not store.assignments
+    for bad in ({"name": "", "material": "PLA"}, {"name": "x", "material": "PLA", "color": "red"},
+                {"name": "x", "material": "PLA", "initial_weight_g": 0}, {"id": "zzz", "name": "x", "material": "PLA"},
+                {"name": "x", "material": "PLA", "price_per_kg": -1}):
+        try:
+            store.save_spool(bad)
+        except spools.SpoolError:
+            continue
+        raise AssertionError(bad)

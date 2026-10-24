@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0-beta.1] - 2026-10-24
+
+### Added
+
+- Filament management: spool inventory (name, material, brand, color, price per kg, initial and remaining weight, notes) with a new "Filament" tab in the panel.
+- Assign spools to AMS and external spool slots. After each print the used weight is deducted from the spool in the active slot, and the spool's price is used for the filament cost.
+- `druck_assistant_filament_low` is also fired for assigned spools that fall below the low stock threshold; new sensor "Spools low on stock".
+- Print history records the spool that was used.
+- Websocket commands to manage spools (changes require an administrator).
+
+### Changed
+
+- The project is now in beta: versions carry a `-beta.N` suffix and releases are marked as pre-releases.
+
+
 ## [0.2.0] - 2026-10-24
 
 ### Added
@@ -32,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Filament prices per type (e.g. `PLA=20`) in the options, sensor for the current filament including price per kg. Cost sensors in euro.
 - GitHub workflow that creates a tag and release after a push to `main`.
 
-[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.3.0-beta.1...HEAD
+[0.3.0-beta.1]: https://github.com/weskona/3D-Print-Assistant/compare/v0.2.0...v0.3.0-beta.1
 [0.2.0]: https://github.com/weskona/3D-Print-Assistant/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/weskona/3D-Print-Assistant/releases/tag/v0.1.0

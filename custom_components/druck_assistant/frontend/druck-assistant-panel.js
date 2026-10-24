@@ -25,6 +25,30 @@ const TRANSLATIONS = {
     success: "Successful",
     failed: "Failed",
     unknown: "unknown",
+    tab_overview: "Overview",
+    tab_filament: "Filament",
+    spools: "Spools",
+    slots: "Slots",
+    add_spool: "Add spool",
+    edit: "Edit",
+    delete: "Delete",
+    save: "Save",
+    cancel: "Cancel",
+    confirm_delete: "Delete spool \"{name}\"?",
+    brand: "Brand",
+    color: "Color",
+    price_per_kg: "Price per kg",
+    initial_weight: "Initial weight (g)",
+    remaining_weight: "Remaining (g)",
+    notes: "Notes",
+    stock: "Stock",
+    slot: "Slot",
+    no_spools: "No spools yet. Add your first spool.",
+    no_slots: "No AMS or external spool slots found for this printer.",
+    assign_spool: "Spool",
+    none: "none",
+    admin_only: "Only administrators can change the filament inventory.",
+    price: "Price",
   },
   de: {
     no_printer: "Kein Drucker eingerichtet.",
@@ -50,6 +74,30 @@ const TRANSLATIONS = {
     success: "Erfolgreich",
     failed: "Fehlgeschlagen",
     unknown: "unbekannt",
+    tab_overview: "Übersicht",
+    tab_filament: "Filament",
+    spools: "Spulen",
+    slots: "Slots",
+    add_spool: "Spule hinzufügen",
+    edit: "Bearbeiten",
+    delete: "Löschen",
+    save: "Speichern",
+    cancel: "Abbrechen",
+    confirm_delete: "Spule „{name}“ löschen?",
+    brand: "Hersteller",
+    color: "Farbe",
+    price_per_kg: "Preis pro kg",
+    initial_weight: "Anfangsgewicht (g)",
+    remaining_weight: "Rest (g)",
+    notes: "Notizen",
+    stock: "Bestand",
+    slot: "Slot",
+    no_spools: "Noch keine Spulen. Lege deine erste Spule an.",
+    no_slots: "Keine AMS- oder Externe-Spule-Slots für diesen Drucker gefunden.",
+    assign_spool: "Spule",
+    none: "keine",
+    admin_only: "Nur Administratoren können den Filamentbestand ändern.",
+    price: "Preis",
   },
 };
 
@@ -59,6 +107,9 @@ class DruckAssistantPanel extends HTMLElement {
     this.attachShadow({ mode: "open" });
     this._data = null;
     this._selected = null;
+    this._tab = "overview";
+    this._editing = null;
+    this._busy = null;
     this._error = null;
     this._unsub = [];
     this._timer = null;
@@ -99,12 +150,13 @@ class DruckAssistantPanel extends HTMLElement {
     try {
       this._data = await this._hass.connection.sendMessagePromise({ type: "druck_assistant/data" });
       this._error = null;
+      this._spools = this._data.spools || [];
       const ids = this._data.printers.map((p) => p.entry_id);
       if (!ids.includes(this._selected)) this._selected = ids[0] || null;
     } catch (e) {
       this._error = e && e.message ? e.message : String(e);
     }
-    this._render();
+    if (this._editing === null) this._render(); // never re-render while a form is open
   }
 
   _t(key, vars = {}) {
@@ -139,6 +191,120 @@ class DruckAssistantPanel extends HTMLElement {
     return el;
   }
 
+  async _call(msg) {
+    try {
+      await this._hass.connection.sendMessagePromise(msg);
+      this._notice = null;
+    } catch (e) {
+      this._notice = e && e.message ? e.message : String(e);
+    }
+    this._editing = null;
+    await this._load();
+    this._render();
+  }
+
+  _isAdmin() { return !!this._hass?.user?.is_admin; }
+
+  _field(label, input) {
+    return this._el("label", { class: "field" }, this._el("span", {}, label), input);
+  }
+
+  _renderForm(spool) {
+    const v = { name: "", material: "", brand: "", color: "#808080", price_per_kg: "", initial_weight_g: 1000, remaining_g: 1000, notes: "", ...spool };
+    const inputs = {};
+    const mk = (key, type = "text", extra = {}) => {
+      inputs[key] = this._el("input", { type, value: v[key] ?? "", ...extra });
+      return inputs[key];
+    };
+    const form = this._el("div", { class: "card form" },
+      this._el("h2", {}, spool.id ? this._t("edit") : this._t("add_spool")),
+      this._field(this._t("name"), mk("name")),
+      this._field(this._t("material"), mk("material", "text", { placeholder: "PLA" })),
+      this._field(this._t("brand"), mk("brand")),
+      this._field(this._t("color"), mk("color", "color")),
+      this._field(this._t("price_per_kg"), mk("price_per_kg", "number", { min: "0", step: "0.01" })),
+      this._field(this._t("initial_weight"), mk("initial_weight_g", "number", { min: "1", step: "1" })),
+      this._field(this._t("remaining_weight"), mk("remaining_g", "number", { min: "0", step: "1" })),
+      this._field(this._t("notes"), mk("notes")),
+      this._el("div", { class: "actions" },
+        this._el("button", { class: "primary", onclick: () => {
+          const out = {};
+          for (const [k, el] of Object.entries(inputs)) out[k] = el.value;
+          if (spool.id) out.id = spool.id;
+          this._call({ type: "druck_assistant/spool_save", spool: out });
+        } }, this._t("save")),
+        this._el("button", { onclick: () => { this._editing = null; this._render(); } }, this._t("cancel"))));
+    return form;
+  }
+
+  _renderFilament(main, printer) {
+    const admin = this._isAdmin();
+    const cur = printer?.currency || "EUR";
+    if (this._notice) main.append(this._el("div", { class: "error" }, this._notice));
+    if (!admin) main.append(this._el("div", { class: "sub notice" }, this._t("admin_only")));
+    if (this._editing !== null) { main.append(this._renderForm(this._editing)); return; }
+
+    const slotOf = {};
+    for (const p of this._data.printers) for (const sl of p.slots || []) if (sl.spool_id) slotOf[sl.spool_id] = sl.label;
+
+    const card = this._el("div", { class: "card" }, this._el("h2", {}, this._t("spools")));
+    if (admin) card.append(this._el("button", { class: "primary", onclick: () => { this._editing = {}; this._render(); } }, this._t("add_spool")));
+    if (!this._spools.length) {
+      card.append(this._el("div", { class: "empty" }, this._t("no_spools")));
+    } else {
+      const table = this._el("table", {});
+      const heads = ["name", "material", "brand", "stock", "price", "slot"].map((k) => this._t(k));
+      table.append(this._el("tr", {}, ...heads.map((h) => this._el("th", {}, h)), this._el("th", {}, "")));
+      for (const sp of this._spools) {
+        const dot = this._el("span", { class: "dot", style: `background:${/^#[0-9a-f]{6,8}$/i.test(sp.color) ? sp.color : "transparent"}` });
+        const pct = Math.max(0, Math.min(100, sp.remaining_percent));
+        const bar = this._el("div", { class: "bar" }, this._el("div", { class: "fill" + (pct <= 15 ? " low" : ""), style: `width:${pct}%` }));
+        const actions = this._el("td", {});
+        if (admin) {
+          actions.append(
+            this._el("button", { onclick: () => { this._editing = sp; this._render(); } }, this._t("edit")),
+            this._el("button", { onclick: () => { if (confirm(this._t("confirm_delete", { name: sp.name }))) this._call({ type: "druck_assistant/spool_delete", spool_id: sp.id }); } }, this._t("delete")));
+        }
+        table.append(this._el("tr", {},
+          this._el("td", {}, dot, sp.name),
+          this._el("td", {}, sp.material),
+          this._el("td", {}, sp.brand || "–"),
+          this._el("td", {}, bar, `${this._fmtNum(sp.remaining_g, 0)} / ${this._fmtNum(sp.initial_weight_g, 0)} g (${this._fmtNum(sp.remaining_percent, 0)} %)`),
+          this._el("td", {}, sp.price_per_kg != null ? `${this._fmtMoney(sp.price_per_kg, cur)}/kg` : "–"),
+          this._el("td", {}, slotOf[sp.id] || "–"),
+          actions));
+      }
+      card.append(table);
+    }
+    main.append(card);
+
+    const slotsCard = this._el("div", { class: "card" }, this._el("h2", {}, this._t("slots")));
+    const slots = printer?.slots || [];
+    if (!slots.length) {
+      slotsCard.append(this._el("div", { class: "empty" }, this._t("no_slots")));
+    } else {
+      const table = this._el("table", {});
+      table.append(this._el("tr", {}, ...["slot", "material", "assign_spool"].map((k) => this._el("th", {}, this._t(k)))));
+      for (const sl of slots) {
+        const sel = this._el("select", { onchange: (e) => this._call({ type: "druck_assistant/spool_assign", slot_key: sl.key, spool_id: e.target.value || null }) },
+          this._el("option", { value: "" }, this._t("none")),
+          ...this._spools.map((sp) => {
+            const o = this._el("option", { value: sp.id }, `${sp.name} (${sp.material})`);
+            if (sp.id === sl.spool_id) o.selected = true;
+            return o;
+          }));
+        if (!admin) sel.disabled = true;
+        const dot = this._el("span", { class: "dot", style: `background:${/^#[0-9a-f]{6,8}$/i.test(sl.color || "") ? sl.color : "transparent"}` });
+        table.append(this._el("tr", {},
+          this._el("td", {}, sl.active ? "▶ " : "", sl.label),
+          this._el("td", {}, dot, `${sl.type || "–"}${sl.remain != null ? `, ${sl.remain} %` : ""}`),
+          this._el("td", {}, sel)));
+      }
+      slotsCard.append(table);
+    }
+    main.append(slotsCard);
+  }
+
   _tile(label, value, sub) {
     return this._el("div", { class: "tile" },
       this._el("div", { class: "label" }, label),
@@ -167,6 +333,18 @@ class DruckAssistantPanel extends HTMLElement {
       td.num, th.num { text-align: right; }
       .dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; vertical-align: middle; margin-right: 6px; border: 1px solid var(--divider-color); }
       .ok { color: var(--success-color, #4caf50); } .fail { color: var(--error-color, #f44336); }
+      .tabs { display: flex; gap: 4px; }
+      .tabs button { background: transparent; color: inherit; border: 0; border-bottom: 2px solid transparent; padding: 6px 10px; font: inherit; cursor: pointer; opacity: .8; }
+      .tabs button.active { border-bottom-color: currentColor; opacity: 1; }
+      button { font: inherit; padding: 4px 12px; margin-right: 6px; border-radius: 6px; border: 1px solid var(--divider-color); background: var(--card-background-color); color: var(--primary-text-color); cursor: pointer; }
+      button.primary { background: var(--primary-color); color: var(--text-primary-color, #fff); border-color: transparent; }
+      .field { display: flex; flex-direction: column; gap: 2px; margin-bottom: 10px; font-size: 13px; color: var(--secondary-text-color); }
+      .field input { font: inherit; padding: 6px 8px; color: var(--primary-text-color); background: var(--card-background-color); border: 1px solid var(--divider-color); border-radius: 6px; }
+      .form { max-width: 480px; }
+      .notice { padding: 0 0 12px; }
+      .bar { width: 120px; height: 6px; border-radius: 3px; background: var(--divider-color); margin-bottom: 4px; }
+      .bar .fill { height: 100%; border-radius: 3px; background: var(--success-color, #4caf50); }
+      .bar .fill.low { background: var(--error-color, #f44336); }
       .empty, .error { color: var(--secondary-text-color); padding: 16px; }
       .error { color: var(--error-color, #f44336); }
     `));
@@ -184,6 +362,12 @@ class DruckAssistantPanel extends HTMLElement {
         }));
       header.append(sel);
     }
+    const tabs = this._el("div", { class: "tabs" },
+      ...["overview", "filament"].map((k) => this._el("button", {
+        class: this._tab === k ? "active" : "",
+        onclick: () => { this._tab = k; this._editing = null; this._render(); },
+      }, this._t(`tab_${k}`))));
+    header.append(tabs);
     root.append(header);
 
     const main = this._el("main");
@@ -191,6 +375,7 @@ class DruckAssistantPanel extends HTMLElement {
 
     if (this._error) { main.append(this._el("div", { class: "error" }, this._error)); return; }
     if (!this._data) { main.append(this._el("div", { class: "empty" }, "…")); return; }
+    if (this._tab === "filament") { this._renderFilament(main, printer); return; }
     if (!printer) { main.append(this._el("div", { class: "empty" }, this._t("no_printer"))); return; }
 
     const t = printer.totals;

@@ -66,6 +66,9 @@
       },
       "current_filament": {
         "name": "Current filament"
+      },
+      "low_spools": {
+        "name": "Spools low on stock"
       }
     }
   }
