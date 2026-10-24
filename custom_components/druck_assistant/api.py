@@ -12,6 +12,7 @@ from homeassistant.core import HomeAssistant, callback
 from .const import (
     DOMAIN,
     WS_DATA,
+    WS_IMPORT_AMS,
     WS_SPOOL_ASSIGN,
     WS_SPOOL_DELETE,
     WS_SPOOL_SAVE,
@@ -21,7 +22,13 @@ from .spools import SpoolError
 
 @callback
 def async_register(hass: HomeAssistant) -> None:
-    for command in (ws_get_data, ws_spool_save, ws_spool_delete, ws_spool_assign):
+    for command in (
+        ws_get_data,
+        ws_spool_save,
+        ws_spool_delete,
+        ws_spool_assign,
+        ws_import_ams,
+    ):
         websocket_api.async_register_command(hass, command)
 
 
@@ -101,3 +108,19 @@ def ws_spool_assign(
         return
     manager.changed()
     connection.send_result(msg["id"])
+
+
+@websocket_api.websocket_command({vol.Required("type"): WS_IMPORT_AMS})
+@websocket_api.require_admin
+@callback
+def ws_import_ams(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Create or link spools for everything currently loaded in the AMS."""
+    counts = {"created": 0, "assigned": 0, "adopted": 0}
+    for entry in hass.config_entries.async_loaded_entries(DOMAIN):
+        for action, items in entry.runtime_data.import_from_ams(
+            include_untagged=True
+        ).items():
+            counts[action] += len(items)
+    connection.send_result(msg["id"], counts)

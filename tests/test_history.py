@@ -135,3 +135,67 @@ def test_spool_store():
         except spools.SpoolError:
             continue
         raise AssertionError(bad)
+
+
+def _spools_module():
+    import importlib.util as iu
+
+    spec = iu.spec_from_file_location("druck_assistant.spools", PKG / "spools.py")
+    mod = iu.module_from_spec(spec)
+    sys.modules["druck_assistant.spools"] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+TRAY = {
+    "type": "PLA", "name": "Bambu PLA Basic", "color": "#FF0000FF", "tray_weight": 1000,
+    "remain": 80, "remain_enabled": True, "empty": False,
+    "tray_uuid": "A1B2C3D4E5F60718293A4B5C6D7E8F90", "tag_uid": "0123456789ABCDEF",
+}
+BLANK = "0" * 32
+
+
+def test_import_rfid_spool_and_recognize_it_in_another_slot():
+    m = _spools_module()
+    store = m.SpoolStore()
+    action, spool = store.import_slot("p:t1", TRAY, include_untagged=False)
+    assert action == "created"
+    assert (spool.material, spool.brand, spool.remaining_g, spool.initial_weight_g) == ("PLA", "Bambu Lab", 800.0, 1000.0)
+    assert spool.color == "#FF0000FF" and store.assignments == {"p:t1": spool.id}
+
+    assert store.import_slot("p:t1", TRAY, include_untagged=False)[0] == "skipped"  # no duplicate
+    action, again = store.import_slot("p:t2", TRAY, include_untagged=False)  # moved to slot 2
+    assert action == "assigned" and again.id == spool.id
+    assert store.assignments == {"p:t2": spool.id} and len(store.spools) == 1
+
+
+def test_import_untagged_only_on_manual_import():
+    m = _spools_module()
+    store = m.SpoolStore()
+    raw = {**TRAY, "tray_uuid": BLANK, "tag_uid": BLANK, "name": "Generic PETG", "type": "PETG"}
+    assert store.import_slot("p:t3", raw, include_untagged=False) == ("skipped", None)
+    action, spool = store.import_slot("p:t3", raw, include_untagged=True)
+    assert action == "created" and spool.rfid == "" and spool.brand == ""
+    assert store.import_slot("p:t3", raw, include_untagged=True)[0] == "skipped"  # slot already has a spool
+
+
+def test_import_adopts_manual_spool_and_skips_empty_slots():
+    m = _spools_module()
+    store = m.SpoolStore()
+    mine = store.save_spool({"name": "Mine", "material": "PLA"})
+    store.assign("p:t1", mine.id)
+    action, spool = store.import_slot("p:t1", TRAY, include_untagged=False)
+    assert action == "adopted" and spool.id == mine.id and spool.rfid == TRAY["tray_uuid"]
+    assert len(store.spools) == 1
+    assert store.import_slot("p:t9", {**TRAY, "empty": True}, include_untagged=True)[0] == "skipped"
+    assert store.import_slot("p:t9", {"type": "", "empty": False}, include_untagged=True)[0] == "skipped"
+    # editing keeps the tag
+    edited = store.save_spool({"id": mine.id, "name": "Renamed", "material": "PLA"})
+    assert edited.rfid == TRAY["tray_uuid"]
+
+
+def test_import_unknown_remaining_uses_full_spool():
+    m = _spools_module()
+    store = m.SpoolStore()
+    _, spool = store.import_slot("p:t1", {**TRAY, "remain": -1}, include_untagged=False)
+    assert spool.remaining_g == 1000.0

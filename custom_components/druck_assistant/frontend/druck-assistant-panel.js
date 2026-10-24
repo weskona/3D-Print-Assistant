@@ -49,6 +49,9 @@ const TRANSLATIONS = {
     none: "none",
     admin_only: "Only administrators can change the filament inventory.",
     price: "Price",
+    import_ams: "Import from AMS",
+    import_result: "Imported from AMS: {created} created, {assigned} assigned, {adopted} linked.",
+    import_nothing: "Nothing to import: all loaded slots already have a spool.",
   },
   de: {
     no_printer: "Kein Drucker eingerichtet.",
@@ -98,6 +101,9 @@ const TRANSLATIONS = {
     none: "keine",
     admin_only: "Nur Administratoren können den Filamentbestand ändern.",
     price: "Preis",
+    import_ams: "Aus AMS importieren",
+    import_result: "Aus AMS importiert: {created} angelegt, {assigned} zugeordnet, {adopted} verknüpft.",
+    import_nothing: "Nichts zu importieren: alle belegten Slots haben schon eine Spule.",
   },
 };
 
@@ -191,10 +197,12 @@ class DruckAssistantPanel extends HTMLElement {
     return el;
   }
 
-  async _call(msg) {
+  async _call(msg, describe) {
+    this._notice = null;
+    this._noticeOk = false;
     try {
-      await this._hass.connection.sendMessagePromise(msg);
-      this._notice = null;
+      const result = await this._hass.connection.sendMessagePromise(msg);
+      if (describe) { this._notice = describe(result); this._noticeOk = true; }
     } catch (e) {
       this._notice = e && e.message ? e.message : String(e);
     }
@@ -240,7 +248,7 @@ class DruckAssistantPanel extends HTMLElement {
   _renderFilament(main, printer) {
     const admin = this._isAdmin();
     const cur = printer?.currency || "EUR";
-    if (this._notice) main.append(this._el("div", { class: "error" }, this._notice));
+    if (this._notice) main.append(this._el("div", { class: this._noticeOk ? "sub notice" : "error" }, this._notice));
     if (!admin) main.append(this._el("div", { class: "sub notice" }, this._t("admin_only")));
     if (this._editing !== null) { main.append(this._renderForm(this._editing)); return; }
 
@@ -248,7 +256,14 @@ class DruckAssistantPanel extends HTMLElement {
     for (const p of this._data.printers) for (const sl of p.slots || []) if (sl.spool_id) slotOf[sl.spool_id] = sl.label;
 
     const card = this._el("div", { class: "card" }, this._el("h2", {}, this._t("spools")));
-    if (admin) card.append(this._el("button", { class: "primary", onclick: () => { this._editing = {}; this._render(); } }, this._t("add_spool")));
+    if (admin) {
+      card.append(
+        this._el("button", { class: "primary", onclick: () => { this._editing = {}; this._render(); } }, this._t("add_spool")),
+        this._el("button", { onclick: () => this._call({ type: "druck_assistant/import_ams" }, (r) =>
+          r.created + r.assigned + r.adopted
+            ? this._t("import_result", r)
+            : this._t("import_nothing")) }, this._t("import_ams")));
+    }
     if (!this._spools.length) {
       card.append(this._el("div", { class: "empty" }, this._t("no_spools")));
     } else {
@@ -266,7 +281,7 @@ class DruckAssistantPanel extends HTMLElement {
             this._el("button", { onclick: () => { if (confirm(this._t("confirm_delete", { name: sp.name }))) this._call({ type: "druck_assistant/spool_delete", spool_id: sp.id }); } }, this._t("delete")));
         }
         table.append(this._el("tr", {},
-          this._el("td", {}, dot, sp.name),
+          this._el("td", {}, dot, sp.name, sp.rfid ? this._el("span", { class: "badge", title: sp.rfid }, "RFID") : ""),
           this._el("td", {}, sp.material),
           this._el("td", {}, sp.brand || "–"),
           this._el("td", {}, bar, `${this._fmtNum(sp.remaining_g, 0)} / ${this._fmtNum(sp.initial_weight_g, 0)} g (${this._fmtNum(sp.remaining_percent, 0)} %)`),
@@ -341,6 +356,7 @@ class DruckAssistantPanel extends HTMLElement {
       .field { display: flex; flex-direction: column; gap: 2px; margin-bottom: 10px; font-size: 13px; color: var(--secondary-text-color); }
       .field input { font: inherit; padding: 6px 8px; color: var(--primary-text-color); background: var(--card-background-color); border: 1px solid var(--divider-color); border-radius: 6px; }
       .form { max-width: 480px; }
+      .badge { margin-left: 6px; padding: 0 6px; border-radius: 8px; font-size: 11px; background: var(--divider-color); color: var(--secondary-text-color); }
       .notice { padding: 0 0 12px; }
       .bar { width: 120px; height: 6px; border-radius: 3px; background: var(--divider-color); margin-bottom: 4px; }
       .bar .fill { height: 100%; border-radius: 3px; background: var(--success-color, #4caf50); }

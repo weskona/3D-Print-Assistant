@@ -15,6 +15,7 @@ from homeassistant.util import dt as dt_util
 
 from .const import (
     BAMBU_DOMAIN,
+    CONF_AUTO_IMPORT,
     CONF_ENERGY_ENTITY,
     CONF_FILAMENT_PRICES,
     CONF_NOTIFY_FILAMENT_LOW,
@@ -31,6 +32,7 @@ from .const import (
     EVENT_PRINT_FAILED,
     EVENT_PRINT_FINISHED,
     EVENT_PRINT_STARTED,
+    EVENT_SPOOL_IMPORTED,
     STATUS_FAILED,
     STORAGE_VERSION,
 )
@@ -106,29 +108,34 @@ class PrintTracker:
             "slots": self.slots(),
         }
 
-    def slots(self) -> list[dict[str, Any]]:
-        """AMS and external spool slots of this printer, from ha-bambulab tray sensors."""
+    def slot_entities(self) -> dict[str, str]:
+        """Slot key -> entity id of the ha-bambulab tray sensors of this printer."""
         prefix = f"_{self.serial}_"
-        slots = []
+        found = {}
         for entry in er.async_get(self.hass).entities.values():
             uid = entry.unique_id
             if (
-                entry.platform != BAMBU_DOMAIN
-                or entry.domain != "sensor"
-                or prefix not in uid
-                or not (re.search(r"_AMS_.*_tray_\d$", uid) or "_ExternalSpool" in uid)
+                entry.platform == BAMBU_DOMAIN
+                and entry.domain == "sensor"
+                and prefix in uid
+                and (re.search(r"_AMS_.*_tray_\d$", uid) or "_ExternalSpool" in uid)
             ):
-                continue
-            state = self.hass.states.get(entry.entity_id)
+                found[f"{self.serial}:{uid.split(prefix, 1)[1]}"] = entry.entity_id
+        return found
+
+    def slots(self) -> list[dict[str, Any]]:
+        """AMS and external spool slots of this printer, from ha-bambulab tray sensors."""
+        slots = []
+        for key, entity_id in self.slot_entities().items():
+            state = self.hass.states.get(entity_id)
             if state is None or "active" not in state.attributes:
                 continue
             attrs = state.attributes
-            key = f"{self.serial}:{uid.split(prefix, 1)[1]}"
             spool = self.filament.store.spool_for_slot(key)
             slots.append(
                 {
                     "key": key,
-                    "label": attrs.get("friendly_name") or entry.entity_id,
+                    "label": attrs.get("friendly_name") or entity_id,
                     "active": bool(attrs.get("active")),
                     "type": attrs.get("type"),
                     "color": attrs.get("color"),
@@ -137,6 +144,28 @@ class PrintTracker:
                 }
             )
         return sorted(slots, key=lambda s: s["key"])
+
+    def import_from_ams(self, *, include_untagged: bool) -> dict[str, list[dict[str, Any]]]:
+        """Create or link spools for the current AMS contents."""
+        result: dict[str, list[dict[str, Any]]] = {
+            "created": [], "assigned": [], "adopted": [],
+        }
+        for key, entity_id in self.slot_entities().items():
+            state = self.hass.states.get(entity_id)
+            if state is None or "active" not in state.attributes:
+                continue
+            action, spool = self.filament.store.import_slot(
+                key, dict(state.attributes), include_untagged=include_untagged
+            )
+            if action in result and spool is not None:
+                result[action].append({"slot": key, "spool": spool.as_dict()})
+                self.hass.bus.async_fire(
+                    EVENT_SPOOL_IMPORTED,
+                    {"serial": self.serial, "action": action, "slot": key, "spool": spool.name},
+                )
+        if any(result.values()):
+            self.filament.changed()
+        return result
 
     def low_spools(self):
         """Spools in this printer's slots that are at or below the low threshold."""
@@ -220,6 +249,15 @@ class PrintTracker:
         self.entry.async_on_unload(
             async_track_state_change_event(self.hass, watched, self._on_change)
         )
+        if self.entry.options.get(CONF_AUTO_IMPORT, True):
+            slot_ids = list(self.slot_entities().values())
+            if slot_ids:
+                self.entry.async_on_unload(
+                    async_track_state_change_event(
+                        self.hass, slot_ids, self._on_slot_change
+                    )
+                )
+                self.import_from_ams(include_untagged=False)
         extra = [
             eid
             for eid in (self._conf(CONF_POWER_ENTITY), self._conf(CONF_PRICE_ENTITY))
@@ -229,6 +267,12 @@ class PrintTracker:
             self.entry.async_on_unload(
                 async_track_state_change_event(self.hass, extra, self._on_external)
             )
+
+    @callback
+    def _on_slot_change(self, event: Event) -> None:
+        """A tray changed: link or create the spool if a new tagged spool appeared."""
+        if event.data["new_state"] is not None:
+            self.import_from_ams(include_untagged=False)
 
     @callback
     def _on_external(self, event: Event) -> None:
