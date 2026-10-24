@@ -238,3 +238,112 @@ def test_archived_rfid_spool_is_not_restored_or_duplicated_by_import():
     for manual in (False, True):
         assert store.import_slot("p:t1", TRAY, include_untagged=manual) == ("skipped", spool)
     assert len(store.spools) == 1 and spool.archived and not store.assignments
+
+
+def test_four_pack_is_matched_by_new_rfid_spools():
+    m = _spools_module()
+    store = m.SpoolStore()
+    pack = store.add_spools({"name": "PETG Basic Black", "material": "PETG", "color": "#101010", "price_per_kg": 18}, 4)
+    assert [s.name for s in pack][:2] == ["PETG Basic Black #1", "PETG Basic Black #2"] and len(store.spools) == 4
+
+    black = {**TRAY, "type": "PETG", "color": "#000000FF", "name": "Bambu PETG Basic"}
+    action, first = store.import_slot("p:t1", {**black, "tray_uuid": "A" * 32}, include_untagged=False)
+    assert action == "adopted" and first.id == pack[0].id and first.rfid == "A" * 32
+    assert len(store.spools) == 4  # nothing new was created, 3 spools remain in stock
+
+    # the next new tagged spool takes the next one; the first stays untouched
+    _, second = store.import_slot("p:t2", {**black, "tray_uuid": "B" * 32}, include_untagged=False)
+    assert second.id == pack[1].id and store.assignments == {"p:t1": first.id, "p:t2": second.id}
+    stock = [s for s in store.spools.values() if not s.rfid and s.id not in store.assignments.values()]
+    assert len(stock) == 2
+
+    # the tagged spool is recognized by its tag from now on
+    assert store.import_slot("p:t3", {**black, "tray_uuid": "A" * 32}, include_untagged=False)[1].id == first.id
+
+
+def test_stock_matching_prefers_color_and_fullest_and_ignores_other_materials():
+    m = _spools_module()
+    store = m.SpoolStore()
+    store.save_spool({"name": "White PETG", "material": "PETG", "color": "#ffffff"})
+    store.save_spool({"name": "PLA Black", "material": "PLA", "color": "#000000"})
+    used = store.save_spool({"name": "Black PETG used", "material": "PETG", "color": "#000000", "remaining_g": 300})
+    full = store.save_spool({"name": "Black PETG full", "material": "PETG", "color": "#050505"})
+    nocolor = store.save_spool({"name": "PETG no color", "material": "PETG"})
+
+    tray = {**TRAY, "type": "PETG", "color": "#000000FF", "tray_uuid": "C" * 32}
+    # closest color first (exact black beats #050505), even if the other one is fuller
+    assert store.find_stock(tray).id == used.id
+    store.archive(used.id)
+    assert store.find_stock(tray).id == full.id
+    store.assign("p:x", full.id)
+    assert store.find_stock(tray).id == nocolor.id  # unknown color is a weak match
+    store.archive(nocolor.id)
+    assert store.find_stock(tray) is None  # white is too far, PLA is another material
+    action, created = store.import_slot("p:t1", tray, include_untagged=False)
+    assert action == "created"
+
+
+def test_untagged_tray_uses_stock_on_manual_import():
+    m = _spools_module()
+    store = m.SpoolStore()
+    mine = store.save_spool({"name": "Generic PLA", "material": "PLA", "color": "#ff0000"})
+    raw = {**TRAY, "tray_uuid": BLANK, "tag_uid": BLANK, "type": "PLA", "color": "#FF0000FF"}
+    assert store.import_slot("p:t1", raw, include_untagged=False) == ("skipped", None)
+    action, spool = store.import_slot("p:t1", raw, include_untagged=True)
+    assert action == "assigned" and spool.id == mine.id and spool.rfid == "" and len(store.spools) == 1
+
+
+def test_add_spools_validates_quantity():
+    m = _spools_module()
+    store = m.SpoolStore()
+    for bad in (0, 51):
+        try:
+            store.add_spools({"name": "x", "material": "PLA"}, bad)
+        except m.SpoolError:
+            continue
+        raise AssertionError(bad)
+    assert len(store.add_spools({"name": "x", "material": "PLA"}, 1)) == 1
+
+
+def test_manual_correction_moves_the_tag_and_survives_auto_import():
+    m = _spools_module()
+    store = m.SpoolStore()
+    pack = store.add_spools({"name": "Black", "material": "PETG", "color": "#101010"}, 2)
+    right = store.save_spool({"name": "Black Matte", "material": "PETG", "color": "#202020"})
+    tray = {**TRAY, "type": "PETG", "color": "#000000FF", "tray_uuid": "D" * 32}
+
+    _, wrong = store.import_slot("p:t1", tray, include_untagged=False)
+    assert wrong.id == pack[0].id and wrong.rfid == "D" * 32
+
+    # the user corrects it in the panel: the tag follows the chosen spool
+    store.assign("p:t1", right.id, tray["tray_uuid"])
+    assert right.rfid == "D" * 32 and wrong.rfid == "" and store.assignments == {"p:t1": right.id}
+    # the wrongly matched spool is plain stock again and a later import keeps the correction
+    assert store.import_slot("p:t1", tray, include_untagged=False) == ("skipped", right)
+    assert store.assignments == {"p:t1": right.id}
+
+
+def test_clearing_a_slot_stops_auto_assignment_until_manual_import():
+    m = _spools_module()
+    store = m.SpoolStore()
+    tray = {**TRAY, "tray_uuid": "E" * 32}
+    _, spool = store.import_slot("p:t1", tray, include_untagged=False)
+    store.assign("p:t1", None, tray["tray_uuid"])
+    assert not store.assignments
+    assert store.import_slot("p:t1", tray, include_untagged=False) == ("skipped", None)
+    assert not store.assignments and len(store.spools) == 1
+    assert m.SpoolStore(**store.to_dict()).dismissed_rfids == {"E" * 32}  # persisted
+
+    action, again = store.import_slot("p:t1", tray, include_untagged=True)  # button overrides
+    assert action == "assigned" and again.id == spool.id and not store.dismissed_rfids
+
+
+def test_editing_the_tag_keeps_it_unique():
+    m = _spools_module()
+    store = m.SpoolStore()
+    a = store.save_spool({"name": "A", "material": "PLA", "rfid": "F" * 32})
+    b = store.save_spool({"name": "B", "material": "PLA"})
+    store.save_spool({"id": b.id, "name": "B", "material": "PLA", "rfid": "F" * 32})
+    assert store.spools[b.id].rfid == "F" * 32 and store.spools[a.id].rfid == ""
+    store.save_spool({"id": b.id, "name": "B", "material": "PLA", "rfid": ""})  # unlink
+    assert store.spools[b.id].rfid == "" and store.find_by_rfid("F" * 32) is None

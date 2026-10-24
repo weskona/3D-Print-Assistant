@@ -10,6 +10,23 @@ from typing import Any
 HEX_COLOR = re.compile(r"^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$")
 
 
+MAX_COLOR_DISTANCE = 90  # RGB distance (0-441) up to which two colors count as the same
+
+
+def _rgb(color: str) -> tuple[int, int, int] | None:
+    if not HEX_COLOR.match(color or ""):
+        return None
+    return int(color[1:3], 16), int(color[3:5], 16), int(color[5:7], 16)
+
+
+def color_distance(a: str, b: str) -> float | None:
+    """Euclidean RGB distance of two #rrggbb[aa] colors, None if either is missing."""
+    ca, cb = _rgb(a), _rgb(b)
+    if ca is None or cb is None:
+        return None
+    return sum((x - y) ** 2 for x, y in zip(ca, cb)) ** 0.5
+
+
 def valid_rfid(value: Any) -> str:
     """Return a usable spool tag id, or "" (Bambu reports all zeros for non-RFID spools)."""
     text = str(value or "").strip()
@@ -93,6 +110,7 @@ class SpoolStore:
         self,
         spools: list[dict[str, Any]] | None = None,
         assignments: dict[str, str] | None = None,
+        dismissed_rfids: list[str] | None = None,
     ) -> None:
         self.spools: dict[str, Spool] = {}
         for item in spools or []:
@@ -101,11 +119,14 @@ class SpoolStore:
         self.assignments: dict[str, str] = {
             k: v for k, v in (assignments or {}).items() if v in self.spools
         }
+        # Tags the user cleared from a slot by hand: not auto-assigned again.
+        self.dismissed_rfids: set[str] = set(dismissed_rfids or [])
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "spools": [asdict(s) for s in self.spools.values()],
             "assignments": dict(self.assignments),
+            "dismissed_rfids": sorted(self.dismissed_rfids),
         }
 
     def save_spool(self, data: dict[str, Any]) -> Spool:
@@ -145,7 +166,52 @@ class SpoolStore:
             archived=existing.archived if existing else False,
         )
         self.spools[spool.id] = spool
+        if spool.rfid:
+            self._move_tag(spool.rfid, spool)
         return spool
+
+    def add_spools(self, data: dict[str, Any], quantity: int = 1) -> list[Spool]:
+        """Add several identical spools at once (e.g. a 4-pack); numbered if more than one."""
+        if not 1 <= quantity <= 50:
+            raise SpoolError("quantity must be between 1 and 50")
+        if quantity == 1:
+            return [self.save_spool(data)]
+        base = {k: v for k, v in data.items() if k != "id"}
+        name = str(base.get("name", "")).strip()
+        return [
+            self.save_spool({**base, "name": f"{name} #{i}" if name else name})
+            for i in range(1, quantity + 1)
+        ]
+
+    def find_stock(self, attrs: dict[str, Any]) -> Spool | None:
+        """Best matching spool that is in stock: not in a slot, untagged, same material.
+
+        The color must be close to the tray color (or unknown on the stock spool);
+        among matches the closest color wins, then the fullest spool.
+        """
+        material = str(attrs.get("type") or "").strip().lower()
+        color = str(attrs.get("color") or "")
+        assigned = set(self.assignments.values())
+        best: tuple[float, float] | None = None
+        found: Spool | None = None
+        for spool in self.spools.values():
+            if (
+                spool.archived
+                or spool.rfid
+                or spool.id in assigned
+                or spool.material.strip().lower() != material
+            ):
+                continue
+            distance = color_distance(spool.color, color)
+            if distance is None:
+                # No usable color on one side: a weaker match than any close color.
+                distance = MAX_COLOR_DISTANCE + 1
+            elif distance > MAX_COLOR_DISTANCE:
+                continue
+            rank = (distance, -spool.remaining_g)
+            if best is None or rank < best:
+                best, found = rank, spool
+        return found
 
     def find_by_rfid(self, rfid: str) -> Spool | None:
         rfid = valid_rfid(rfid)
@@ -157,7 +223,8 @@ class SpoolStore:
         """Create or link a spool for an AMS slot from ha-bambulab tray attributes.
 
         Returns (action, spool) with action one of "created", "assigned",
-        "adopted", "skipped". Spools with an RFID tag are matched by tag, so the
+        "adopted", "skipped". New spools are matched against the stock first
+        (see find_stock), so a pre-entered 4-pack is used up instead of duplicated. Spools with an RFID tag are matched by tag, so the
         same spool is recognized when it moves to another slot. Untagged spools
         are only imported when include_untagged is set (manual import).
         """
@@ -166,6 +233,11 @@ class SpoolStore:
         if attrs.get("empty") or not material:
             return "skipped", None
         current = self.spool_for_slot(slot)
+
+        if rfid and rfid in self.dismissed_rfids:
+            if not include_untagged:  # manual import overrides an earlier dismissal
+                return "skipped", None
+            self.dismissed_rfids.discard(rfid)
 
         if rfid:
             known = self.find_by_rfid(rfid)
@@ -184,6 +256,13 @@ class SpoolStore:
                 return "adopted", current
         elif current is not None or not include_untagged:
             return "skipped", current
+
+        stock = self.find_stock(attrs)
+        if stock is not None:
+            # A spool bought earlier and added by hand: this is it.
+            stock.rfid = rfid
+            self.assign(slot, stock.id)
+            return ("adopted" if rfid else "assigned"), stock
 
         spool = self.save_spool(spool_data_from_tray(attrs, rfid))
         self.assign(slot, spool.id)
@@ -204,17 +283,37 @@ class SpoolStore:
             self.assignments = {k: v for k, v in self.assignments.items() if v != spool_id}
         return spool
 
-    def assign(self, slot: str, spool_id: str | None) -> None:
-        """Assign a spool to a slot (a spool sits in one slot only); None clears it."""
+    def assign(self, slot: str, spool_id: str | None, tag: str = "") -> None:
+        """Assign a spool to a slot (a spool sits in one slot only); None clears it.
+
+        tag is the RFID tag the tray currently reports. When given, a manual
+        correction wins over the automatic match: the tag moves to the chosen
+        spool (so the automatic import keeps agreeing with you), and clearing the
+        slot makes the automatic import leave this tag alone.
+        """
+        tag = valid_rfid(tag)
         if spool_id is None:
             self.assignments.pop(slot, None)
+            if tag:
+                self.dismissed_rfids.add(tag)
             return
         if spool_id not in self.spools:
             raise SpoolError("unknown spool")
-        if self.spools[spool_id].archived:
+        spool = self.spools[spool_id]
+        if spool.archived:
             raise SpoolError("spool is archived")
         self.assignments = {k: v for k, v in self.assignments.items() if v != spool_id}
         self.assignments[slot] = spool_id
+        if tag:
+            self._move_tag(tag, spool)
+            self.dismissed_rfids.discard(tag)
+
+    def _move_tag(self, tag: str, target: Spool) -> None:
+        """Make target the only spool carrying tag."""
+        for other in self.spools.values():
+            if other.id != target.id and other.rfid == tag:
+                other.rfid = ""
+        target.rfid = tag
 
     def spool_for_slot(self, slot: str | None) -> Spool | None:
         spool_id = self.assignments.get(slot) if slot else None

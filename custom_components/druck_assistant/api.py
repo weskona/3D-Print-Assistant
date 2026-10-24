@@ -55,7 +55,11 @@ def ws_get_data(
 
 
 @websocket_api.websocket_command(
-    {vol.Required("type"): WS_SPOOL_SAVE, vol.Required("spool"): dict}
+    {
+        vol.Required("type"): WS_SPOOL_SAVE,
+        vol.Required("spool"): dict,
+        vol.Optional("quantity", default=1): vol.All(int, vol.Range(min=1, max=50)),
+    }
 )
 @websocket_api.require_admin
 @callback
@@ -64,12 +68,15 @@ def ws_spool_save(
 ) -> None:
     manager = hass.data[DOMAIN]["filament"]
     try:
-        spool = manager.store.save_spool(msg["spool"])
+        if msg["spool"].get("id") or msg["quantity"] == 1:
+            created = [manager.store.save_spool(msg["spool"])]
+        else:
+            created = manager.store.add_spools(msg["spool"], msg["quantity"])
     except SpoolError as err:
         connection.send_error(msg["id"], "invalid_spool", str(err))
         return
     manager.changed()
-    connection.send_result(msg["id"], spool.as_dict())
+    connection.send_result(msg["id"], {"spools": [s.as_dict() for s in created]})
 
 
 @websocket_api.websocket_command(
@@ -104,7 +111,15 @@ def ws_spool_assign(
 ) -> None:
     manager = hass.data[DOMAIN]["filament"]
     try:
-        manager.store.assign(msg["slot_key"], msg["spool_id"])
+        tag = next(
+            (
+                entry.runtime_data.slot_tag(msg["slot_key"])
+                for entry in hass.config_entries.async_loaded_entries(DOMAIN)
+                if msg["slot_key"] in entry.runtime_data.slot_entities()
+            ),
+            "",
+        )
+        manager.store.assign(msg["slot_key"], msg["spool_id"], tag)
     except SpoolError as err:
         connection.send_error(msg["id"], "unknown_spool", str(err))
         return

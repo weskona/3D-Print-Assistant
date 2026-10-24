@@ -49,6 +49,9 @@ const TRANSLATIONS = {
     none: "none",
     admin_only: "Only administrators can change the filament inventory.",
     price: "Price",
+    rfid_tag: "RFID tag (clear to unlink)",
+    correct_hint: "Wrong spool? Pick the right one: the tag moves to it, and the automatic match stays corrected. Choosing \"none\" stops automatic assignment for the spool currently in this slot.",
+    quantity: "Quantity (e.g. 4 for a 4-pack)",
     archive: "Archive",
     restore: "Restore",
     archived_spools: "Archived spools ({count})",
@@ -105,6 +108,9 @@ const TRANSLATIONS = {
     none: "keine",
     admin_only: "Nur Administratoren können den Filamentbestand ändern.",
     price: "Preis",
+    rfid_tag: "RFID-Tag (leeren zum Lösen)",
+    correct_hint: "Falsche Spule? Wähle die richtige: Der Tag wandert zu ihr, die automatische Zuordnung bleibt korrigiert. „keine“ stoppt die automatische Zuordnung für die Spule, die gerade in diesem Slot steckt.",
+    quantity: "Anzahl (z. B. 4 für ein 4er-Pack)",
     archive: "Archivieren",
     restore: "Wiederherstellen",
     archived_spools: "Archivierte Spulen ({count})",
@@ -226,8 +232,9 @@ class DruckAssistantPanel extends HTMLElement {
   }
 
   _renderForm(spool) {
-    const v = { name: "", material: "", brand: "", color: "#808080", price_per_kg: "", initial_weight_g: 1000, remaining_g: 1000, notes: "", ...spool };
+    const v = { name: "", material: "", brand: "", color: "#808080", price_per_kg: "", initial_weight_g: 1000, remaining_g: 1000, notes: "", rfid: "", ...spool };
     const inputs = {};
+    const qty = this._el("input", { type: "number", min: "1", max: "50", step: "1", value: "1" });
     const mk = (key, type = "text", extra = {}) => {
       inputs[key] = this._el("input", { type, value: v[key] ?? "", ...extra });
       return inputs[key];
@@ -242,12 +249,13 @@ class DruckAssistantPanel extends HTMLElement {
       this._field(this._t("initial_weight"), mk("initial_weight_g", "number", { min: "1", step: "1" })),
       this._field(this._t("remaining_weight"), mk("remaining_g", "number", { min: "0", step: "1" })),
       this._field(this._t("notes"), mk("notes")),
+      spool.id ? this._field(this._t("rfid_tag"), mk("rfid")) : this._field(this._t("quantity"), qty),
       this._el("div", { class: "actions" },
         this._el("button", { class: "primary", onclick: () => {
           const out = {};
           for (const [k, el] of Object.entries(inputs)) out[k] = el.value;
-          if (spool.id) out.id = spool.id;
-          this._call({ type: "druck_assistant/spool_save", spool: out });
+          if (spool.id) out.id = spool.id; else delete out.rfid;
+          this._call({ type: "druck_assistant/spool_save", spool: out, ...(spool.id ? {} : { quantity: parseInt(qty.value, 10) || 1 }) });
         } }, this._t("save")),
         this._el("button", { onclick: () => { this._editing = null; this._render(); } }, this._t("cancel"))));
     return form;
@@ -349,12 +357,13 @@ class DruckAssistantPanel extends HTMLElement {
         if (!admin) sel.disabled = true;
         const dot = this._el("span", { class: "dot", style: `background:${/^#[0-9a-f]{6,8}$/i.test(sl.color || "") ? sl.color : "transparent"}` });
         table.append(this._el("tr", {},
-          this._el("td", {}, sl.active ? "▶ " : "", sl.label),
+          this._el("td", {}, sl.active ? "▶ " : "", sl.label, sl.tagged ? this._el("span", { class: "badge" }, "RFID") : ""),
           this._el("td", {}, dot, `${sl.type || "–"}${sl.remain != null ? `, ${sl.remain} %` : ""}`),
           this._el("td", {}, sel)));
       }
       slotsCard.append(table);
     }
+    if (slots.length && admin) slotsCard.append(this._el("div", { class: "sub notice" }, this._t("correct_hint")));
     main.append(slotsCard);
   }
 

@@ -27,6 +27,15 @@ Mit „Aus AMS importieren“ werden aus den belegten AMS-Slots Spulen angelegt.
 RFID-Tag werden zusätzlich automatisch übernommen (Option „Neue Bambu-Spulen automatisch übernehmen“);
 Spulen ohne Tag, etwa Fremdfilament oder die externe Spule, werden nur über den Button importiert.
 Der Restbestand wird aus der AMS-Prozentanzeige geschätzt und lässt sich von Hand korrigieren.
+**Großeinkauf:** Lege das Paket mit dem Feld „Anzahl“ an (z. B. 4 x „PETG Basic Schwarz“, Farbe Schwarz).
+Wird eine neue Bambu-Spule erkannt, sucht die Integration zuerst eine passende Spule im Bestand
+(nicht in einem Slot, noch ohne Tag, gleiche Sorte, ähnliche Farbe) und verwendet sie, statt eine neue
+anzulegen. Der Bestand sinkt von 4 auf 3, und die eingelegte Spule wird ab dann verfolgt. Ohne Treffer wird eine neue Spule angelegt.
+Passt die Zuordnung nicht, wähle in der Slot-Liste des Tabs „Filament“ die richtige Spule: Der RFID-Tag
+wandert zu ihr, und die Korrektur bleibt bestehen. „keine“ stoppt die automatische Zuordnung für die
+Spule, die gerade im Slot steckt (der Button „Aus AMS importieren“ hebt das wieder auf). Den RFID-Tag
+einer Spule kannst du auch im Formular ändern oder leeren. Eine Bestandsspule, die ihren Tag verloren hat, bleibt einfach im Bestand.
+
 Erreicht der Restbestand einer Spule nach einem Druck 0 g, kommt sie automatisch ins Archiv
 (Option „Leere Spulen automatisch archivieren“) und löst `druck_assistant_spool_empty` aus. Du kannst
 Spulen auch von Hand archivieren und in der einklappbaren Liste „Archivierte Spulen“ wiederherstellen.
