@@ -19,4 +19,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - German language pack (config flow, entities and panel); English is the source language.
 - German README (`README.de.md`).
 
-[Unreleased]: https://github.com/weskona/3D-Druck-Assistant/commits/main
+[Unreleased]: https://github.com/weskona/3D-Print-Assistant/commits/main
