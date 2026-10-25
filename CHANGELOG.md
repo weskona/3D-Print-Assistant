@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - The filament name in the inventory is no longer clickable; the popup opens with the "Add stock" button only.
+- All forms are popups over the list: adding a spool, editing a spool and adding stock. Editing a spool from the type popup shows the form on top and returns to the type popup after saving or cancelling.
 
 ## [0.4.0-beta.6] - 2026-10-25
 
