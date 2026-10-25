@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Spools are no longer archived by hand: they are archived automatically when they run empty and can be restored from the archive. The Archive button is gone from the edit popup.
 - Untagged Bambu Lab spools (catalog entries and spools added with a quantity) can be deleted from their row, e.g. a duplicate that was added by mistake; their values still cannot be edited until the AMS detects the spool. Editing rules for tagged Bambu Lab spools and for other brands are unchanged.
 
 ## [0.5.0-beta.2] - 2026-10-25
@@ -21,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Spools are edited with an "Edit" button on their own row (the sub-row of an expanded type, or the row of a single-spool type). Bambu Lab spools can only be edited once their RFID tag was detected; spools of other brands can always be edited. The edit popup now also has Archive and Delete.
+- Spools are edited with an "Edit" button on their own row (the sub-row of an expanded type, or the row of a single-spool type). Bambu Lab spools can only be edited once their RFID tag was detected; spools of other brands can always be edited. The edit popup now also has Delete.
 
 ### Removed
 

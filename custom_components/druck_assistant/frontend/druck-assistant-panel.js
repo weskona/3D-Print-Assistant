@@ -73,7 +73,6 @@ const TRANSLATIONS = {
     rfid_tag: "RFID tag (clear to unlink)",
     correct_hint: "Wrong spool? Pick the right one: the tag moves to it, and the automatic match stays corrected. Choosing \"none\" stops automatic assignment for the spool currently in this slot.",
     quantity: "Quantity (e.g. 4 for a 4-pack)",
-    archive: "Archive",
     restore: "Restore",
     archived_spools: "Archived spools ({count})",
     no_archived: "No archived spools. Empty spools are archived automatically.",
@@ -149,7 +148,6 @@ const TRANSLATIONS = {
     rfid_tag: "RFID-Tag (leeren zum Lösen)",
     correct_hint: "Falsche Spule? Wähle die richtige: Der Tag wandert zu ihr, die automatische Zuordnung bleibt korrigiert. „keine“ stoppt die automatische Zuordnung für die Spule, die gerade in diesem Slot steckt.",
     quantity: "Anzahl (z. B. 4 für ein 4er-Pack)",
-    archive: "Archivieren",
     restore: "Wiederherstellen",
     archived_spools: "Archivierte Spulen ({count})",
     no_archived: "Keine archivierten Spulen. Leere Spulen werden automatisch archiviert.",
@@ -340,7 +338,6 @@ class DruckAssistantPanel extends HTMLElement {
         } }, this._t("save")),
         this._el("button", { onclick: () => { this._editing = null; this._render(); } }, this._t("cancel")),
         ...(spool.id ? [
-          this._el("button", { onclick: () => this._call({ type: "druck_assistant/spool_archive", spool_id: spool.id, archived: true }) }, this._t("archive")),
           this._el("button", { onclick: () => { if (confirm(this._t("confirm_delete", { name: spool.name }))) this._call({ type: "druck_assistant/spool_delete", spool_id: spool.id }); } }, this._t("delete")),
         ] : [])));
     inputs.name.addEventListener("change", fromTemplate);

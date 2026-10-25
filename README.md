@@ -36,8 +36,7 @@ catalog (`docs/bambu-filaments.md`) to fill in name, material, brand and color; 
 
 **Editing spools:** the list shows one row per type and color (e.g. "Bambu PETG Basic" in black and in gray are two
 rows) with the total stock of all its spools and the average price per kg. Click the name of a type with several spools to
-expand and list them one by one. Spools are edited with the "Edit" button of their row; the edit popup also has Archive and
-Delete. Bambu Lab spools can be edited once their RFID tag has been detected (the tag fills them in); spools of other
+expand and list them one by one. Spools are edited with the "Edit" button of their row; the edit popup also has Delete. Bambu Lab spools can be edited once their RFID tag has been detected (the tag fills them in); spools of other
 brands, which have no tag, can always be edited. A Bambu Lab spool without a tag (for example one you added from the
 catalog) can be deleted from its row until the AMS detects it (spools are archived automatically when they run empty).
 
@@ -51,8 +50,8 @@ the slot (the "Import from AMS" button overrides this). You can also edit or cle
 in its form. A stock spool that lost its tag simply stays in stock.
 
 A spool whose remaining stock reaches 0 g after a print is moved to the archive automatically
-(option "Automatically archive empty spools") and fires `druck_assistant_spool_empty`. You can also
-archive spools by hand and restore them from the collapsible "Archived spools" list. Archived spools
+(option "Automatically archive empty spools") and fires `druck_assistant_spool_empty`. Restore
+spools from the collapsible "Archived spools" list. Archived spools
 are not imported or assigned again automatically, even if they are still loaded in the AMS.
 Prints with several spools or materials are booked to the spool active at the start.
 
