@@ -347,3 +347,18 @@ def test_editing_the_tag_keeps_it_unique():
     assert store.spools[b.id].rfid == "F" * 32 and store.spools[a.id].rfid == ""
     store.save_spool({"id": b.id, "name": "B", "material": "PLA", "rfid": ""})  # unlink
     assert store.spools[b.id].rfid == "" and store.find_by_rfid("F" * 32) is None
+
+
+def test_live_energy_estimate_does_not_change_the_session():
+    from druck_assistant.history import PrintSession
+
+    s = PrintSession(started=T0)
+    s.add_power(T0, 200)
+    # power only: 200 W for 30 min since the last reading = 0.1 kWh, nothing is stored
+    assert abs(s.estimate_energy_kwh(T0 + timedelta(minutes=30), None) - 0.1) < 1e-9
+    assert s.energy_acc_kwh == 0 and s.power_ts == T0
+    s.add_power(T0 + timedelta(hours=1), 100)
+    assert abs(s.estimate_energy_kwh(T0 + timedelta(hours=2), None) - (0.2 + 0.1)) < 1e-9
+    # a meter wins over the power estimate
+    s.energy_start_kwh = 10.0
+    assert abs(s.estimate_energy_kwh(T0 + timedelta(hours=2), 10.4) - 0.4) < 1e-9

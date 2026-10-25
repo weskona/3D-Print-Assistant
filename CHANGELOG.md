@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0-beta.6] - 2026-10-25
+
+### Added
+
+- The Overview tab shows the print in progress: name and status (printing, paused, preparing), progress bar, elapsed time, remaining time, finish time, layer, filament weight, nozzle and bed temperature, and a cost estimate (filament for the whole print at the price of the spool or type, electricity used so far, and their sum). The spool in use is listed below. Without a print the card keeps the "no print active" message and the loaded filament.
+- The panel refreshes every 10 seconds while a print is running (30 seconds otherwise) and no longer redraws while you type in a field.
+
 ## [0.5.0-beta.5] - 2026-10-25
 
 ### Changed
@@ -173,7 +180,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Filament prices per type (e.g. `PLA=20`) in the options, sensor for the current filament including price per kg. Cost sensors in euro.
 - GitHub workflow that creates a tag and release after a push to `main`.
 
-[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.5.0-beta.5...HEAD
+[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.5.0-beta.6...HEAD
+[0.5.0-beta.6]: https://github.com/weskona/3D-Print-Assistant/compare/v0.5.0-beta.5...v0.5.0-beta.6
 [0.5.0-beta.5]: https://github.com/weskona/3D-Print-Assistant/compare/v0.5.0-beta.4...v0.5.0-beta.5
 [0.5.0-beta.4]: https://github.com/weskona/3D-Print-Assistant/compare/v0.5.0-beta.3...v0.5.0-beta.4
 [0.5.0-beta.3]: https://github.com/weskona/3D-Print-Assistant/compare/v0.5.0-beta.2...v0.5.0-beta.3

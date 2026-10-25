@@ -36,6 +36,21 @@ const TRANSLATIONS = {
     success: "Successful",
     failed: "Failed",
     unknown: "unknown",
+    current_print: "Current print",
+    status_running: "Printing",
+    status_pause: "Paused",
+    status_prepare: "Preparing",
+    elapsed: "Elapsed",
+    time_remaining: "Remaining",
+    finishes: "Finishes",
+    layer: "Layer",
+    print_weight: "Filament weight",
+    nozzle_bed: "Nozzle / bed",
+    spool_label: "Spool",
+    filament_cost: "Filament cost",
+    energy_cost_so_far: "Electricity so far",
+    cost_estimate: "Estimated cost",
+    cost_hint: "Whole print + electricity so far",
     tab_overview: "Overview",
     tab_filament: "Filament",
     tab_ams: "AMS",
@@ -111,6 +126,21 @@ const TRANSLATIONS = {
     success: "Erfolgreich",
     failed: "Fehlgeschlagen",
     unknown: "unbekannt",
+    current_print: "Aktueller Druck",
+    status_running: "Druckt",
+    status_pause: "Pausiert",
+    status_prepare: "Bereitet vor",
+    elapsed: "Dauer bisher",
+    time_remaining: "Restzeit",
+    finishes: "Fertig um",
+    layer: "Schicht",
+    print_weight: "Filamentgewicht",
+    nozzle_bed: "Düse / Bett",
+    spool_label: "Spule",
+    filament_cost: "Filamentkosten",
+    energy_cost_so_far: "Strom bisher",
+    cost_estimate: "Geschätzte Kosten",
+    cost_hint: "Ganzer Druck + bisheriger Strom",
     tab_overview: "Übersicht",
     tab_filament: "Filament",
     tab_ams: "AMS",
@@ -197,14 +227,13 @@ class DruckAssistantPanel extends HTMLElement {
   disconnectedCallback() {
     this._unsub.forEach((u) => u());
     this._unsub = [];
-    clearInterval(this._timer);
+    clearTimeout(this._timer);
     this._timer = null;
   }
 
   async _start() {
     this._render();
     await this._load();
-    this._timer = setInterval(() => this._load(), 30000);
     for (const ev of ["druck_assistant_print_started", "druck_assistant_print_finished", "druck_assistant_print_failed"]) {
       try {
         this._unsub.push(await this._hass.connection.subscribeEvents(() => this._load(), ev));
@@ -222,7 +251,13 @@ class DruckAssistantPanel extends HTMLElement {
     } catch (e) {
       this._error = e && e.message ? e.message : String(e);
     }
-    if (this._editing === null) this._render(); // never re-render while a form is open
+    // Never re-render while a form is open or the user is typing in a field.
+    const typing = ["INPUT", "SELECT", "TEXTAREA"].includes(this.shadowRoot.activeElement?.tagName);
+    if (this._editing === null && !typing) this._render();
+    // Refresh faster while a print is running so progress and costs stay live.
+    const printing = (this._data?.printers || []).some((p) => p.current_print);
+    clearTimeout(this._timer);
+    this._timer = setTimeout(() => this._load(), printing ? 10000 : 30000);
   }
 
   _t(key, vars = {}) {
@@ -657,6 +692,54 @@ class DruckAssistantPanel extends HTMLElement {
     main.append(slotsCard);
   }
 
+  /** The print in progress with progress, times, layer, weight, temperatures and cost estimate. */
+  _renderCurrentPrint(printer, cur) {
+    const card = this._el("div", { class: "card" });
+    const c = printer.current_print;
+    const f = printer.filament;
+    if (!c) {
+      card.append(this._el("h2", {}, this._t("current")), this._el("div", { class: "sub" }, this._t("no_active_print")));
+      if (f && f.type) {
+        const line = this._el("div", { style: "margin-top:6px" });
+        if (f.color) line.append(this._el("span", { class: "dot", style: `background:${/^#[0-9a-f]{3,8}$/i.test(f.color) ? f.color : "transparent"}` }));
+        line.append(`${f.name || f.type}, ${f.price_per_kg != null ? this._fmtMoney(f.price_per_kg, cur) + "/kg" : ""}${f.remain != null ? `, ${this._t("remaining", { value: f.remain })}` : ""}`);
+        card.append(line);
+      }
+      return card;
+    }
+    const known = (v) => v !== null && v !== undefined;
+    const money = (v) => (known(v) ? this._fmtMoney(v, cur) : "–");
+    const elapsedMin = c.started && !Number.isNaN(Date.parse(c.started)) ? Math.max(0, (Date.now() - Date.parse(c.started)) / 60000) : null;
+    const pct = known(c.progress) ? Math.max(0, Math.min(100, c.progress)) : null;
+    const dot = /^#[0-9a-f]{6,8}$/i.test(c.color || "") ? this._el("span", { class: "dot", style: `background:${c.color}` }) : "";
+
+    card.append(this._el("h2", {}, this._t("current_print")),
+      this._el("div", { class: "print-title" }, c.name || this._t("unknown"),
+        this._el("span", { class: "badge stock" }, this._t(`status_${c.status}`) === `status_${c.status}` ? c.status : this._t(`status_${c.status}`))));
+    if (pct !== null) {
+      card.append(this._el("div", { class: "progress" },
+        this._el("div", { class: "bar wide" }, this._el("div", { class: "fill", style: `width:${pct}%` })),
+        this._el("span", {}, `${this._fmtNum(pct, 0)} %`)));
+    }
+    const tiles = [
+      [this._t("elapsed"), elapsedMin !== null ? this._fmtDuration(elapsedMin) : "–"],
+      [this._t("time_remaining"), known(c.remaining_min) ? this._fmtDuration(c.remaining_min) : "–"],
+      [this._t("finishes"), c.end && !Number.isNaN(Date.parse(c.end)) ? new Date(c.end).toLocaleTimeString(this._hass.locale?.language, { hour: "2-digit", minute: "2-digit" }) : "–"],
+      [this._t("layer"), known(c.layer) && known(c.total_layers) ? `${this._fmtNum(c.layer, 0)} / ${this._fmtNum(c.total_layers, 0)}` : "–"],
+      [this._t("print_weight"), known(c.weight_g) ? `${this._fmtNum(c.weight_g, 1)} g` : "–"],
+      [this._t("nozzle_bed"), known(c.nozzle_temp) || known(c.bed_temp) ? `${known(c.nozzle_temp) ? this._fmtNum(c.nozzle_temp, 0) : "–"} / ${known(c.bed_temp) ? this._fmtNum(c.bed_temp, 0) : "–"} °C` : "–"],
+    ];
+    const grid = this._el("div", { class: "tiles small" }, ...tiles.map(([label, value]) => this._tile(label, value)));
+    grid.append(
+      this._tile(this._t("filament_cost"), money(c.filament_cost), known(c.price_per_kg) ? `${this._fmtMoney(c.price_per_kg, cur)}/kg` : ""),
+      this._tile(this._t("energy_cost_so_far"), money(c.energy_cost), known(c.energy_kwh) ? `${this._fmtNum(c.energy_kwh, 2)} kWh` : ""),
+      this._tile(this._t("cost_estimate"), money(c.total_cost), this._t("cost_hint")));
+    card.append(grid);
+    const spoolLine = [c.spool, c.material].filter(Boolean).join(" · ");
+    if (spoolLine) card.append(this._el("div", { class: "sub", style: "margin-top:8px" }, `${this._t("spool_label")}: `, dot, spoolLine));
+    return card;
+  }
+
   _tile(label, value, sub) {
     return this._el("div", { class: "tile" },
       this._el("div", { class: "label" }, label),
@@ -673,6 +756,11 @@ class DruckAssistantPanel extends HTMLElement {
       select { font: inherit; padding: 4px 8px; }
       main { padding: 16px; max-width: 1100px; margin: 0 auto; }
       .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
+      .print-title { font-size: 18px; margin: 2px 0 10px; }
+      .progress { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+      .bar.wide { width: auto; flex: 1; height: 8px; margin: 0; }
+      .tiles.small { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); margin-bottom: 0; }
+      .tiles.small .value { font-size: 18px; }
       .tile, .card { background: var(--card-background-color); border-radius: var(--ha-card-border-radius, 12px); box-shadow: var(--ha-card-box-shadow, 0 1px 3px rgba(0,0,0,.2)); padding: 12px 16px; }
       .label { color: var(--secondary-text-color); font-size: 13px; }
       .value { font-size: 24px; margin-top: 4px; }
@@ -766,21 +854,7 @@ class DruckAssistantPanel extends HTMLElement {
       this._tile(this._t("total_cost"), this._fmtMoney(t.cost, cur), this._t("of_which_energy", { value: this._fmtMoney(t.energy_cost, cur) })),
     ));
 
-    const now = this._el("div", { class: "card" }, this._el("h2", {}, this._t("current")));
-    const s = printer.session;
-    const f = printer.filament;
-    if (s) {
-      now.append(this._el("div", {}, this._t("print_running", { name: s.name || this._t("unknown"), since: this._fmtDate(s.started) })));
-    } else {
-      now.append(this._el("div", { class: "sub" }, this._t("no_active_print")));
-    }
-    if (f && f.type) {
-      const line = this._el("div", { style: "margin-top:6px" });
-      if (f.color) line.append(this._el("span", { class: "dot", style: `background:${/^#[0-9a-f]{3,8}$/i.test(f.color) ? f.color : "transparent"}` }));
-      line.append(`${f.name || f.type}, ${f.price_per_kg != null ? this._fmtMoney(f.price_per_kg, cur) + "/kg" : ""}${f.remain != null ? `, ${this._t("remaining", { value: f.remain })}` : ""}`);
-      now.append(line);
-    }
-    main.append(now);
+    main.append(this._renderCurrentPrint(printer, cur));
 
     const hist = this._el("div", { class: "card" }, this._el("h2", {}, this._t("history")));
     if (!printer.history.length) {
