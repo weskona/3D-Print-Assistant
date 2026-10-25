@@ -36,9 +36,9 @@ Hersteller und Status (Vorrat, in einem Slot, niedriger Bestand). Tabelle und Su
 **Spulen bearbeiten:** Die Liste zeigt eine Zeile pro Sorte und Farbe (z. B. „Bambu PETG Basic“ in Schwarz und in Grau sind
 zwei Zeilen) mit dem Gesamtbestand aller Spulen und dem Durchschnittspreis pro kg. Klicke auf den Namen einer Sorte mit
 mehreren Spulen, um sie einzeln aufzuklappen. Spulen bearbeitest du mit dem Button „Bearbeiten“ ihrer Zeile; das Bearbeiten-Popup
-bietet auch „Löschen“. Bambu-Lab-Spulen lassen sich bearbeiten, sobald ihr RFID-Tag erkannt wurde (der Tag füllt sie aus);
-Spulen anderer Hersteller, die keinen Tag haben, sind immer bearbeitbar. Eine Bambu-Lab-Spule ohne Tag (zum Beispiel aus dem
-Katalog angelegt) lässt sich bis zur Erkennung im AMS in ihrer Zeile löschen (archiviert wird automatisch, wenn eine Spule leer ist).
+bietet auch „Löschen“. Eine Bambu-Lab-Spule in einem Slot lässt sich bearbeiten, sobald ihr RFID-Tag erkannt wurde (der Tag füllt sie aus);
+Spulen auf Vorrat und Spulen anderer Hersteller, die keinen Tag haben, sind immer bearbeitbar. Eine Bambu-Lab-Spule ohne Tag,
+die in einem Slot steckt, lässt sich bis zur Erkennung im AMS nur in ihrer Zeile löschen (archiviert wird automatisch, wenn eine Spule leer ist).
 
 **Großeinkauf:** Lege das Paket mit „Spule hinzufügen“ und dem Feld „Anzahl“ an (z. B. 4 x „PETG Basic Schwarz“, Farbe Schwarz).
 Wird eine neue Bambu-Spule erkannt, sucht die Integration zuerst eine passende Spule im Bestand

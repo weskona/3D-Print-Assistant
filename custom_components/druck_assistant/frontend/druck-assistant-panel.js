@@ -384,21 +384,22 @@ class DruckAssistantPanel extends HTMLElement {
   }
 
   /**
-   * Bambu Lab spools are filled in by the RFID tag, so they can be edited once the tag was
-   * detected; spools of other brands have no tag and can always be edited.
+   * A Bambu Lab spool in a slot is filled in by its RFID tag, so it can be edited once the tag
+   * was detected. A spool in stock (in no slot) can always be edited, as can spools of other
+   * brands, which have no tag.
    */
-  _canEdit(sp, admin) {
-    return admin && (!!sp.rfid || (sp.brand || "").trim().toLowerCase() !== "bambu lab");
+  _canEdit(sp, admin, slotOf) {
+    return admin && (!!sp.rfid || !slotOf[sp.id] || (sp.brand || "").trim().toLowerCase() !== "bambu lab");
   }
 
   /**
-   * Row buttons of a spool: Edit where editing is allowed; an untagged Bambu Lab spool has
-   * nothing to edit yet, but can be deleted (e.g. a duplicate). Spools are archived
-   * automatically when they run empty, not by hand from the row.
+   * Row buttons of a spool: Edit where editing is allowed; an untagged Bambu Lab spool in a
+   * slot has nothing to edit, but can be deleted. Spools are archived automatically when they
+   * run empty, not by hand from the row.
    */
-  _rowActions(sp, admin) {
+  _rowActions(sp, admin, slotOf) {
     if (!admin) return [];
-    if (this._canEdit(sp, admin)) {
+    if (this._canEdit(sp, admin, slotOf)) {
       return [this._el("button", { onclick: () => { this._editing = sp; this._render(); } }, this._t("edit"))];
     }
     return [
@@ -521,7 +522,7 @@ class DruckAssistantPanel extends HTMLElement {
         const bar = this._el("div", { class: "bar" }, this._el("div", { class: "fill" + (pct <= 15 ? " low" : ""), style: `width:${pct}%` }));
         const actions = this._el("td", {});
         // A single-spool type is managed from its own row; several spools from their sub-rows.
-        if (g.spools.length === 1) actions.append(...this._rowActions(g.spools[0], admin));
+        if (g.spools.length === 1) actions.append(...this._rowActions(g.spools[0], admin, slotOf));
         // A type with several spools expands on a click on its name to list them one by one.
         const multi = g.spools.length > 1;
         const expanded = multi && this._expanded.has(g.key);
@@ -556,7 +557,7 @@ class DruckAssistantPanel extends HTMLElement {
                 this._el("div", { class: "bar" }, this._el("div", { class: "fill" + (spct <= 15 ? " low" : ""), style: `width:${spct}%` })),
                 `${this._fmtNum(sp.remaining_g, 0)} / ${this._fmtNum(sp.initial_weight_g, 0)} g (${this._fmtNum(sp.remaining_percent, 0)} %)`),
               this._el("td", {}, sp.price_per_kg != null ? `${this._fmtMoney(sp.price_per_kg, cur)}/kg` : "–"),
-              this._el("td", {}, ...this._rowActions(sp, admin))));
+              this._el("td", {}, ...this._rowActions(sp, admin, slotOf))));
           }
         }
       }
