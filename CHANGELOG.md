@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0-beta.10] - 2026-10-25
+
+### Added
+
+- The add and edit spool forms suggest names, materials and brands that are already captured (and common materials such as PLA or PETG) in a pick list; typing a new value still works. Picking a known name when adding a spool fills material, brand, color, price and weight from the newest spool of that name, without overwriting fields you already changed.
+
+### Fixed
+
+- Editing a spool whose color has an alpha channel (e.g. a color taken from the tray) no longer resets the color to black.
+
 ## [0.4.0-beta.9] - 2026-10-25
 
 ### Added
@@ -116,7 +126,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Filament prices per type (e.g. `PLA=20`) in the options, sensor for the current filament including price per kg. Cost sensors in euro.
 - GitHub workflow that creates a tag and release after a push to `main`.
 
-[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.9...HEAD
+[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.10...HEAD
+[0.4.0-beta.10]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.9...v0.4.0-beta.10
 [0.4.0-beta.9]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.8...v0.4.0-beta.9
 [0.4.0-beta.8]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.7...v0.4.0-beta.8
 [0.4.0-beta.7]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.6...v0.4.0-beta.7
