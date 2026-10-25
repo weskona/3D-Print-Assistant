@@ -29,6 +29,7 @@ const TRANSLATIONS = {
     unknown: "unknown",
     tab_overview: "Overview",
     tab_filament: "Filament",
+    tab_ams: "AMS",
     spools: "Spools",
     slots: "Slots",
     add_spool: "Add spool",
@@ -96,6 +97,7 @@ const TRANSLATIONS = {
     unknown: "unbekannt",
     tab_overview: "Übersicht",
     tab_filament: "Filament",
+    tab_ams: "AMS",
     spools: "Spulen",
     slots: "Slots",
     add_spool: "Spule hinzufügen",
@@ -492,6 +494,17 @@ class DruckAssistantPanel extends HTMLElement {
     }
     main.append(details);
 
+    // Forms are popups over the list; the form of a spool shows on top of the type popup it was opened from.
+    const open = groups.find((g) => g.key === this._dialog);
+    if (this._editing !== null) main.append(this._renderForm(this._editing));
+    else if (open) main.append(this._renderDialog(open, slotOf, cur, admin));
+  }
+
+  _renderAms(main, printer) {
+    const admin = this._isAdmin();
+    if (this._notice) main.append(this._el("div", { class: this._noticeOk ? "sub notice" : "error" }, this._notice));
+    if (!admin) main.append(this._el("div", { class: "sub notice" }, this._t("admin_only")));
+    const activeSpools = this._spools.filter((sp) => !sp.archived);
     const slotsCard = this._el("div", { class: "card" }, this._el("h2", {}, this._t("slots")));
     const slots = printer?.slots || [];
     if (!slots.length) {
@@ -518,11 +531,6 @@ class DruckAssistantPanel extends HTMLElement {
     }
     if (slots.length && admin) slotsCard.append(this._el("div", { class: "sub notice" }, this._t("correct_hint")));
     main.append(slotsCard);
-
-    // Forms are popups over the list; the form of a spool shows on top of the type popup it was opened from.
-    const open = groups.find((g) => g.key === this._dialog);
-    if (this._editing !== null) main.append(this._renderForm(this._editing));
-    else if (open) main.append(this._renderDialog(open, slotOf, cur, admin));
   }
 
   _tile(label, value, sub) {
@@ -597,7 +605,7 @@ class DruckAssistantPanel extends HTMLElement {
       header.append(sel);
     }
     const tabs = this._el("div", { class: "tabs" },
-      ...["overview", "filament"].map((k) => this._el("button", {
+      ...["overview", "filament", "ams"].map((k) => this._el("button", {
         class: this._tab === k ? "active" : "",
         onclick: () => { this._tab = k; this._editing = null; this._render(); },
       }, this._t(`tab_${k}`))));
@@ -610,6 +618,7 @@ class DruckAssistantPanel extends HTMLElement {
     if (this._error) { main.append(this._el("div", { class: "error" }, this._error)); return; }
     if (!this._data) { main.append(this._el("div", { class: "empty" }, "…")); return; }
     if (this._tab === "filament") { this._renderFilament(main, printer); return; }
+    if (this._tab === "ams") { this._renderAms(main, printer); return; }
     if (!printer) { main.append(this._el("div", { class: "empty" }, this._t("no_printer"))); return; }
 
     const t = printer.totals;

@@ -20,7 +20,7 @@ Home-Assistant-Integration für Bambu-Lab-Drucker. Sie setzt auf
 
 ## Filamentverwaltung
 
-Im Tab „Filament“ des Panels (Bearbeiten nur für Administratoren) legst du Spulen an und ordnest
+Im Tab „Filament“ des Panels (Bearbeiten nur für Administratoren) legst du Spulen an, im Tab „AMS“ ordnest du
 sie den Slots des Druckers zu. Verwendet wird der Slot, der beim Druckstart aktiv ist: Der Preis
 seiner Spule ersetzt den Sortenpreis, das verbrauchte Gewicht wird am Druckende abgezogen.
 Mit „Aus AMS importieren“ werden aus den belegten AMS-Slots Spulen angelegt. Neue Bambu-Spulen mit
@@ -36,7 +36,7 @@ bekommen den eingegebenen Preis, vorhandene behalten ihren.
 Wird eine neue Bambu-Spule erkannt, sucht die Integration zuerst eine passende Spule im Bestand
 (nicht in einem Slot, noch ohne Tag, gleiche Sorte, ähnliche Farbe) und verwendet sie, statt eine neue
 anzulegen. Der Bestand sinkt von 4 auf 3, und die eingelegte Spule wird ab dann verfolgt. Ohne Treffer wird eine neue Spule angelegt.
-Passt die Zuordnung nicht, wähle in der Slot-Liste des Tabs „Filament“ die richtige Spule: Der RFID-Tag
+Passt die Zuordnung nicht, wähle in der Slot-Liste des Tabs „AMS“ die richtige Spule: Der RFID-Tag
 wandert zu ihr, und die Korrektur bleibt bestehen. „keine“ stoppt die automatische Zuordnung für die
 Spule, die gerade im Slot steckt (der Button „Aus AMS importieren“ hebt das wieder auf). Den RFID-Tag
 einer Spule kannst du auch im Formular ändern oder leeren. Eine Bestandsspule, die ihren Tag verloren hat, bleibt einfach im Bestand.
