@@ -142,6 +142,7 @@ class DruckAssistantPanel extends HTMLElement {
     this._tab = "overview";
     this._editing = null;
     this._dialog = null;
+    this._expanded = new Set();
     this._busy = null;
     this._error = null;
     this._unsub = [];
@@ -384,14 +385,40 @@ class DruckAssistantPanel extends HTMLElement {
         const bar = this._el("div", { class: "bar" }, this._el("div", { class: "fill" + (pct <= 15 ? " low" : ""), style: `width:${pct}%` }));
         const actions = this._el("td", {});
         if (admin) actions.append(this._el("button", { onclick: open }, this._t("add_stock")));
+        // A type with several spools expands on a click on its name to list them one by one.
+        const multi = g.spools.length > 1;
+        const expanded = multi && this._expanded.has(g.key);
+        const toggle = () => {
+          if (this._expanded.has(g.key)) this._expanded.delete(g.key); else this._expanded.add(g.key);
+          this._render();
+        };
         table.append(this._el("tr", {},
-          this._el("td", { title: g.color || "" }, dot, g.name,
-            g.spools.length > 1 ? this._el("span", { class: "badge" }, `× ${g.spools.length}`) : ""),
+          this._el("td", multi
+            ? { class: "link", title: g.color || "", role: "button", "aria-expanded": String(expanded), onclick: toggle }
+            : { title: g.color || "" },
+          multi ? this._el("span", { class: "chevron" }, expanded ? "▾" : "▸") : "", dot, g.name,
+            multi ? this._el("span", { class: "badge" }, `× ${g.spools.length}`) : ""),
           this._el("td", {}, g.material),
           this._el("td", {}, g.brand || "–"),
           this._el("td", {}, bar, `${this._fmtNum(g.remaining, 0)} / ${this._fmtNum(g.initial, 0)} g (${this._fmtNum(g.percent, 0)} %)`),
           this._el("td", {}, g.avgPrice != null ? `${this._fmtMoney(g.avgPrice, cur)}/kg` : "–"),
           actions));
+        if (expanded) {
+          for (const sp of g.spools) {
+            const spct = Math.max(0, Math.min(100, sp.remaining_percent));
+            table.append(this._el("tr", { class: "sub-row" },
+              this._el("td", { class: "indent" }, sp.name,
+                sp.rfid ? this._el("span", { class: "badge", title: sp.rfid }, "RFID") : "",
+                slotOf[sp.id] ? this._el("span", { class: "sub" }, ` · ${slotOf[sp.id]}`) : ""),
+              this._el("td", {}, ""),
+              this._el("td", {}, ""),
+              this._el("td", {},
+                this._el("div", { class: "bar" }, this._el("div", { class: "fill" + (spct <= 15 ? " low" : ""), style: `width:${spct}%` })),
+                `${this._fmtNum(sp.remaining_g, 0)} / ${this._fmtNum(sp.initial_weight_g, 0)} g (${this._fmtNum(sp.remaining_percent, 0)} %)`),
+              this._el("td", {}, sp.price_per_kg != null ? `${this._fmtMoney(sp.price_per_kg, cur)}/kg` : "–"),
+              this._el("td", {}, "")));
+          }
+        }
       }
       card.append(table);
     }
@@ -500,6 +527,11 @@ class DruckAssistantPanel extends HTMLElement {
       .dialog h2 { margin: 0 0 4px; font-size: 18px; }
       .dialog h3 { margin: 16px 0 6px; font-size: 14px; font-weight: 500; }
       .dialog .field { max-width: 260px; }
+      td.link { cursor: pointer; }
+      td.link:hover { text-decoration: underline; }
+      .chevron { display: inline-block; width: 14px; color: var(--secondary-text-color); }
+      tr.sub-row td { font-size: 13px; color: var(--secondary-text-color); border-bottom-style: dashed; }
+      tr.sub-row td.indent { padding-left: 38px; }
       .badge { margin-left: 6px; padding: 0 6px; border-radius: 8px; font-size: 11px; background: var(--divider-color); color: var(--secondary-text-color); }
       .notice { padding: 0 0 12px; }
       .bar { width: 120px; height: 6px; border-radius: 3px; background: var(--divider-color); margin-bottom: 4px; }
