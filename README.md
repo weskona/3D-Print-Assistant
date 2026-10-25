@@ -39,7 +39,7 @@ rows) with the total stock of all its spools and the average price per kg. Click
 expand and list them one by one. Spools are edited with the "Edit" button of their row; the edit popup also has Archive and
 Delete. Bambu Lab spools can be edited once their RFID tag has been detected (the tag fills them in); spools of other
 brands, which have no tag, can always be edited. A Bambu Lab spool without a tag (for example one you added from the
-catalog) can be archived or deleted from its row until the AMS detects it.
+catalog) can be deleted from its row until the AMS detects it (spools are archived automatically when they run empty).
 
 **Buying in bulk:** add the pack with "Add spool" and its quantity field (e.g. 4 x "PETG Basic Black", color black).
 When a new Bambu spool is detected, the integration first looks for a matching spool in your stock

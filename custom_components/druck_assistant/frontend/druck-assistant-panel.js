@@ -396,7 +396,8 @@ class DruckAssistantPanel extends HTMLElement {
 
   /**
    * Row buttons of a spool: Edit where editing is allowed; an untagged Bambu Lab spool has
-   * nothing to edit yet, but can still be archived or deleted (e.g. a duplicate).
+   * nothing to edit yet, but can be deleted (e.g. a duplicate). Spools are archived
+   * automatically when they run empty, not by hand from the row.
    */
   _rowActions(sp, admin) {
     if (!admin) return [];
@@ -404,7 +405,6 @@ class DruckAssistantPanel extends HTMLElement {
       return [this._el("button", { onclick: () => { this._editing = sp; this._render(); } }, this._t("edit"))];
     }
     return [
-      this._el("button", { onclick: () => this._call({ type: "druck_assistant/spool_archive", spool_id: sp.id, archived: true }) }, this._t("archive")),
       this._el("button", { onclick: () => { if (confirm(this._t("confirm_delete", { name: sp.name }))) this._call({ type: "druck_assistant/spool_delete", spool_id: sp.id }); } }, this._t("delete")),
     ];
   }

@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Untagged Bambu Lab spools (catalog entries and spools added with a quantity) can be archived and deleted from their row, e.g. a duplicate that was added by mistake; their values still cannot be edited until the AMS detects the spool. Editing rules for tagged Bambu Lab spools and for other brands are unchanged.
+- Untagged Bambu Lab spools (catalog entries and spools added with a quantity) can be deleted from their row, e.g. a duplicate that was added by mistake; their values still cannot be edited until the AMS detects the spool. Editing rules for tagged Bambu Lab spools and for other brands are unchanged.
 
 ## [0.5.0-beta.2] - 2026-10-25
 

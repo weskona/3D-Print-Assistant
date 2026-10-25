@@ -38,7 +38,7 @@ zwei Zeilen) mit dem Gesamtbestand aller Spulen und dem Durchschnittspreis pro k
 mehreren Spulen, um sie einzeln aufzuklappen. Spulen bearbeitest du mit dem Button „Bearbeiten“ ihrer Zeile; das Bearbeiten-Popup
 bietet auch „Archivieren“ und „Löschen“. Bambu-Lab-Spulen lassen sich bearbeiten, sobald ihr RFID-Tag erkannt wurde (der Tag füllt sie aus);
 Spulen anderer Hersteller, die keinen Tag haben, sind immer bearbeitbar. Eine Bambu-Lab-Spule ohne Tag (zum Beispiel aus dem
-Katalog angelegt) lässt sich bis zur Erkennung im AMS in ihrer Zeile archivieren oder löschen.
+Katalog angelegt) lässt sich bis zur Erkennung im AMS in ihrer Zeile löschen (archiviert wird automatisch, wenn eine Spule leer ist).
 
 **Großeinkauf:** Lege das Paket mit „Spule hinzufügen“ und dem Feld „Anzahl“ an (z. B. 4 x „PETG Basic Schwarz“, Farbe Schwarz).
 Wird eine neue Bambu-Spule erkannt, sucht die Integration zuerst eine passende Spule im Bestand
