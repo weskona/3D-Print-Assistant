@@ -28,9 +28,9 @@ Click "Import from AMS" to create spools from the loaded AMS slots. New Bambu sp
 tag are also added automatically (option "Automatically add new Bambu spools"); spools without a
 tag, such as third-party filament or the external spool, are only imported with the button.
 The remaining stock of an imported spool is estimated from the AMS percentage, so correct it by hand if needed.
-**Adding stock from a detected spool:** click a spool in the list (e.g. "Bambu PETG Basic Black"), enter
-the purchased quantity and the price per kg. The new spools are created full and appear as stock
-("In stock: Bambu PETG Basic × 3"); they are used up as new spools are detected. Only the new spools get
+**Adding stock from a detected spool:** the list shows one row per type (e.g. "Bambu PETG Basic Black") with
+the total stock of all its spools and the average price per kg. Click a row or "Add stock" to open a popup, enter
+the purchased quantity and the price per kg. The popup also lists the single spools of the type, where you can edit, archive or delete them. The new spools are created full and are added to the stock of the type; they are used up as new spools are detected. Only the new spools get
 the entered price, existing spools keep theirs.
 
 **Buying in bulk:** add the pack with the quantity field (e.g. 4 x "PETG Basic Black", color black).

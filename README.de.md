@@ -27,9 +27,9 @@ Mit „Aus AMS importieren“ werden aus den belegten AMS-Slots Spulen angelegt.
 RFID-Tag werden zusätzlich automatisch übernommen (Option „Neue Bambu-Spulen automatisch übernehmen“);
 Spulen ohne Tag, etwa Fremdfilament oder die externe Spule, werden nur über den Button importiert.
 Der Restbestand wird aus der AMS-Prozentanzeige geschätzt und lässt sich von Hand korrigieren.
-**Bestand an einer erkannten Spule hinzufügen:** Klicke eine Spule in der Liste an (z. B. „Bambu PETG Basic Black“)
-und gib die gekaufte Anzahl und den Preis pro kg ein. Die neuen Spulen werden voll angelegt und erscheinen als Vorrat
-(„Auf Lager: Bambu PETG Basic × 3“); sie werden aufgebraucht, sobald neue Spulen erkannt werden. Nur die neuen Spulen
+**Bestand an einer erkannten Spule hinzufügen:** Die Liste zeigt eine Zeile pro Sorte (z. B. „Bambu PETG Basic Black“)
+mit dem Gesamtbestand aller Spulen und dem Durchschnittspreis pro kg. Klicke eine Zeile oder „Bestand hinzufügen“, um ein Popup
+zu öffnen, und gib die gekaufte Anzahl und den Preis pro kg ein. Das Popup listet auch die einzelnen Spulen der Sorte, die du dort bearbeiten, archivieren oder löschen kannst. Die neuen Spulen werden voll angelegt und zum Bestand der Sorte gezählt; sie werden aufgebraucht, sobald neue Spulen erkannt werden. Nur die neuen Spulen
 bekommen den eingegebenen Preis, vorhandene behalten ihren.
 
 **Großeinkauf:** Lege das Paket mit dem Feld „Anzahl“ an (z. B. 4 x „PETG Basic Schwarz“, Farbe Schwarz).
