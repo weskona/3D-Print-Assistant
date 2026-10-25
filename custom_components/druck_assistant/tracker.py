@@ -38,7 +38,7 @@ from .const import (
     STATUS_FAILED,
     STORAGE_VERSION,
 )
-from .history import PrintHistory, parse_prices, price_for
+from .history import PrintHistory, parse_prices, price_for, to_minutes
 from .spools import valid_rfid
 
 UNAVAILABLE = ("unknown", "unavailable", None)
@@ -114,7 +114,7 @@ class PrintTracker:
             "progress": self._float("print_progress"),
             "started": self._value("start_time")
             or (session.started.isoformat() if session else None),
-            "remaining_min": self._float("remaining_time"),
+            "remaining_min": self._minutes("remaining_time"),
             "end": self._value("end_time"),
             "layer": self._float("current_layer"),
             "total_layers": self._float("total_layers"),
@@ -151,6 +151,7 @@ class PrintTracker:
                 "cost": h.total_cost,
                 "energy_kwh": h.total_energy_kwh,
                 "energy_cost": h.total_energy_cost,
+                "filament_cost": h.total_filament_cost,
             },
             "current_print": self.current_print(),
             "session": None
@@ -314,6 +315,14 @@ class PrintTracker:
             return float(value) if value is not None else None
         except ValueError:
             return None
+
+    def _minutes(self, key: str) -> float | None:
+        """A duration entity in minutes. ha-bambulab stores minutes but suggests hours, so the
+        entity usually shows hours: convert from the unit it reports."""
+        state = self._state(key)
+        if state is None:
+            return None
+        return to_minutes(self._float(key), state.attributes.get("unit_of_measurement"))
 
     async def async_start(self) -> None:
         data = await self._store.async_load()

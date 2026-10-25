@@ -15,6 +15,16 @@ from .const import (
 )
 
 
+_MINUTES_PER_UNIT = {"s": 1 / 60, "min": 1.0, "h": 60.0, "d": 1440.0}
+
+
+def to_minutes(value: float | None, unit: str | None) -> float | None:
+    """Convert a duration sensor value to minutes (the unit is what the entity displays)."""
+    if value is None:
+        return None
+    return value * _MINUTES_PER_UNIT.get(unit or "min", 1.0)
+
+
 def calculate_cost(weight_g: float | None, price_per_kg: float) -> float:
     """Return the filament cost for a print."""
     if not weight_g or weight_g < 0:
@@ -233,6 +243,14 @@ class PrintHistory:
     @property
     def total_energy_cost(self) -> float:
         return round(sum(r.get("energy_cost", 0) for r in self.records), 2)
+
+    @property
+    def total_filament_cost(self) -> float:
+        # Records from before the split only have the total (which then was filament only).
+        return round(
+            sum(r.get("filament_cost", r["cost"] - r.get("energy_cost", 0)) for r in self.records),
+            2,
+        )
 
     @property
     def total_cost(self) -> float:

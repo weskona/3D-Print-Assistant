@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0-beta.7] - 2026-10-25
+
+### Added
+
+- The costs are split into filament and electricity: the total tile of the Overview tab shows "Filament x · Electricity y", the print history has separate columns for filament cost, electricity cost (with the kWh) and total, and there is a new sensor "Total filament cost". Records from before the split count their cost as filament cost.
+
+### Fixed
+
+- The remaining time of the current print was wrong: ha-bambulab reports it in minutes but suggests hours, so the entity usually shows hours (1.87 for 1 h 52 min) and the panel read that value as minutes. The panel now converts the value from the unit the entity reports (seconds, minutes, hours or days).
+
 ## [0.5.0-beta.6] - 2026-10-25
 
 ### Added
@@ -180,7 +190,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Filament prices per type (e.g. `PLA=20`) in the options, sensor for the current filament including price per kg. Cost sensors in euro.
 - GitHub workflow that creates a tag and release after a push to `main`.
 
-[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.5.0-beta.6...HEAD
+[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.5.0-beta.7...HEAD
+[0.5.0-beta.7]: https://github.com/weskona/3D-Print-Assistant/compare/v0.5.0-beta.6...v0.5.0-beta.7
 [0.5.0-beta.6]: https://github.com/weskona/3D-Print-Assistant/compare/v0.5.0-beta.5...v0.5.0-beta.6
 [0.5.0-beta.5]: https://github.com/weskona/3D-Print-Assistant/compare/v0.5.0-beta.4...v0.5.0-beta.5
 [0.5.0-beta.4]: https://github.com/weskona/3D-Print-Assistant/compare/v0.5.0-beta.3...v0.5.0-beta.4

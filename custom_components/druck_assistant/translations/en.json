@@ -71,6 +71,9 @@
       },
       "low_spools": {
         "name": "Spools low on stock"
+      },
+      "total_filament_cost": {
+        "name": "Total filament cost"
       }
     }
   }
