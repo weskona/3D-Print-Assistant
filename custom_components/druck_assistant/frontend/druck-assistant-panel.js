@@ -253,7 +253,7 @@ class DruckAssistantPanel extends HTMLElement {
       inputs[key] = this._el("input", { type, value: v[key] ?? "", ...extra });
       return inputs[key];
     };
-    const form = this._el("div", { class: "card form" },
+    const form = this._el("div", { class: "dialog form", role: "dialog" },
       this._el("h2", {}, spool.id ? this._t("edit") : this._t("add_spool")),
       this._field(this._t("name"), mk("name")),
       this._field(this._t("material"), mk("material", "text", { placeholder: "PLA" })),
@@ -269,10 +269,10 @@ class DruckAssistantPanel extends HTMLElement {
           const out = {};
           for (const [k, el] of Object.entries(inputs)) out[k] = el.value;
           if (spool.id) out.id = spool.id; else delete out.rfid;
-          this._call({ type: "druck_assistant/spool_save", spool: out, ...(spool.id ? {} : { quantity: parseInt(qty.value, 10) || 1 }) });
+          this._call({ type: "druck_assistant/spool_save", spool: out, ...(spool.id ? {} : { quantity: parseInt(qty.value, 10) || 1 }) }, null, true);
         } }, this._t("save")),
         this._el("button", { onclick: () => { this._editing = null; this._render(); } }, this._t("cancel"))));
-    return form;
+    return this._el("div", { class: "overlay" }, form);
   }
 
   /** Spools of the same type (name without " #n", material and color) form one inventory row. */
@@ -331,7 +331,7 @@ class DruckAssistantPanel extends HTMLElement {
       const actions = this._el("td", {});
       if (admin) {
         actions.append(
-          this._el("button", { onclick: () => { this._dialog = null; this._editing = sp; this._render(); } }, this._t("edit")),
+          this._el("button", { onclick: () => { this._editing = sp; this._render(); } }, this._t("edit")),
           this._el("button", { onclick: () => this._call({ type: "druck_assistant/spool_archive", spool_id: sp.id, archived: true }, null, true) }, this._t("archive")),
           this._el("button", { onclick: () => { if (confirm(this._t("confirm_delete", { name: sp.name }))) this._call({ type: "druck_assistant/spool_delete", spool_id: sp.id }, null, true); } }, this._t("delete")));
       }
@@ -354,7 +354,6 @@ class DruckAssistantPanel extends HTMLElement {
     const cur = printer?.currency || "EUR";
     if (this._notice) main.append(this._el("div", { class: this._noticeOk ? "sub notice" : "error" }, this._notice));
     if (!admin) main.append(this._el("div", { class: "sub notice" }, this._t("admin_only")));
-    if (this._editing !== null) { main.append(this._renderForm(this._editing)); return; }
 
     const slotOf = {};
     for (const p of this._data.printers) for (const sl of p.slots || []) if (sl.spool_id) slotOf[sl.spool_id] = sl.label;
@@ -386,7 +385,7 @@ class DruckAssistantPanel extends HTMLElement {
         const actions = this._el("td", {});
         if (admin) actions.append(this._el("button", { onclick: open }, this._t("add_stock")));
         table.append(this._el("tr", {},
-          this._el("td", admin ? { class: "link", onclick: open, title: g.color || "" } : { title: g.color || "" }, dot, g.name,
+          this._el("td", { title: g.color || "" }, dot, g.name,
             g.spools.length > 1 ? this._el("span", { class: "badge" }, `× ${g.spools.length}`) : ""),
           this._el("td", {}, g.material),
           this._el("td", {}, g.brand || "–"),
@@ -452,8 +451,10 @@ class DruckAssistantPanel extends HTMLElement {
     if (slots.length && admin) slotsCard.append(this._el("div", { class: "sub notice" }, this._t("correct_hint")));
     main.append(slotsCard);
 
+    // Forms are popups over the list; the form of a spool shows on top of the type popup it was opened from.
     const open = groups.find((g) => g.key === this._dialog);
-    if (open) main.append(this._renderDialog(open, slotOf, cur, admin));
+    if (this._editing !== null) main.append(this._renderForm(this._editing));
+    else if (open) main.append(this._renderDialog(open, slotOf, cur, admin));
   }
 
   _tile(label, value, sub) {
@@ -491,7 +492,7 @@ class DruckAssistantPanel extends HTMLElement {
       button.primary { background: var(--primary-color); color: var(--text-primary-color, #fff); border-color: transparent; }
       .field { display: flex; flex-direction: column; gap: 2px; margin-bottom: 10px; font-size: 13px; color: var(--secondary-text-color); }
       .field input { font: inherit; padding: 6px 8px; color: var(--primary-text-color); background: var(--card-background-color); border: 1px solid var(--divider-color); border-radius: 6px; }
-      .form { max-width: 480px; }
+      .dialog.form { max-width: 480px; }
       summary { cursor: pointer; font-weight: 500; }
       details.card[open] summary { margin-bottom: 8px; }
       .overlay { position: fixed; inset: 0; z-index: 10; background: rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -499,8 +500,6 @@ class DruckAssistantPanel extends HTMLElement {
       .dialog h2 { margin: 0 0 4px; font-size: 18px; }
       .dialog h3 { margin: 16px 0 6px; font-size: 14px; font-weight: 500; }
       .dialog .field { max-width: 260px; }
-      td.link { cursor: pointer; }
-      td.link:hover { text-decoration: underline; }
       .badge { margin-left: 6px; padding: 0 6px; border-radius: 8px; font-size: 11px; background: var(--divider-color); color: var(--secondary-text-color); }
       .notice { padding: 0 0 12px; }
       .bar { width: 120px; height: 6px; border-radius: 3px; background: var(--divider-color); margin-bottom: 4px; }
