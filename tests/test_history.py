@@ -374,3 +374,16 @@ def test_duration_sensor_values_are_converted_to_minutes():
     assert to_minutes(0.5, "d") == 720
     assert to_minutes(112, None) == 112 and to_minutes(112, "weeks") == 112  # unknown unit: as is
     assert to_minutes(None, "h") is None
+
+
+def test_cost_split_in_totals_handles_older_records():
+    from druck_assistant.history import PrintHistory
+
+    h = PrintHistory([
+        {"name": "old", "result": "finish", "weight_g": 100, "cost": 2.0},  # before the split: filament only
+        {"name": "new", "result": "finish", "weight_g": 50, "cost": 1.5, "filament_cost": 1.0, "energy_cost": 0.5, "energy_kwh": 1.7},
+    ])
+    assert h.total_cost == 3.5
+    assert h.total_filament_cost == 3.0  # 2.0 + 1.0
+    assert h.total_energy_cost == 0.5
+    assert round(h.total_filament_cost + h.total_energy_cost, 2) == h.total_cost

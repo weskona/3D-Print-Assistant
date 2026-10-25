@@ -245,5 +245,13 @@ class PrintHistory:
         return round(sum(r.get("energy_cost", 0) for r in self.records), 2)
 
     @property
+    def total_filament_cost(self) -> float:
+        # Records from before the split only have the total (which then was filament only).
+        return round(
+            sum(r.get("filament_cost", r["cost"] - r.get("energy_cost", 0)) for r in self.records),
+            2,
+        )
+
+    @property
     def total_cost(self) -> float:
         return round(sum(r["cost"] for r in self.records), 2)

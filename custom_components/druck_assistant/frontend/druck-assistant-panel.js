@@ -19,7 +19,6 @@ const TRANSLATIONS = {
     filament: "Filament",
     energy: "Energy",
     total_cost: "Total cost",
-    of_which_energy: "of which energy {value}",
     current: "Current",
     print_running: "Printing: {name} (since {since})",
     no_active_print: "No print active.",
@@ -36,6 +35,9 @@ const TRANSLATIONS = {
     success: "Successful",
     failed: "Failed",
     unknown: "unknown",
+    electricity_cost: "Electricity cost",
+    total: "Total",
+    cost_split: "Filament {filament} · Electricity {energy}",
     current_print: "Current print",
     status_running: "Printing",
     status_pause: "Paused",
@@ -109,7 +111,6 @@ const TRANSLATIONS = {
     filament: "Filament",
     energy: "Strom",
     total_cost: "Gesamtkosten",
-    of_which_energy: "davon Strom {value}",
     current: "Aktuell",
     print_running: "Druck läuft: {name} (seit {since})",
     no_active_print: "Kein Druck aktiv.",
@@ -126,6 +127,9 @@ const TRANSLATIONS = {
     success: "Erfolgreich",
     failed: "Fehlgeschlagen",
     unknown: "unbekannt",
+    electricity_cost: "Stromkosten",
+    total: "Gesamt",
+    cost_split: "Filament {filament} · Strom {energy}",
     current_print: "Aktueller Druck",
     status_running: "Druckt",
     status_pause: "Pausiert",
@@ -851,7 +855,8 @@ class DruckAssistantPanel extends HTMLElement {
       this._tile(this._t("prints"), t.prints, this._t("success_rate", { rate })),
       this._tile(this._t("filament"), `${this._fmtNum(t.weight_g, 0)} g`),
       this._tile(this._t("energy"), `${this._fmtNum(t.energy_kwh, 2)} kWh`, `${this._fmtNum(printer.price_per_kwh, 4)} ${cur}/kWh`),
-      this._tile(this._t("total_cost"), this._fmtMoney(t.cost, cur), this._t("of_which_energy", { value: this._fmtMoney(t.energy_cost, cur) })),
+      this._tile(this._t("total_cost"), this._fmtMoney(t.cost, cur),
+        this._t("cost_split", { filament: this._fmtMoney(t.filament_cost ?? t.cost - t.energy_cost, cur), energy: this._fmtMoney(t.energy_cost, cur) })),
     ));
 
     main.append(this._renderCurrentPrint(printer, cur));
@@ -862,7 +867,7 @@ class DruckAssistantPanel extends HTMLElement {
     } else {
       const table = this._el("table", {});
       table.append(this._el("tr", {},
-        ...["end", "name", "result", "duration", "material", "weight", "energy", "cost"].map((k) => this._t(k)).map((h, i) =>
+        ...["end", "name", "result", "duration", "material", "weight", "filament_cost", "electricity_cost", "total"].map((k) => this._t(k)).map((h, i) =>
           this._el("th", { class: i >= 5 ? "num" : "" }, h))));
       for (const r of printer.history) {
         const ok = r.result !== "failed";
@@ -873,7 +878,10 @@ class DruckAssistantPanel extends HTMLElement {
           this._el("td", {}, this._fmtDuration(r.duration_min)),
           this._el("td", {}, r.material || "–"),
           this._el("td", { class: "num" }, `${this._fmtNum(r.weight_g)} g`),
-          this._el("td", { class: "num" }, `${this._fmtNum(r.energy_kwh || 0, 3)} kWh`),
+          this._el("td", { class: "num", title: r.price_per_kg ? `${this._fmtMoney(r.price_per_kg, cur)}/kg` : "" },
+            this._fmtMoney(r.filament_cost ?? r.cost - (r.energy_cost || 0), cur)),
+          this._el("td", { class: "num", title: `${this._fmtNum(r.energy_kwh || 0, 3)} kWh` },
+            this._fmtMoney(r.energy_cost || 0, cur), this._el("div", { class: "sub" }, `${this._fmtNum(r.energy_kwh || 0, 2)} kWh`)),
           this._el("td", { class: "num" }, this._fmtMoney(r.cost, cur))));
       }
       hist.append(table);

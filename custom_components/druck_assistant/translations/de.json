@@ -71,6 +71,9 @@
       },
       "low_spools": {
         "name": "Spulen mit niedrigem Bestand"
+      },
+      "total_filament_cost": {
+        "name": "Filamentkosten gesamt"
       }
     }
   }

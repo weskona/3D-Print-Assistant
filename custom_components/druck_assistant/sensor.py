@@ -79,6 +79,16 @@ SENSORS: tuple[DruckSensorDescription, ...] = (
         value_fn=lambda h: h.total_energy_kwh,
     ),
     DruckSensorDescription(
+        key="total_filament_cost",
+        translation_key="total_filament_cost",
+        icon="mdi:printer-3d-nozzle",
+        device_class=SensorDeviceClass.MONETARY,
+        native_unit_of_measurement=CURRENCY_EURO,
+        state_class=SensorStateClass.TOTAL,
+        suggested_display_precision=2,
+        value_fn=lambda h: h.total_filament_cost,
+    ),
+    DruckSensorDescription(
         key="total_energy_cost",
         translation_key="total_energy_cost",
         icon="mdi:flash",

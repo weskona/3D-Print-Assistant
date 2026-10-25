@@ -151,6 +151,7 @@ class PrintTracker:
                 "cost": h.total_cost,
                 "energy_kwh": h.total_energy_kwh,
                 "energy_cost": h.total_energy_cost,
+                "filament_cost": h.total_filament_cost,
             },
             "current_print": self.current_print(),
             "session": None
