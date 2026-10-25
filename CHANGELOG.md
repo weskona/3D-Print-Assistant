@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0-beta.4] - 2026-10-25
+
+### Added
+
+- Click a spool in the inventory (its name, or "Add stock") to add stock of that type: enter the purchased quantity and the price per kg. Full, untagged copies are created (numbered after existing ones) and matched when a new spool is detected. The price applies to the new spools only, so older spools keep what they cost.
+- The Spools card shows a stock summary ("In stock: PETG Basic × 3") of all spools that are in no slot.
+
 ## [0.4.0-beta.3] - 2026-10-24
 
 ### Added
@@ -76,7 +83,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Filament prices per type (e.g. `PLA=20`) in the options, sensor for the current filament including price per kg. Cost sensors in euro.
 - GitHub workflow that creates a tag and release after a push to `main`.
 
-[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.3...HEAD
+[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.4...HEAD
+[0.4.0-beta.4]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.3...v0.4.0-beta.4
 [0.4.0-beta.3]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.2...v0.4.0-beta.3
 [0.4.0-beta.2]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.1...v0.4.0-beta.2
 [0.4.0-beta.1]: https://github.com/weskona/3D-Print-Assistant/compare/v0.3.0-beta.1...v0.4.0-beta.1

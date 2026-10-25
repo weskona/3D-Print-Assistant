@@ -10,6 +10,14 @@ from typing import Any
 HEX_COLOR = re.compile(r"^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$")
 
 
+_NUMBER_SUFFIX = re.compile(r"\s+#(\d+)$")
+
+
+def name_base(name: str) -> str:
+    """Spool name without a trailing " #n" number."""
+    return _NUMBER_SUFFIX.sub("", name).strip()
+
+
 MAX_COLOR_DISTANCE = 90  # RGB distance (0-441) up to which two colors count as the same
 
 
@@ -180,6 +188,56 @@ class SpoolStore:
         name = str(base.get("name", "")).strip()
         return [
             self.save_spool({**base, "name": f"{name} #{i}" if name else name})
+            for i in range(1, quantity + 1)
+        ]
+
+    def _same_type(self, spool: Spool) -> list[Spool]:
+        """Active spools of the same type: same material and same name (ignoring " #n")."""
+        base, material = name_base(spool.name).lower(), spool.material.strip().lower()
+        return [
+            s
+            for s in self.spools.values()
+            if not s.archived
+            and s.material.strip().lower() == material
+            and name_base(s.name).lower() == base
+        ]
+
+    def add_spares(
+        self, source: Spool, quantity: int, price_per_kg: Any = None
+    ) -> list[Spool]:
+        """Add full, untagged copies of source (spares you bought), numbered after existing ones.
+
+        price_per_kg sets the price of the new spools (a new batch may cost something
+        else); None keeps the price of source. Existing spools are not touched.
+        """
+        if not 1 <= quantity <= 50:
+            raise SpoolError("quantity must be between 1 and 50")
+        price = (
+            source.price_per_kg
+            if price_per_kg in (None, "")
+            else _number(price_per_kg, "price_per_kg")
+        )
+        base = name_base(source.name)
+        numbers = [
+            int(m.group(1))
+            for s in self.spools.values()
+            if name_base(s.name).lower() == base.lower()
+            and (m := _NUMBER_SUFFIX.search(s.name))
+        ]
+        start = max(numbers, default=0)
+        return [
+            self.save_spool(
+                {
+                    "name": f"{base} #{start + i}",
+                    "material": source.material,
+                    "brand": source.brand,
+                    "color": source.color,
+                    "price_per_kg": price,
+                    "initial_weight_g": source.initial_weight_g,
+                    "remaining_g": source.initial_weight_g,
+                    "notes": source.notes,
+                }
+            )
             for i in range(1, quantity + 1)
         ]
 
