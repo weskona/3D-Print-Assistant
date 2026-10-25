@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0-beta.3] - 2026-10-25
+
+### Changed
+
+- Untagged Bambu Lab spools (catalog entries and spools added with a quantity) can be archived and deleted from their row, e.g. a duplicate that was added by mistake; their values still cannot be edited until the AMS detects the spool. Editing rules for tagged Bambu Lab spools and for other brands are unchanged.
+
 ## [0.5.0-beta.2] - 2026-10-25
 
 ### Added
@@ -154,7 +160,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Filament prices per type (e.g. `PLA=20`) in the options, sensor for the current filament including price per kg. Cost sensors in euro.
 - GitHub workflow that creates a tag and release after a push to `main`.
 
-[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.5.0-beta.2...HEAD
+[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.5.0-beta.3...HEAD
+[0.5.0-beta.3]: https://github.com/weskona/3D-Print-Assistant/compare/v0.5.0-beta.2...v0.5.0-beta.3
 [0.5.0-beta.2]: https://github.com/weskona/3D-Print-Assistant/compare/v0.5.0-beta.1...v0.5.0-beta.2
 [0.5.0-beta.1]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.11...v0.5.0-beta.1
 [0.4.0-beta.11]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.10...v0.4.0-beta.11
