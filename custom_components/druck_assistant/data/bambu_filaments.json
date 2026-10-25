@@ -1,0 +1,1461 @@
+{
+  "source": "https://us.store.bambulab.com/collections/bambu-lab-3d-printer-filament",
+  "retrieved": "2026-10-25",
+  "note": "Spool filaments of the Bambu Lab store (US catalog; the EU store may differ in colors). Bundles, packs, mystery boxes, swatches and accessories are left out. Color codes are Bambu's filament codes; the store does not publish hex values.",
+  "products": [
+    {
+      "name": "Bambu PLA Basic",
+      "product": "PLA Basic",
+      "material": "PLA",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/pla-basic-filament",
+      "colors": [
+        {
+          "name": "Jade White",
+          "code": "10100"
+        },
+        {
+          "name": "Beige",
+          "code": "10201"
+        },
+        {
+          "name": "Light Gray",
+          "code": "10104"
+        },
+        {
+          "name": "Yellow",
+          "code": "10400"
+        },
+        {
+          "name": "Sunflower Yellow",
+          "code": "10402"
+        },
+        {
+          "name": "Pumpkin Orange",
+          "code": "10301"
+        },
+        {
+          "name": "Orange",
+          "code": "10300"
+        },
+        {
+          "name": "Gold",
+          "code": "10401"
+        },
+        {
+          "name": "Bright Green",
+          "code": "10503"
+        },
+        {
+          "name": "Bambu Green",
+          "code": "10501"
+        },
+        {
+          "name": "Mistletoe Green",
+          "code": "10502"
+        },
+        {
+          "name": "Pink",
+          "code": "10203"
+        },
+        {
+          "name": "Hot Pink",
+          "code": "10204"
+        },
+        {
+          "name": "Magenta",
+          "code": "10202"
+        },
+        {
+          "name": "Red",
+          "code": "10200"
+        },
+        {
+          "name": "Maroon Red",
+          "code": "10205"
+        },
+        {
+          "name": "Purple",
+          "code": "10700"
+        },
+        {
+          "name": "Indigo Purple",
+          "code": "10701"
+        },
+        {
+          "name": "Turquoise",
+          "code": "10605"
+        },
+        {
+          "name": "Cyan",
+          "code": "10603"
+        },
+        {
+          "name": "Cobalt Blue",
+          "code": "10604"
+        },
+        {
+          "name": "Blue",
+          "code": "10601"
+        },
+        {
+          "name": "Brown",
+          "code": "10800"
+        },
+        {
+          "name": "Cocoa Brown",
+          "code": "10802"
+        },
+        {
+          "name": "Bronze",
+          "code": "10801"
+        },
+        {
+          "name": "Gray",
+          "code": "10103"
+        },
+        {
+          "name": "Silver",
+          "code": "10102"
+        },
+        {
+          "name": "Blue Grey",
+          "code": "10602"
+        },
+        {
+          "name": "Dark Gray",
+          "code": "10105"
+        },
+        {
+          "name": "Black",
+          "code": "10101"
+        }
+      ]
+    },
+    {
+      "name": "Bambu PLA Matte",
+      "product": "PLA Matte",
+      "material": "PLA",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/pla-matte",
+      "colors": [
+        {
+          "name": "Ivory White",
+          "code": "11100"
+        },
+        {
+          "name": "Bone White",
+          "code": "11103"
+        },
+        {
+          "name": "Lemon Yellow",
+          "code": "11400"
+        },
+        {
+          "name": "Mandarin Orange",
+          "code": "11300"
+        },
+        {
+          "name": "Sakura Pink",
+          "code": "11201"
+        },
+        {
+          "name": "Lilac purple",
+          "code": "11700"
+        },
+        {
+          "name": "Plum",
+          "code": "11204"
+        },
+        {
+          "name": "Scarlet Red",
+          "code": "11200"
+        },
+        {
+          "name": "Dark Red",
+          "code": "11202"
+        },
+        {
+          "name": "Apple Green",
+          "code": "11502"
+        },
+        {
+          "name": "Grass Green",
+          "code": "11500"
+        },
+        {
+          "name": "Dark Green",
+          "code": "11501"
+        },
+        {
+          "name": "Ice Blue",
+          "code": "11601"
+        },
+        {
+          "name": "Sky Blue",
+          "code": "11603"
+        },
+        {
+          "name": "Marine Blue",
+          "code": "11600"
+        },
+        {
+          "name": "Dark Blue",
+          "code": "11602"
+        },
+        {
+          "name": "Desert Tan",
+          "code": "11401"
+        },
+        {
+          "name": "Latte Brown",
+          "code": "11800"
+        },
+        {
+          "name": "Caramel",
+          "code": "11803"
+        },
+        {
+          "name": "Terracotta",
+          "code": "11203"
+        },
+        {
+          "name": "Dark Brown",
+          "code": "11801"
+        },
+        {
+          "name": "Dark Chocolate",
+          "code": "11802"
+        },
+        {
+          "name": "Ash Gray",
+          "code": "11102"
+        },
+        {
+          "name": "Nardo Gray",
+          "code": "11104"
+        },
+        {
+          "name": "Charcoal",
+          "code": "11101"
+        }
+      ]
+    },
+    {
+      "name": "Bambu PETG Basic",
+      "product": "PETG Basic",
+      "material": "PETG",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/petg-basic",
+      "colors": [
+        {
+          "name": "Orange",
+          "code": "30301"
+        },
+        {
+          "name": "Red",
+          "code": "30201"
+        },
+        {
+          "name": "Yellow",
+          "code": "30402"
+        },
+        {
+          "name": "Green",
+          "code": "30502"
+        },
+        {
+          "name": "Navy Blue",
+          "code": "30604"
+        },
+        {
+          "name": "Reflex Blue",
+          "code": "30603"
+        },
+        {
+          "name": "Black",
+          "code": "30105"
+        },
+        {
+          "name": "White",
+          "code": "30106"
+        },
+        {
+          "name": "Dark Beige",
+          "code": "30403"
+        },
+        {
+          "name": "Dark Brown",
+          "code": "30800"
+        },
+        {
+          "name": "Gray",
+          "code": "30107"
+        },
+        {
+          "name": "Misty Blue",
+          "code": "30108"
+        },
+        {
+          "name": "Pine Green",
+          "code": "30503"
+        }
+      ]
+    },
+    {
+      "name": "Bambu PETG Matte",
+      "product": "PETG Matte",
+      "material": "PETG",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/petg-matte",
+      "colors": [
+        {
+          "name": "Black",
+          "code": "35101"
+        },
+        {
+          "name": "White",
+          "code": "35100"
+        },
+        {
+          "name": "Gray",
+          "code": "35102"
+        },
+        {
+          "name": "Pink",
+          "code": "35700"
+        },
+        {
+          "name": "Violet",
+          "code": "35702"
+        },
+        {
+          "name": "Baby Blue",
+          "code": "35600"
+        },
+        {
+          "name": "Avocado Green",
+          "code": "35501"
+        },
+        {
+          "name": "Lime",
+          "code": "35500"
+        }
+      ]
+    },
+    {
+      "name": "Bambu PLA Silk+",
+      "product": "PLA Silk+",
+      "material": "PLA",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/pla-silk-upgrade",
+      "colors": [
+        {
+          "name": "Gold",
+          "code": "13405"
+        },
+        {
+          "name": "Titan Gray",
+          "code": "13108"
+        },
+        {
+          "name": "Silver",
+          "code": "13109"
+        },
+        {
+          "name": "White",
+          "code": "13110"
+        },
+        {
+          "name": "Candy Red",
+          "code": "13205"
+        },
+        {
+          "name": "Candy Green",
+          "code": "13506"
+        },
+        {
+          "name": "Mint",
+          "code": "13507"
+        },
+        {
+          "name": "Blue",
+          "code": "13604"
+        },
+        {
+          "name": "Baby Blue",
+          "code": "13603"
+        },
+        {
+          "name": "Purple",
+          "code": "13702"
+        },
+        {
+          "name": "Rose Gold",
+          "code": "13206"
+        },
+        {
+          "name": "Pink",
+          "code": "13207"
+        },
+        {
+          "name": "Champagne",
+          "code": "13404"
+        }
+      ]
+    },
+    {
+      "name": "Bambu ABS",
+      "product": "ABS",
+      "material": "ABS",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/abs-filament",
+      "colors": [
+        {
+          "name": "Silver",
+          "code": "40102"
+        },
+        {
+          "name": "Black",
+          "code": "40101"
+        },
+        {
+          "name": "White",
+          "code": "40100"
+        },
+        {
+          "name": "Bambu Green",
+          "code": "40500"
+        },
+        {
+          "name": "Olive",
+          "code": "40502"
+        },
+        {
+          "name": "Tangerine Yellow",
+          "code": "40402"
+        },
+        {
+          "name": "Orange",
+          "code": "40300"
+        },
+        {
+          "name": "Red",
+          "code": "40200"
+        },
+        {
+          "name": "Azure",
+          "code": "40601"
+        },
+        {
+          "name": "Blue",
+          "code": "40600"
+        },
+        {
+          "name": "Navy Blue",
+          "code": "40602"
+        }
+      ]
+    },
+    {
+      "name": "Bambu PLA Pure",
+      "product": "PLA Pure",
+      "material": "PLA",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/pla-pure",
+      "colors": [
+        {
+          "name": "Milky Pink",
+          "code": "17200"
+        },
+        {
+          "name": "Baby Blue",
+          "code": "17600"
+        },
+        {
+          "name": "Apricot",
+          "code": "17300"
+        },
+        {
+          "name": "Pure White",
+          "code": "17100"
+        },
+        {
+          "name": "Absolute Black",
+          "code": "17101"
+        }
+      ]
+    },
+    {
+      "name": "Bambu PETG Translucent",
+      "product": "PETG Translucent",
+      "material": "PETG",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/petg-translucent",
+      "colors": [
+        {
+          "name": "Teal",
+          "code": "32501"
+        },
+        {
+          "name": "Light Blue",
+          "code": "32600"
+        },
+        {
+          "name": "Clear",
+          "code": "32101"
+        },
+        {
+          "name": "Gray",
+          "code": "32100"
+        },
+        {
+          "name": "Olive",
+          "code": "32500"
+        },
+        {
+          "name": "Brown",
+          "code": "32800"
+        },
+        {
+          "name": "Orange",
+          "code": "32300"
+        },
+        {
+          "name": "Pink",
+          "code": "32200"
+        },
+        {
+          "name": "Purple",
+          "code": "32700"
+        }
+      ]
+    },
+    {
+      "name": "Bambu PLA Tough+",
+      "product": "PLA Tough+",
+      "material": "PLA",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/pla-tough-upgrade",
+      "colors": [
+        {
+          "name": "Black",
+          "code": "12104"
+        },
+        {
+          "name": "White",
+          "code": "12107"
+        },
+        {
+          "name": "Yellow",
+          "code": "12401"
+        },
+        {
+          "name": "Orange",
+          "code": "12301"
+        },
+        {
+          "name": "Gray",
+          "code": "12105"
+        },
+        {
+          "name": "Silver",
+          "code": "12106"
+        },
+        {
+          "name": "Cyan",
+          "code": "12601"
+        }
+      ]
+    },
+    {
+      "name": "Bambu PLA Translucent",
+      "product": "PLA Translucent",
+      "material": "PLA",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/pla-translucent",
+      "colors": [
+        {
+          "name": "Teal",
+          "code": "13612"
+        },
+        {
+          "name": "Blue",
+          "code": "13611"
+        },
+        {
+          "name": "Orange",
+          "code": "13301"
+        },
+        {
+          "name": "Purple",
+          "code": "13710"
+        },
+        {
+          "name": "Red",
+          "code": "13210"
+        },
+        {
+          "name": "Light Jade",
+          "code": "13510"
+        },
+        {
+          "name": "Mellow Yellow",
+          "code": "13410"
+        },
+        {
+          "name": "Cherry Pink",
+          "code": "13211"
+        },
+        {
+          "name": "Ice Blue",
+          "code": "13610"
+        },
+        {
+          "name": "Lavender",
+          "code": "13711"
+        }
+      ]
+    },
+    {
+      "name": "Bambu PETG HF",
+      "product": "PETG HF",
+      "material": "PETG",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/petg-hf",
+      "colors": [
+        {
+          "name": "Black",
+          "code": "33102"
+        },
+        {
+          "name": "White",
+          "code": "33100"
+        },
+        {
+          "name": "Red",
+          "code": "33200"
+        },
+        {
+          "name": "Gray",
+          "code": "33101"
+        },
+        {
+          "name": "Dark Gray",
+          "code": "33103"
+        },
+        {
+          "name": "Cream",
+          "code": "33401"
+        },
+        {
+          "name": "Yellow",
+          "code": "33400"
+        },
+        {
+          "name": "Orange",
+          "code": "33300"
+        },
+        {
+          "name": "Peanut Brown",
+          "code": "33801"
+        },
+        {
+          "name": "Lime Green",
+          "code": "33501"
+        },
+        {
+          "name": "Green",
+          "code": "33500"
+        },
+        {
+          "name": "Forest Green",
+          "code": "33502"
+        },
+        {
+          "name": "Lake Blue",
+          "code": "33601"
+        },
+        {
+          "name": "Blue",
+          "code": "33600"
+        }
+      ]
+    },
+    {
+      "name": "Bambu PLA Silk Multi-Color",
+      "product": "PLA Silk Multi-Color",
+      "material": "PLA",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/pla-silk-multi-color",
+      "colors": [
+        {
+          "name": "Dawn Radiance",
+          "code": "13912"
+        },
+        {
+          "name": "Aurora Purple",
+          "code": "13909"
+        },
+        {
+          "name": "South Beach",
+          "code": "13906"
+        },
+        {
+          "name": "Phantom Blue",
+          "code": "13916"
+        },
+        {
+          "name": "Mystic Magenta",
+          "code": "13913"
+        },
+        {
+          "name": "Neon City",
+          "code": "13903"
+        },
+        {
+          "name": "Midnight Blaze",
+          "code": "13902"
+        },
+        {
+          "name": "Gilded Rose",
+          "code": "13901"
+        },
+        {
+          "name": "Blue Hawaii",
+          "code": "13904"
+        },
+        {
+          "name": "Velvet Eclipse",
+          "code": "13905"
+        }
+      ]
+    },
+    {
+      "name": "Bambu PLA Glow",
+      "product": "PLA Glow",
+      "material": "PLA",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/pla-glow",
+      "colors": [
+        {
+          "name": "Glow Green",
+          "code": "15500"
+        },
+        {
+          "name": "Glow Pink",
+          "code": "15200"
+        },
+        {
+          "name": "Glow Orange",
+          "code": "15300"
+        },
+        {
+          "name": "Glow Yellow",
+          "code": "15400"
+        },
+        {
+          "name": "Glow Blue",
+          "code": "15600"
+        }
+      ]
+    },
+    {
+      "name": "Bambu TPU for AMS",
+      "product": "TPU for AMS",
+      "material": "TPU",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/tpu-for-ams",
+      "colors": [
+        {
+          "name": "Blue",
+          "code": "53600"
+        },
+        {
+          "name": "Red",
+          "code": "53200"
+        },
+        {
+          "name": "Yellow",
+          "code": "53400"
+        },
+        {
+          "name": "Neon Green",
+          "code": "53500"
+        },
+        {
+          "name": "White",
+          "code": "53100"
+        },
+        {
+          "name": "Gray",
+          "code": "53102"
+        },
+        {
+          "name": "Black",
+          "code": "53101"
+        }
+      ]
+    },
+    {
+      "name": "Bambu PLA Wood",
+      "product": "PLA Wood",
+      "material": "PLA",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/pla-wood",
+      "colors": [
+        {
+          "name": "Black Walnut",
+          "code": "13107"
+        },
+        {
+          "name": "Rosewood",
+          "code": "13204"
+        },
+        {
+          "name": "Clay Brown",
+          "code": "13801"
+        },
+        {
+          "name": "Classic Birch",
+          "code": "13505"
+        },
+        {
+          "name": "White Oak",
+          "code": "13106"
+        },
+        {
+          "name": "Ochre Yellow",
+          "code": "13403"
+        }
+      ]
+    },
+    {
+      "name": "Bambu ASA",
+      "product": "ASA",
+      "material": "ASA",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/asa-filament",
+      "colors": [
+        {
+          "name": "White",
+          "code": "45100"
+        },
+        {
+          "name": "Green",
+          "code": "45500"
+        },
+        {
+          "name": "Black",
+          "code": "45101"
+        },
+        {
+          "name": "Gray",
+          "code": "45102"
+        },
+        {
+          "name": "Red",
+          "code": "45200"
+        },
+        {
+          "name": "Blue",
+          "code": "45600"
+        }
+      ]
+    },
+    {
+      "name": "Bambu PETG-CF",
+      "product": "PETG-CF",
+      "material": "PETG-CF",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/petg-cf",
+      "colors": [
+        {
+          "name": "Indigo Blue",
+          "code": "31600"
+        },
+        {
+          "name": "Malachite Green",
+          "code": "31500"
+        },
+        {
+          "name": "Titan Gray",
+          "code": "31101"
+        },
+        {
+          "name": "Brick Red",
+          "code": "31200"
+        },
+        {
+          "name": "Violet Purple",
+          "code": "31700"
+        },
+        {
+          "name": "Black",
+          "code": "31100"
+        }
+      ]
+    },
+    {
+      "name": "Bambu PLA Metal",
+      "product": "PLA Metal",
+      "material": "PLA",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/pla-metal",
+      "colors": [
+        {
+          "name": "Cobalt Blue Metallic",
+          "code": "13600"
+        },
+        {
+          "name": "Oxide Green Metallic",
+          "code": "13500"
+        },
+        {
+          "name": "Iridium Gold Metallic",
+          "code": "13400"
+        },
+        {
+          "name": "Copper Brown Metallic",
+          "code": "13800"
+        },
+        {
+          "name": "Iron Gray Metallic",
+          "code": "13100"
+        }
+      ]
+    },
+    {
+      "name": "Bambu TPU 85A / TPU 90A",
+      "product": "TPU 85A / TPU 90A",
+      "material": "TPU",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/tpu-85a-tpu-90a",
+      "colors": [
+        {
+          "name": "White",
+          "code": "51105"
+        },
+        {
+          "name": "Black",
+          "code": "51103"
+        },
+        {
+          "name": "Black",
+          "code": "51107"
+        },
+        {
+          "name": "Cocoa Brown",
+          "code": "51800"
+        },
+        {
+          "name": "Quicksilver",
+          "code": "51106"
+        },
+        {
+          "name": "Frozen",
+          "code": "51900"
+        },
+        {
+          "name": "Blaze",
+          "code": "51901"
+        },
+        {
+          "name": "Neon Orange",
+          "code": "51305"
+        },
+        {
+          "name": "Light Cyan",
+          "code": "51500"
+        },
+        {
+          "name": "Grape Jelly",
+          "code": "51700"
+        },
+        {
+          "name": "Crystal Blue",
+          "code": "51601"
+        },
+        {
+          "name": "Rose Beige/Flesh",
+          "code": "51201"
+        },
+        {
+          "name": "Lime Green",
+          "code": "51501"
+        }
+      ]
+    },
+    {
+      "name": "Bambu ABS-GF",
+      "product": "ABS-GF",
+      "material": "ABS-GF",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/abs-gf",
+      "colors": [
+        {
+          "name": "Orange",
+          "code": "41300"
+        },
+        {
+          "name": "Red",
+          "code": "41200"
+        },
+        {
+          "name": "Blue",
+          "code": "41600"
+        },
+        {
+          "name": "White",
+          "code": "41100"
+        },
+        {
+          "name": "Gray",
+          "code": "41102"
+        },
+        {
+          "name": "Black",
+          "code": "41101"
+        }
+      ]
+    },
+    {
+      "name": "Bambu TPU 95A HF",
+      "product": "TPU 95A HF",
+      "material": "TPU",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/tpu-95a-hf",
+      "colors": [
+        {
+          "name": "White",
+          "code": "51102"
+        },
+        {
+          "name": "Gray",
+          "code": "51101"
+        },
+        {
+          "name": "Yellow",
+          "code": "51400"
+        },
+        {
+          "name": "Blue",
+          "code": "51600"
+        },
+        {
+          "name": "Red",
+          "code": "51200"
+        },
+        {
+          "name": "Black",
+          "code": "51100"
+        }
+      ]
+    },
+    {
+      "name": "Bambu PLA Sparkle",
+      "product": "PLA Sparkle",
+      "material": "PLA",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/pla-sparkle",
+      "colors": [
+        {
+          "name": "Alpine Green Sparkle",
+          "code": "13501"
+        },
+        {
+          "name": "Slate Gray Sparkle",
+          "code": "13102"
+        },
+        {
+          "name": "Royal Purple Sparkle",
+          "code": "13700"
+        },
+        {
+          "name": "Crimson Red Sparkle",
+          "code": "13200"
+        },
+        {
+          "name": "Onyx Black Sparkle",
+          "code": "13101"
+        },
+        {
+          "name": "Classic Gold Sparkle",
+          "code": "13402"
+        }
+      ]
+    },
+    {
+      "name": "Bambu PLA-CF",
+      "product": "PLA-CF",
+      "material": "PLA-CF",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/pla-cf",
+      "colors": [
+        {
+          "name": "Burgundy Red",
+          "code": "14200"
+        },
+        {
+          "name": "Matcha Green",
+          "code": "14500"
+        },
+        {
+          "name": "Lava Gray",
+          "code": "14101"
+        },
+        {
+          "name": "Jeans Blue",
+          "code": "14600"
+        },
+        {
+          "name": "Black",
+          "code": "14100"
+        },
+        {
+          "name": "Royal Blue",
+          "code": "14601"
+        },
+        {
+          "name": "Iris Purple",
+          "code": "14700"
+        }
+      ]
+    },
+    {
+      "name": "Bambu Support for PLA/PETG",
+      "product": "Support for PLA/PETG",
+      "material": "Support",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/support-for-pla-petg",
+      "colors": [
+        {
+          "name": "Nature",
+          "code": "65102"
+        },
+        {
+          "name": "Black",
+          "code": "65103"
+        }
+      ]
+    },
+    {
+      "name": "Bambu PLA Marble",
+      "product": "PLA Marble",
+      "material": "PLA",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/pla-marble",
+      "colors": [
+        {
+          "name": "Red Granite",
+          "code": "13201"
+        },
+        {
+          "name": "White Marble",
+          "code": "13103"
+        }
+      ]
+    },
+    {
+      "name": "Bambu PLA Galaxy",
+      "product": "PLA Galaxy",
+      "material": "PLA",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/pla-galaxy",
+      "colors": [
+        {
+          "name": "Purple",
+          "code": "13602"
+        },
+        {
+          "name": "Green",
+          "code": "13503"
+        },
+        {
+          "name": "Nebulae",
+          "code": "13504"
+        },
+        {
+          "name": "Brown",
+          "code": "13203"
+        }
+      ]
+    },
+    {
+      "name": "Bambu PAHT-CF",
+      "product": "PAHT-CF",
+      "material": "PAHT-CF",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/paht-cf",
+      "colors": [
+        {
+          "name": "Black",
+          "code": "70100"
+        }
+      ]
+    },
+    {
+      "name": "Bambu Support for PLA (New Version)",
+      "product": "Support for PLA (New Version)",
+      "material": "Support",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/support-for-pla-new",
+      "colors": [
+        {
+          "name": "White",
+          "code": "65104"
+        }
+      ]
+    },
+    {
+      "name": "Bambu PC",
+      "product": "PC",
+      "material": "PC",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/pc-filament",
+      "colors": [
+        {
+          "name": "Transparent",
+          "code": "60103"
+        },
+        {
+          "name": "Clear Black",
+          "code": "60102"
+        },
+        {
+          "name": "Black",
+          "code": "60101"
+        },
+        {
+          "name": "White",
+          "code": "60100"
+        }
+      ]
+    },
+    {
+      "name": "Bambu PA6-CF",
+      "product": "PA6-CF",
+      "material": "PA6-CF",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/pa6-cf",
+      "colors": [
+        {
+          "name": "Black",
+          "code": "72100"
+        }
+      ]
+    },
+    {
+      "name": "Bambu Support for ABS",
+      "product": "Support for ABS",
+      "material": "Support",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/support-for-abs",
+      "colors": [
+        {
+          "name": "White",
+          "code": "66100"
+        }
+      ]
+    },
+    {
+      "name": "Bambu PC FR",
+      "product": "PC FR",
+      "material": "PC",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/pc-fr",
+      "colors": [
+        {
+          "name": "Black",
+          "code": "63100"
+        },
+        {
+          "name": "White",
+          "code": "63101"
+        },
+        {
+          "name": "Gray",
+          "code": "63102"
+        }
+      ]
+    },
+    {
+      "name": "Bambu PA6-GF",
+      "product": "PA6-GF",
+      "material": "PA6-GF",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/pa6-gf",
+      "colors": [
+        {
+          "name": "Blue",
+          "code": "72600"
+        },
+        {
+          "name": "Orange",
+          "code": "72200"
+        },
+        {
+          "name": "White",
+          "code": "72102"
+        },
+        {
+          "name": "Gray",
+          "code": "72103"
+        },
+        {
+          "name": "Black",
+          "code": "72104"
+        }
+      ]
+    },
+    {
+      "name": "Bambu PPA-CF",
+      "product": "PPA-CF",
+      "material": "PPA-CF",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/ppa-cf",
+      "colors": [
+        {
+          "name": "Black",
+          "code": "73100"
+        }
+      ]
+    },
+    {
+      "name": "Bambu PVA",
+      "product": "PVA",
+      "material": "PVA",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/pva",
+      "colors": [
+        {
+          "name": "Clear",
+          "code": "66400"
+        }
+      ]
+    },
+    {
+      "name": "Bambu PLA Aero",
+      "product": "PLA Aero",
+      "material": "PLA",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/pla-aero",
+      "colors": [
+        {
+          "name": "White",
+          "code": "14102"
+        },
+        {
+          "name": "Gray",
+          "code": "14104"
+        }
+      ]
+    },
+    {
+      "name": "Bambu PLA Basic Gradient",
+      "product": "PLA Basic Gradient",
+      "material": "PLA",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/pla-basic-gradient",
+      "colors": [
+        {
+          "name": "Pink Citrus",
+          "code": "10903"
+        },
+        {
+          "name": "Dusk Glare",
+          "code": "10906"
+        },
+        {
+          "name": "Arctic Whisper",
+          "code": "10900"
+        },
+        {
+          "name": "Solar Breeze",
+          "code": "10901"
+        },
+        {
+          "name": "Blueberry Bubblegum",
+          "code": "10905"
+        },
+        {
+          "name": "Mint Lime",
+          "code": "10904"
+        },
+        {
+          "name": "Ocean to Meadow",
+          "code": "10902"
+        },
+        {
+          "name": "Cotton Candy Cloud",
+          "code": "10907"
+        }
+      ]
+    },
+    {
+      "name": "Bambu ASA Aero",
+      "product": "ASA Aero",
+      "material": "ASA",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/asa-aero",
+      "colors": [
+        {
+          "name": "White",
+          "code": "46100"
+        }
+      ]
+    },
+    {
+      "name": "Bambu PET-CF",
+      "product": "PET-CF",
+      "material": "PET-CF",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/pet-cf",
+      "colors": [
+        {
+          "name": "Black",
+          "code": "71100"
+        }
+      ]
+    },
+    {
+      "name": "Bambu PPS-CF",
+      "product": "PPS-CF",
+      "material": "PPS-CF",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/pps-cf",
+      "colors": [
+        {
+          "name": "Black",
+          "code": "76100"
+        }
+      ]
+    },
+    {
+      "name": "Bambu Support for PA/PET",
+      "product": "Support for PA/PET",
+      "material": "Support",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/support-for-pa-pet",
+      "colors": [
+        {
+          "name": "Green",
+          "code": "65500"
+        }
+      ]
+    },
+    {
+      "name": "Bambu ASA-CF",
+      "product": "ASA-CF",
+      "material": "ASA-CF",
+      "brand": "Bambu Lab",
+      "url": "https://store.bambulab.com/products/asa-cf",
+      "colors": [
+        {
+          "name": "Black",
+          "code": "46101"
+        }
+      ]
+    }
+  ]
+}

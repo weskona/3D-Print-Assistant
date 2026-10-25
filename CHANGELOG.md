@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Catalog of Bambu Lab spool filaments with their colors (42 filaments, 269 colors, taken from the US store on 2026-10-25) as `custom_components/druck_assistant/data/bambu_filaments.json` and a readable list in `docs/bambu-filaments.md`. It is not used by the integration yet.
+
 ## [0.4.0-beta.11] - 2026-10-25
 
 ### Changed
