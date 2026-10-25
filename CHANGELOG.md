@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0-beta.5] - 2026-10-25
+
+### Changed
+
+- The spool list in the Filament tab is now an inventory by type: spools with the same name (ignoring " #n") and material form one row with the total stock of all of them (e.g. "2,500 / 3,000 g") and the average price per kg of the purchases, weighted by spool size. The slot column and the per-row Edit, Archive and Delete buttons are gone.
+- "Add stock" opens a popup for the type with the purchase form (quantity and price) and the list of individual spools of that type, where each spool can still be edited, archived or deleted.
+
 ## [0.4.0-beta.4] - 2026-10-25
 
 ### Added
@@ -83,7 +90,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Filament prices per type (e.g. `PLA=20`) in the options, sensor for the current filament including price per kg. Cost sensors in euro.
 - GitHub workflow that creates a tag and release after a push to `main`.
 
-[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.4...HEAD
+[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.5...HEAD
+[0.4.0-beta.5]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.4...v0.4.0-beta.5
 [0.4.0-beta.4]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.3...v0.4.0-beta.4
 [0.4.0-beta.3]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.2...v0.4.0-beta.3
 [0.4.0-beta.2]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.1...v0.4.0-beta.2
