@@ -362,3 +362,15 @@ def test_live_energy_estimate_does_not_change_the_session():
     # a meter wins over the power estimate
     s.energy_start_kwh = 10.0
     assert abs(s.estimate_energy_kwh(T0 + timedelta(hours=2), 10.4) - 0.4) < 1e-9
+
+
+def test_duration_sensor_values_are_converted_to_minutes():
+    from druck_assistant.history import to_minutes
+
+    # ha-bambulab: native minutes, displayed in hours -> 1.867 h is 1 h 52 min
+    assert round(to_minutes(1.8667, "h")) == 112
+    assert to_minutes(112, "min") == 112
+    assert to_minutes(6720, "s") == 112
+    assert to_minutes(0.5, "d") == 720
+    assert to_minutes(112, None) == 112 and to_minutes(112, "weeks") == 112  # unknown unit: as is
+    assert to_minutes(None, "h") is None
