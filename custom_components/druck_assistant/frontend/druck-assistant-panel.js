@@ -1,4 +1,6 @@
 // Sidebar panel of the 3D Print Assistant integration (no external dependencies).
+const LOW_PERCENT = 15; // same threshold as the red stock bar
+
 const COMMON_MATERIALS = ["PLA", "PLA+", "PETG", "ABS", "ASA", "TPU", "PC", "PA", "PA-CF", "PET-CF", "PVA"];
 
 // English is the source language; add further languages to TRANSLATIONS.
@@ -52,19 +54,22 @@ const TRANSLATIONS = {
     none: "none",
     admin_only: "Only administrators can change the filament inventory.",
     price: "Price",
-    add_stock: "Add stock",
     suggest_hint: "Pick a name you already have to fill in the other fields.",
     catalog: "Bambu Lab catalog",
     catalog_filament: "Filament",
     catalog_color: "Color",
     catalog_choose: "– choose –",
     catalog_hint: "Pick a Bambu Lab filament and color to fill in name, material, brand and color. You can still change every field.",
+    filter_search: "Search name, material, brand, notes",
+    all: "All",
+    status: "Status",
+    status_stock: "In stock",
+    status_slot: "In a slot",
+    status_low: "Low stock",
+    filter_count: "{shown} of {total} spools",
+    filter_reset: "Reset filter",
+    no_match: "No spools match the filter.",
     stock_badge: "In stock",
-    spools_of_type: "Spools of this type",
-    close: "Close",
-    add_stock_hint: "New full spools of this type. Existing spools keep their price.",
-    purchased_quantity: "Purchased quantity",
-    add: "Add",
     rfid_tag: "RFID tag (clear to unlink)",
     correct_hint: "Wrong spool? Pick the right one: the tag moves to it, and the automatic match stays corrected. Choosing \"none\" stops automatic assignment for the spool currently in this slot.",
     quantity: "Quantity (e.g. 4 for a 4-pack)",
@@ -125,19 +130,22 @@ const TRANSLATIONS = {
     none: "keine",
     admin_only: "Nur Administratoren können den Filamentbestand ändern.",
     price: "Preis",
-    add_stock: "Bestand hinzufügen",
     suggest_hint: "Wähle einen vorhandenen Namen, um die übrigen Felder auszufüllen.",
     catalog: "Bambu-Lab-Katalog",
     catalog_filament: "Filament",
     catalog_color: "Farbe",
     catalog_choose: "– wählen –",
     catalog_hint: "Wähle ein Bambu-Lab-Filament und eine Farbe, um Name, Material, Hersteller und Farbe auszufüllen. Du kannst jedes Feld danach noch ändern.",
+    filter_search: "Suche in Name, Material, Hersteller, Notizen",
+    all: "Alle",
+    status: "Status",
+    status_stock: "Vorrat",
+    status_slot: "In einem Slot",
+    status_low: "Niedriger Bestand",
+    filter_count: "{shown} von {total} Spulen",
+    filter_reset: "Filter zurücksetzen",
+    no_match: "Keine Spulen entsprechen dem Filter.",
     stock_badge: "Vorrat",
-    spools_of_type: "Spulen dieser Sorte",
-    close: "Schließen",
-    add_stock_hint: "Neue volle Spulen dieser Sorte. Vorhandene Spulen behalten ihren Preis.",
-    purchased_quantity: "Gekaufte Anzahl",
-    add: "Hinzufügen",
     rfid_tag: "RFID-Tag (leeren zum Lösen)",
     correct_hint: "Falsche Spule? Wähle die richtige: Der Tag wandert zu ihr, die automatische Zuordnung bleibt korrigiert. „keine“ stoppt die automatische Zuordnung für die Spule, die gerade in diesem Slot steckt.",
     quantity: "Anzahl (z. B. 4 für ein 4er-Pack)",
@@ -159,7 +167,8 @@ class DruckAssistantPanel extends HTMLElement {
     this._selected = null;
     this._tab = "overview";
     this._editing = null;
-    this._dialog = null;
+    this._filter = { text: "", material: "", brand: "", status: "" };
+    this._refocusSearch = null;
     this._expanded = new Set();
     this._busy = null;
     this._error = null;
@@ -208,7 +217,7 @@ class DruckAssistantPanel extends HTMLElement {
     } catch (e) {
       this._error = e && e.message ? e.message : String(e);
     }
-    if (this._editing === null && this._dialog === null) this._render(); // never re-render while a form is open
+    if (this._editing === null) this._render(); // never re-render while a form is open
   }
 
   _t(key, vars = {}) {
@@ -243,7 +252,7 @@ class DruckAssistantPanel extends HTMLElement {
     return el;
   }
 
-  async _call(msg, describe, keepDialog = false) {
+  async _call(msg, describe) {
     this._notice = null;
     this._noticeOk = false;
     try {
@@ -253,7 +262,6 @@ class DruckAssistantPanel extends HTMLElement {
       this._notice = e && e.message ? e.message : String(e);
     }
     this._editing = null;
-    if (!keepDialog) this._dialog = null;
     await this._load();
     this._render();
   }
@@ -328,9 +336,13 @@ class DruckAssistantPanel extends HTMLElement {
           const out = {};
           for (const [k, el] of Object.entries(inputs)) out[k] = el.value;
           if (spool.id) out.id = spool.id; else delete out.rfid;
-          this._call({ type: "druck_assistant/spool_save", spool: out, ...(spool.id ? {} : { quantity: parseInt(qty.value, 10) || 1 }) }, null, true);
+          this._call({ type: "druck_assistant/spool_save", spool: out, ...(spool.id ? {} : { quantity: parseInt(qty.value, 10) || 1 }) });
         } }, this._t("save")),
-        this._el("button", { onclick: () => { this._editing = null; this._render(); } }, this._t("cancel"))));
+        this._el("button", { onclick: () => { this._editing = null; this._render(); } }, this._t("cancel")),
+        ...(spool.id ? [
+          this._el("button", { onclick: () => this._call({ type: "druck_assistant/spool_archive", spool_id: spool.id, archived: true }) }, this._t("archive")),
+          this._el("button", { onclick: () => { if (confirm(this._t("confirm_delete", { name: spool.name }))) this._call({ type: "druck_assistant/spool_delete", spool_id: spool.id }); } }, this._t("delete")),
+        ] : [])));
     inputs.name.addEventListener("change", fromTemplate);
     if (!spool.id && this._catalog && this._catalog.products?.length) {
       const german = (this._hass?.locale?.language || this._hass?.language || "en").startsWith("de");
@@ -374,6 +386,65 @@ class DruckAssistantPanel extends HTMLElement {
     return this._el("div", { class: "overlay" }, form);
   }
 
+  /**
+   * Bambu Lab spools are filled in by the RFID tag, so they can be edited once the tag was
+   * detected; spools of other brands have no tag and can always be edited.
+   */
+  _canEdit(sp, admin) {
+    return admin && (!!sp.rfid || (sp.brand || "").trim().toLowerCase() !== "bambu lab");
+  }
+
+  _matchesFilter(sp, slotOf) {
+    const f = this._filter;
+    if (f.material && sp.material !== f.material) return false;
+    if (f.brand && (sp.brand || "") !== f.brand) return false;
+    if (f.status === "stock" && slotOf[sp.id]) return false;
+    if (f.status === "slot" && !slotOf[sp.id]) return false;
+    if (f.status === "low" && sp.remaining_percent > LOW_PERCENT) return false;
+    const text = f.text.trim().toLowerCase();
+    if (!text) return true;
+    return [sp.name, sp.material, sp.brand, sp.notes, sp.color].some((v) => (v || "").toLowerCase().includes(text));
+  }
+
+  _renderFilter(spools, shown) {
+    const f = this._filter;
+    const unique = (values) => [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b));
+    const select = (key, label, options) => {
+      const sel = this._el("select", { onchange: (e) => { f[key] = e.target.value; this._render(); } },
+        this._el("option", { value: "" }, `${label}: ${this._t("all")}`),
+        ...options.map(([value, text]) => {
+          const o = this._el("option", { value }, text);
+          if (f[key] === value) o.selected = true;
+          return o;
+        }));
+      return sel;
+    };
+    const search = this._el("input", { type: "search", class: "filter-search", placeholder: this._t("filter_search"), value: f.text });
+    search.addEventListener("input", () => {
+      f.text = search.value;
+      this._refocusSearch = search.selectionStart;
+      this._render();
+    });
+    if (this._refocusSearch !== null) {
+      // The list is rebuilt while typing: keep focus and caret in the search box.
+      const caret = this._refocusSearch;
+      this._refocusSearch = null;
+      queueMicrotask(() => { search.focus(); search.setSelectionRange(caret, caret); });
+    }
+    const active = f.text || f.material || f.brand || f.status;
+    return this._el("div", { class: "filter" },
+      search,
+      select("material", this._t("material"), unique(spools.map((sp) => sp.material)).map((m) => [m, m])),
+      select("brand", this._t("brand"), unique(spools.map((sp) => sp.brand)).map((b) => [b, b])),
+      select("status", this._t("status"), [["stock", this._t("status_stock")], ["slot", this._t("status_slot")], ["low", this._t("status_low")]]),
+      active
+        ? this._el("span", { class: "sub" }, this._t("filter_count", { shown, total: spools.length }))
+        : "",
+      active
+        ? this._el("button", { onclick: () => { this._filter = { text: "", material: "", brand: "", status: "" }; this._render(); } }, this._t("filter_reset"))
+        : "");
+  }
+
   /** Spools of the same type (name without " #n", material and color) form one inventory row. */
   _groups(spools) {
     const groups = new Map();
@@ -400,55 +471,6 @@ class DruckAssistantPanel extends HTMLElement {
     return [...groups.values()];
   }
 
-  _renderDialog(group, slotOf, cur, admin) {
-    const qty = this._el("input", { type: "number", min: "1", max: "50", step: "1", value: "1" });
-    const last = group.spools[group.spools.length - 1];
-    const price = this._el("input", { type: "number", min: "0", step: "0.01", value: last.price_per_kg ?? "" });
-    const close = () => { this._dialog = null; this._render(); };
-
-    const dialog = this._el("div", { class: "dialog", role: "dialog" },
-      this._el("h2", {}, group.name),
-      this._el("div", { class: "sub notice" }, `${group.material}${group.brand ? `, ${group.brand}` : ""}${group.color ? `, ${group.color.slice(0, 7)}` : ""}`));
-
-    if (admin) {
-      dialog.append(
-        this._el("h3", {}, this._t("add_stock")),
-        this._el("div", { class: "sub notice" }, this._t("add_stock_hint")),
-        this._field(this._t("purchased_quantity"), qty),
-        this._field(`${this._t("price_per_kg")} (${cur})`, price),
-        this._el("div", { class: "actions" },
-          this._el("button", { class: "primary", onclick: () => this._call({
-            type: "druck_assistant/spool_add_stock", spool_id: last.id,
-            quantity: parseInt(qty.value, 10) || 1,
-            price_per_kg: price.value === "" ? null : price.value,
-          }, null, true) }, this._t("add"))));
-    }
-
-    const table = this._el("table", {});
-    table.append(this._el("tr", {}, ...["name", "stock", "price", "slot"].map((k) => this._el("th", {}, this._t(k))), this._el("th", {}, "")));
-    for (const sp of group.spools) {
-      const actions = this._el("td", {});
-      if (admin) {
-        actions.append(
-          this._el("button", { onclick: () => { this._editing = sp; this._render(); } }, this._t("edit")),
-          this._el("button", { onclick: () => this._call({ type: "druck_assistant/spool_archive", spool_id: sp.id, archived: true }, null, true) }, this._t("archive")),
-          this._el("button", { onclick: () => { if (confirm(this._t("confirm_delete", { name: sp.name }))) this._call({ type: "druck_assistant/spool_delete", spool_id: sp.id }, null, true); } }, this._t("delete")));
-      }
-      table.append(this._el("tr", {},
-        this._el("td", {}, sp.name, sp.rfid ? this._el("span", { class: "badge", title: sp.rfid }, "RFID") : "",
-          slotOf[sp.id] ? "" : this._el("span", { class: "badge stock" }, this._t("stock_badge"))),
-        this._el("td", {}, `${this._fmtNum(sp.remaining_g, 0)} / ${this._fmtNum(sp.initial_weight_g, 0)} g (${this._fmtNum(sp.remaining_percent, 0)} %)`),
-        this._el("td", {}, sp.price_per_kg != null ? `${this._fmtMoney(sp.price_per_kg, cur)}/kg` : "–"),
-        this._el("td", {}, slotOf[sp.id] || "–"),
-        actions));
-    }
-    dialog.append(this._el("h3", {}, this._t("spools_of_type")), table,
-      this._el("div", { class: "actions" }, this._el("button", { onclick: close }, this._t("close"))));
-
-    const overlay = this._el("div", { class: "overlay", onclick: (e) => { if (e.target === overlay) close(); } }, dialog);
-    return overlay;
-  }
-
   _renderFilament(main, printer) {
     const admin = this._isAdmin();
     const cur = printer?.currency || "EUR";
@@ -469,21 +491,27 @@ class DruckAssistantPanel extends HTMLElement {
             ? this._t("import_result", r)
             : this._t("import_nothing")) }, this._t("import_ams")));
     }
-    const groups = this._groups(activeSpools);
-    if (this._dialog && !groups.some((g) => g.key === this._dialog)) this._dialog = null;
-    if (!groups.length) {
+    // The table shows the filtered spools and sums only those, so what you see is what is added up.
+    const filtered = activeSpools.filter((sp) => this._matchesFilter(sp, slotOf));
+    const groups = this._groups(filtered);
+    if (activeSpools.length) card.append(this._renderFilter(activeSpools, filtered.length));
+    if (!activeSpools.length) {
       card.append(this._el("div", { class: "empty" }, this._t("no_spools")));
+    } else if (!groups.length) {
+      card.append(this._el("div", { class: "empty" }, this._t("no_match")));
     } else {
       const table = this._el("table", {});
       const heads = ["name", "material", "brand", "stock", "price"].map((k) => this._t(k));
       table.append(this._el("tr", {}, ...heads.map((h) => this._el("th", {}, h)), this._el("th", {}, "")));
       for (const g of groups) {
-        const open = () => { this._dialog = g.key; this._render(); };
         const dot = this._el("span", { class: "dot", style: `background:${/^#[0-9a-f]{6,8}$/i.test(g.color) ? g.color : "transparent"}` });
         const pct = Math.max(0, Math.min(100, g.percent));
         const bar = this._el("div", { class: "bar" }, this._el("div", { class: "fill" + (pct <= 15 ? " low" : ""), style: `width:${pct}%` }));
         const actions = this._el("td", {});
-        if (admin) actions.append(this._el("button", { onclick: open }, this._t("add_stock")));
+        // A single-spool type is edited from its own row; several spools are edited from their sub-rows.
+        if (g.spools.length === 1 && this._canEdit(g.spools[0], admin)) {
+          actions.append(this._el("button", { onclick: () => { this._editing = g.spools[0]; this._render(); } }, this._t("edit")));
+        }
         // A type with several spools expands on a click on its name to list them one by one.
         const multi = g.spools.length > 1;
         const expanded = multi && this._expanded.has(g.key);
@@ -518,7 +546,9 @@ class DruckAssistantPanel extends HTMLElement {
                 this._el("div", { class: "bar" }, this._el("div", { class: "fill" + (spct <= 15 ? " low" : ""), style: `width:${spct}%` })),
                 `${this._fmtNum(sp.remaining_g, 0)} / ${this._fmtNum(sp.initial_weight_g, 0)} g (${this._fmtNum(sp.remaining_percent, 0)} %)`),
               this._el("td", {}, sp.price_per_kg != null ? `${this._fmtMoney(sp.price_per_kg, cur)}/kg` : "–"),
-              this._el("td", {}, "")));
+              this._el("td", {}, this._canEdit(sp, admin)
+                ? this._el("button", { onclick: () => { this._editing = sp; this._render(); } }, this._t("edit"))
+                : "")));
           }
         }
       }
@@ -553,10 +583,8 @@ class DruckAssistantPanel extends HTMLElement {
     }
     main.append(details);
 
-    // Forms are popups over the list; the form of a spool shows on top of the type popup it was opened from.
-    const open = groups.find((g) => g.key === this._dialog);
+    // Forms are popups over the list.
     if (this._editing !== null) main.append(this._renderForm(this._editing));
-    else if (open) main.append(this._renderDialog(open, slotOf, cur, admin));
   }
 
   _renderAms(main, printer) {
@@ -627,6 +655,9 @@ class DruckAssistantPanel extends HTMLElement {
       button.primary { background: var(--primary-color); color: var(--text-primary-color, #fff); border-color: transparent; }
       .field { display: flex; flex-direction: column; gap: 2px; margin-bottom: 10px; font-size: 13px; color: var(--secondary-text-color); }
       .field input { font: inherit; padding: 6px 8px; color: var(--primary-text-color); background: var(--card-background-color); border: 1px solid var(--divider-color); border-radius: 6px; }
+      .filter { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0; }
+      .filter input, .filter select { font: inherit; padding: 5px 8px; color: var(--primary-text-color); background: var(--card-background-color); border: 1px solid var(--divider-color); border-radius: 6px; }
+      .filter-search { flex: 1; min-width: 200px; }
       .dialog.form { max-width: 480px; }
       .catalog { margin-bottom: 12px; padding-bottom: 4px; border-bottom: 1px solid var(--divider-color); }
       .field select { font: inherit; padding: 6px 8px; color: var(--primary-text-color); background: var(--card-background-color); border: 1px solid var(--divider-color); border-radius: 6px; }
