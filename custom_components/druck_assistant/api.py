@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import Any
 
 import voluptuous as vol
@@ -11,6 +13,7 @@ from homeassistant.core import HomeAssistant, callback
 
 from .const import (
     DOMAIN,
+    WS_CATALOG,
     WS_DATA,
     WS_IMPORT_AMS,
     WS_SPOOL_ADD_STOCK,
@@ -22,6 +25,13 @@ from .const import (
 from .spools import SpoolError
 
 
+CATALOG_FILE = Path(__file__).parent / "data" / "bambu_filaments.json"
+
+
+def _load_catalog() -> dict[str, Any]:
+    return json.loads(CATALOG_FILE.read_text(encoding="utf-8"))
+
+
 @callback
 def async_register(hass: HomeAssistant) -> None:
     for command in (
@@ -30,6 +40,7 @@ def async_register(hass: HomeAssistant) -> None:
         ws_spool_delete,
         ws_spool_assign,
         ws_import_ams,
+        ws_catalog,
         ws_spool_archive,
         ws_spool_add_stock,
     ):
@@ -198,3 +209,15 @@ def ws_spool_add_stock(
         return
     manager.changed()
     connection.send_result(msg["id"], {"spools": [s.as_dict() for s in created]})
+
+
+@websocket_api.websocket_command({vol.Required("type"): WS_CATALOG})
+@websocket_api.async_response
+async def ws_catalog(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Return the Bambu Lab filament catalog (read once, then cached)."""
+    domain_data = hass.data[DOMAIN]
+    if "catalog" not in domain_data:
+        domain_data["catalog"] = await hass.async_add_executor_job(_load_catalog)
+    connection.send_result(msg["id"], domain_data["catalog"])

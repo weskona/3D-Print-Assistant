@@ -7,9 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0-beta.1] - 2026-10-25
+
 ### Added
 
-- Catalog of Bambu Lab spool filaments with their colors (42 filaments, 269 colors, taken from the US store on 2026-10-25) as `custom_components/druck_assistant/data/bambu_filaments.json` and a readable list in `docs/bambu-filaments.md`. It is not used by the integration yet.
+- Bambu Lab catalog in the add spool form: pick a filament (e.g. "Bambu PETG Basic") and a color (German names in a German UI) to fill in name, material, brand and color; the color name and code go into the notes. Every field can still be changed. The form works without the catalog.
+- The catalog of Bambu Lab spool filaments with their colors (42 filaments, 269 colors, taken from the US store on 2026-10-25) as `custom_components/druck_assistant/data/bambu_filaments.json` and a readable list in `docs/bambu-filaments.md`. Hex values, German color names and filament ids come from Bambu Studio's `filaments_color_codes.json`, matched by color code.
+- Websocket command `druck_assistant/catalog` for the panel.
 
 ## [0.4.0-beta.11] - 2026-10-25
 
@@ -136,7 +140,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Filament prices per type (e.g. `PLA=20`) in the options, sensor for the current filament including price per kg. Cost sensors in euro.
 - GitHub workflow that creates a tag and release after a push to `main`.
 
-[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.11...HEAD
+[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.5.0-beta.1...HEAD
+[0.5.0-beta.1]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.11...v0.5.0-beta.1
 [0.4.0-beta.11]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.10...v0.4.0-beta.11
 [0.4.0-beta.10]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.9...v0.4.0-beta.10
 [0.4.0-beta.9]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.8...v0.4.0-beta.9

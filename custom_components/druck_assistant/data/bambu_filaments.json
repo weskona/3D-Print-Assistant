@@ -1,7 +1,7 @@
 {
   "source": "https://us.store.bambulab.com/collections/bambu-lab-3d-printer-filament",
   "retrieved": "2026-10-25",
-  "note": "Spool filaments of the Bambu Lab store (US catalog; the EU store may differ in colors). Bundles, packs, mystery boxes, swatches and accessories are left out. Color codes are Bambu's filament codes; the store does not publish hex values.",
+  "note": "Spool filaments of the Bambu Lab store (US catalog; the EU store may differ in colors). Bundles, packs, mystery boxes, swatches and accessories are left out. Color codes are Bambu's filament codes. Hex values, German names and filament ids come from Bambu Studio's resources/profiles/BBL/filament/filaments_color_codes.json (matched by color code); hex is the first color of multi-color filaments, the full list is in `hexes`.",
   "products": [
     {
       "name": "Bambu PLA Basic",
@@ -12,124 +12,180 @@
       "colors": [
         {
           "name": "Jade White",
-          "code": "10100"
+          "code": "10100",
+          "hex": "#FFFFFF",
+          "name_de": "Jade-Weiß"
         },
         {
           "name": "Beige",
-          "code": "10201"
+          "code": "10201",
+          "hex": "#F7E6DE"
         },
         {
           "name": "Light Gray",
-          "code": "10104"
+          "code": "10104",
+          "hex": "#D1D3D5",
+          "name_de": "Hellgrau"
         },
         {
           "name": "Yellow",
-          "code": "10400"
+          "code": "10400",
+          "hex": "#F4EE2A",
+          "name_de": "Gelb"
         },
         {
           "name": "Sunflower Yellow",
-          "code": "10402"
+          "code": "10402",
+          "hex": "#FEC600",
+          "name_de": "Sonnenblumen-Gelb"
         },
         {
           "name": "Pumpkin Orange",
-          "code": "10301"
+          "code": "10301",
+          "hex": "#FF9016",
+          "name_de": "Kürbis-Orange"
         },
         {
           "name": "Orange",
-          "code": "10300"
+          "code": "10300",
+          "hex": "#FF6A13"
         },
         {
           "name": "Gold",
-          "code": "10401"
+          "code": "10401",
+          "hex": "#E4BD68"
         },
         {
           "name": "Bright Green",
-          "code": "10503"
+          "code": "10503",
+          "hex": "#BECF00",
+          "name_de": "Hellgrün"
         },
         {
           "name": "Bambu Green",
-          "code": "10501"
+          "code": "10501",
+          "hex": "#00AE42",
+          "name_de": "Bambusgrün"
         },
         {
           "name": "Mistletoe Green",
-          "code": "10502"
+          "code": "10502",
+          "hex": "#3F8E43",
+          "name_de": "Mistelzweig-Grün"
         },
         {
           "name": "Pink",
-          "code": "10203"
+          "code": "10203",
+          "hex": "#F55A74"
         },
         {
           "name": "Hot Pink",
-          "code": "10204"
+          "code": "10204",
+          "hex": "#F5547C",
+          "name_de": "Heißes Pink"
         },
         {
           "name": "Magenta",
-          "code": "10202"
+          "code": "10202",
+          "hex": "#EC008C"
         },
         {
           "name": "Red",
-          "code": "10200"
+          "code": "10200",
+          "hex": "#C12E1F",
+          "name_de": "Rot"
         },
         {
           "name": "Maroon Red",
-          "code": "10205"
+          "code": "10205",
+          "hex": "#9D2235",
+          "name_de": "Kastanienrot"
         },
         {
           "name": "Purple",
-          "code": "10700"
+          "code": "10700",
+          "hex": "#5E43B7",
+          "name_de": "Lila"
         },
         {
           "name": "Indigo Purple",
-          "code": "10701"
+          "code": "10701",
+          "hex": "#482960",
+          "name_de": "Indigo-Violett"
         },
         {
           "name": "Turquoise",
-          "code": "10605"
+          "code": "10605",
+          "hex": "#00B1B7",
+          "name_de": "Türkis"
         },
         {
           "name": "Cyan",
-          "code": "10603"
+          "code": "10603",
+          "hex": "#0086D6"
         },
         {
           "name": "Cobalt Blue",
-          "code": "10604"
+          "code": "10604",
+          "hex": "#0056B8",
+          "name_de": "Kobaltblau"
         },
         {
           "name": "Blue",
-          "code": "10601"
+          "code": "10601",
+          "hex": "#0A2989",
+          "name_de": "Blau"
         },
         {
           "name": "Brown",
-          "code": "10800"
+          "code": "10800",
+          "hex": "#9D432C",
+          "name_de": "Braun"
         },
         {
           "name": "Cocoa Brown",
-          "code": "10802"
+          "code": "10802",
+          "hex": "#6F5034",
+          "name_de": "Kakaobraun"
         },
         {
           "name": "Bronze",
-          "code": "10801"
+          "code": "10801",
+          "hex": "#847D48"
         },
         {
           "name": "Gray",
-          "code": "10103"
+          "code": "10103",
+          "hex": "#8E9089",
+          "name_de": "Grau"
         },
         {
           "name": "Silver",
-          "code": "10102"
+          "code": "10102",
+          "hex": "#A6A9AA",
+          "name_de": "Silber"
         },
         {
           "name": "Blue Grey",
-          "code": "10602"
+          "code": "10602",
+          "hex": "#5B6579",
+          "name_de": "Blau-Grau"
         },
         {
           "name": "Dark Gray",
-          "code": "10105"
+          "code": "10105",
+          "hex": "#545454",
+          "name_de": "Dunkelgrau"
         },
         {
           "name": "Black",
-          "code": "10101"
+          "code": "10101",
+          "hex": "#000000",
+          "name_de": "Schwarz"
         }
+      ],
+      "filament_ids": [
+        "GFA00"
       ]
     },
     {
@@ -141,104 +197,157 @@
       "colors": [
         {
           "name": "Ivory White",
-          "code": "11100"
+          "code": "11100",
+          "hex": "#FFFFFF",
+          "name_de": "Elfenbeinweiß"
         },
         {
           "name": "Bone White",
-          "code": "11103"
+          "code": "11103",
+          "hex": "#CBC6B8",
+          "name_de": "Knochenweiß"
         },
         {
           "name": "Lemon Yellow",
-          "code": "11400"
+          "code": "11400",
+          "hex": "#F7D959",
+          "name_de": "Zitronengelb"
         },
         {
           "name": "Mandarin Orange",
-          "code": "11300"
+          "code": "11300",
+          "hex": "#F99963",
+          "name_de": "Mandarine-Orange"
         },
         {
           "name": "Sakura Pink",
-          "code": "11201"
+          "code": "11201",
+          "hex": "#E8AFCF",
+          "name_de": "Sakura-Pink"
         },
         {
           "name": "Lilac purple",
-          "code": "11700"
+          "code": "11700",
+          "hex": "#AE96D4",
+          "name_de": "Flieder-Violett"
         },
         {
           "name": "Plum",
-          "code": "11204"
+          "code": "11204",
+          "hex": "#950051",
+          "name_de": "Pflaume"
         },
         {
           "name": "Scarlet Red",
-          "code": "11200"
+          "code": "11200",
+          "hex": "#DE4343",
+          "name_de": "Scharlachrot"
         },
         {
           "name": "Dark Red",
-          "code": "11202"
+          "code": "11202",
+          "hex": "#BB3D43",
+          "name_de": "Dunkelrot"
         },
         {
           "name": "Apple Green",
-          "code": "11502"
+          "code": "11502",
+          "hex": "#C2E189",
+          "name_de": "Apfelgrün"
         },
         {
           "name": "Grass Green",
-          "code": "11500"
+          "code": "11500",
+          "hex": "#61C680",
+          "name_de": "Grasgrün"
         },
         {
           "name": "Dark Green",
-          "code": "11501"
+          "code": "11501",
+          "hex": "#68724D",
+          "name_de": "Dunkelgrün"
         },
         {
           "name": "Ice Blue",
-          "code": "11601"
+          "code": "11601",
+          "hex": "#A3D8E1",
+          "name_de": "Eisblau"
         },
         {
           "name": "Sky Blue",
-          "code": "11603"
+          "code": "11603",
+          "hex": "#56B7E6",
+          "name_de": "Himmelblau"
         },
         {
           "name": "Marine Blue",
-          "code": "11600"
+          "code": "11600",
+          "hex": "#0078BF",
+          "name_de": "Marineblau"
         },
         {
           "name": "Dark Blue",
-          "code": "11602"
+          "code": "11602",
+          "hex": "#042F56",
+          "name_de": "Dunkelblau"
         },
         {
           "name": "Desert Tan",
-          "code": "11401"
+          "code": "11401",
+          "hex": "#E8DBB7",
+          "name_de": "Wüstenbraun"
         },
         {
           "name": "Latte Brown",
-          "code": "11800"
+          "code": "11800",
+          "hex": "#D3B7A7",
+          "name_de": "Milchkaffee-Braun"
         },
         {
           "name": "Caramel",
-          "code": "11803"
+          "code": "11803",
+          "hex": "#AE835B",
+          "name_de": "Karamell"
         },
         {
           "name": "Terracotta",
-          "code": "11203"
+          "code": "11203",
+          "hex": "#B15533",
+          "name_de": "Terrakotta"
         },
         {
           "name": "Dark Brown",
-          "code": "11801"
+          "code": "11801",
+          "hex": "#7D6556",
+          "name_de": "Dunkelbraun"
         },
         {
           "name": "Dark Chocolate",
-          "code": "11802"
+          "code": "11802",
+          "hex": "#4D3324",
+          "name_de": "Dunkel-Schokoladenbraun"
         },
         {
           "name": "Ash Gray",
-          "code": "11102"
+          "code": "11102",
+          "hex": "#9B9EA0",
+          "name_de": "Aschgrau"
         },
         {
           "name": "Nardo Gray",
-          "code": "11104"
+          "code": "11104",
+          "hex": "#757575",
+          "name_de": "Nardo-Grau"
         },
         {
           "name": "Charcoal",
-          "code": "11101"
+          "code": "11101",
+          "hex": "#000000",
+          "name_de": "Kohlschwarz"
         }
+      ],
+      "filament_ids": [
+        "GFA01"
       ]
     },
     {
@@ -250,56 +359,72 @@
       "colors": [
         {
           "name": "Orange",
-          "code": "30301"
+          "code": "30301",
+          "hex": "#FF671F"
         },
         {
           "name": "Red",
-          "code": "30201"
+          "code": "30201",
+          "hex": "#D6001C"
         },
         {
           "name": "Yellow",
-          "code": "30402"
+          "code": "30402",
+          "hex": "#FCE300"
         },
         {
           "name": "Green",
-          "code": "30502"
+          "code": "30502",
+          "hex": "#009639"
         },
         {
           "name": "Navy Blue",
-          "code": "30604"
+          "code": "30604",
+          "hex": "#0086D6"
         },
         {
           "name": "Reflex Blue",
-          "code": "30603"
+          "code": "30603",
+          "hex": "#001489"
         },
         {
           "name": "Black",
-          "code": "30105"
+          "code": "30105",
+          "hex": "#000000"
         },
         {
           "name": "White",
-          "code": "30106"
+          "code": "30106",
+          "hex": "#FFFFFF"
         },
         {
           "name": "Dark Beige",
-          "code": "30403"
+          "code": "30403",
+          "hex": "#DBC8B6"
         },
         {
           "name": "Dark Brown",
-          "code": "30800"
+          "code": "30800",
+          "hex": "#4F2C1D"
         },
         {
           "name": "Gray",
-          "code": "30107"
+          "code": "30107",
+          "hex": "#7F7E83"
         },
         {
           "name": "Misty Blue",
-          "code": "30108"
+          "code": "30108",
+          "hex": "#688197"
         },
         {
           "name": "Pine Green",
-          "code": "30503"
+          "code": "30503",
+          "hex": "#034638"
         }
+      ],
+      "filament_ids": [
+        "GFG00"
       ]
     },
     {
@@ -311,36 +436,47 @@
       "colors": [
         {
           "name": "Black",
-          "code": "35101"
+          "code": "35101",
+          "hex": "#000000"
         },
         {
           "name": "White",
-          "code": "35100"
+          "code": "35100",
+          "hex": "#FFFFFF"
         },
         {
           "name": "Gray",
-          "code": "35102"
+          "code": "35102",
+          "hex": "#7F7E83"
         },
         {
           "name": "Pink",
-          "code": "35700"
+          "code": "35700",
+          "hex": "#FABBCB"
         },
         {
           "name": "Violet",
-          "code": "35702"
+          "code": "35702",
+          "hex": "#A7A4E0"
         },
         {
           "name": "Baby Blue",
-          "code": "35600"
+          "code": "35600",
+          "hex": "#B9D9EB"
         },
         {
           "name": "Avocado Green",
-          "code": "35501"
+          "code": "35501",
+          "hex": "#BCE194"
         },
         {
           "name": "Lime",
-          "code": "35500"
+          "code": "35500",
+          "hex": "#C0DF16"
         }
+      ],
+      "filament_ids": [
+        "GFG03"
       ]
     },
     {
@@ -352,56 +488,83 @@
       "colors": [
         {
           "name": "Gold",
-          "code": "13405"
+          "code": "13405",
+          "hex": "#F4A925"
         },
         {
           "name": "Titan Gray",
-          "code": "13108"
+          "code": "13108",
+          "hex": "#5F6367",
+          "name_de": "Titangrau"
         },
         {
           "name": "Silver",
-          "code": "13109"
+          "code": "13109",
+          "hex": "#C8C8C8",
+          "name_de": "Silber"
         },
         {
           "name": "White",
-          "code": "13110"
+          "code": "13110",
+          "hex": "#FFFFFF",
+          "name_de": "Weiß"
         },
         {
           "name": "Candy Red",
-          "code": "13205"
+          "code": "13205",
+          "hex": "#D02727",
+          "name_de": "Candy-Rot"
         },
         {
           "name": "Candy Green",
-          "code": "13506"
+          "code": "13506",
+          "hex": "#018814",
+          "name_de": "Candy-Grün"
         },
         {
           "name": "Mint",
-          "code": "13507"
+          "code": "13507",
+          "hex": "#96DCB9",
+          "name_de": "Minze"
         },
         {
           "name": "Blue",
-          "code": "13604"
+          "code": "13604",
+          "hex": "#008BDA",
+          "name_de": "Blau"
         },
         {
           "name": "Baby Blue",
-          "code": "13603"
+          "code": "13603",
+          "hex": "#A8C6EE",
+          "name_de": "Babyblau"
         },
         {
           "name": "Purple",
-          "code": "13702"
+          "code": "13702",
+          "hex": "#8671CB",
+          "name_de": "Lila"
         },
         {
           "name": "Rose Gold",
-          "code": "13206"
+          "code": "13206",
+          "hex": "#BA9594",
+          "name_de": "Gold-Rosa"
         },
         {
           "name": "Pink",
-          "code": "13207"
+          "code": "13207",
+          "hex": "#F7ADA6"
         },
         {
           "name": "Champagne",
-          "code": "13404"
+          "code": "13404",
+          "hex": "#F3CFB2",
+          "name_de": "Champagner"
         }
+      ],
+      "filament_ids": [
+        "GFA06"
       ]
     },
     {
@@ -413,48 +576,71 @@
       "colors": [
         {
           "name": "Silver",
-          "code": "40102"
+          "code": "40102",
+          "hex": "#87909A",
+          "name_de": "Silber"
         },
         {
           "name": "Black",
-          "code": "40101"
+          "code": "40101",
+          "hex": "#000000",
+          "name_de": "Schwarz"
         },
         {
           "name": "White",
-          "code": "40100"
+          "code": "40100",
+          "hex": "#FFFFFF",
+          "name_de": "Weiß"
         },
         {
           "name": "Bambu Green",
-          "code": "40500"
+          "code": "40500",
+          "hex": "#00AE42",
+          "name_de": "Bambusgrün"
         },
         {
           "name": "Olive",
-          "code": "40502"
+          "code": "40502",
+          "hex": "#789D4A"
         },
         {
           "name": "Tangerine Yellow",
-          "code": "40402"
+          "code": "40402",
+          "hex": "#FFC72C",
+          "name_de": "Mandarinengelb"
         },
         {
           "name": "Orange",
-          "code": "40300"
+          "code": "40300",
+          "hex": "#FF6A13"
         },
         {
           "name": "Red",
-          "code": "40200"
+          "code": "40200",
+          "hex": "#D32941",
+          "name_de": "Rot"
         },
         {
           "name": "Azure",
-          "code": "40601"
+          "code": "40601",
+          "hex": "#489FDF",
+          "name_de": "Azurblau"
         },
         {
           "name": "Blue",
-          "code": "40600"
+          "code": "40600",
+          "hex": "#0A2CA5",
+          "name_de": "Blau"
         },
         {
           "name": "Navy Blue",
-          "code": "40602"
+          "code": "40602",
+          "hex": "#0C2340",
+          "name_de": "Marineblau"
         }
+      ],
+      "filament_ids": [
+        "GFB00"
       ]
     },
     {
@@ -466,24 +652,32 @@
       "colors": [
         {
           "name": "Milky Pink",
-          "code": "17200"
+          "code": "17200",
+          "hex": "#F7CED7"
         },
         {
           "name": "Baby Blue",
-          "code": "17600"
+          "code": "17600",
+          "hex": "#A4DBE8"
         },
         {
           "name": "Apricot",
-          "code": "17300"
+          "code": "17300",
+          "hex": "#FFB673"
         },
         {
           "name": "Pure White",
-          "code": "17100"
+          "code": "17100",
+          "hex": "#FFFFFF"
         },
         {
           "name": "Absolute Black",
-          "code": "17101"
+          "code": "17101",
+          "hex": "#000000"
         }
+      ],
+      "filament_ids": [
+        "GFA19"
       ]
     },
     {
@@ -495,40 +689,61 @@
       "colors": [
         {
           "name": "Teal",
-          "code": "32501"
+          "code": "32501",
+          "hex": "#77EDD7",
+          "name_de": "Durchsichtiges Blaugrün"
         },
         {
           "name": "Light Blue",
-          "code": "32600"
+          "code": "32600",
+          "hex": "#61B0FF",
+          "name_de": "Durchsichtiges Hellblau"
         },
         {
           "name": "Clear",
-          "code": "32101"
+          "code": "32101",
+          "hex": "#000000",
+          "name_de": "Klar"
         },
         {
           "name": "Gray",
-          "code": "32100"
+          "code": "32100",
+          "hex": "#8E8E8E",
+          "name_de": "Durchsichtiges Grau"
         },
         {
           "name": "Olive",
-          "code": "32500"
+          "code": "32500",
+          "hex": "#748C45",
+          "name_de": "Durchsichtiges Olivgrün"
         },
         {
           "name": "Brown",
-          "code": "32800"
+          "code": "32800",
+          "hex": "#C9A381",
+          "name_de": "Durchsichtiges Braun"
         },
         {
           "name": "Orange",
-          "code": "32300"
+          "code": "32300",
+          "hex": "#FF911A",
+          "name_de": "Durchsichtiges Orange"
         },
         {
           "name": "Pink",
-          "code": "32200"
+          "code": "32200",
+          "hex": "#F9C1BD",
+          "name_de": "Durchsichtiges Pink"
         },
         {
           "name": "Purple",
-          "code": "32700"
+          "code": "32700",
+          "hex": "#D6ABFF",
+          "name_de": "Durchsichtiges Lila"
         }
+      ],
+      "filament_ids": [
+        "GFG01"
       ]
     },
     {
@@ -540,32 +755,42 @@
       "colors": [
         {
           "name": "Black",
-          "code": "12104"
+          "code": "12104",
+          "hex": "#000000"
         },
         {
           "name": "White",
-          "code": "12107"
+          "code": "12107",
+          "hex": "#FFFFFF"
         },
         {
           "name": "Yellow",
-          "code": "12401"
+          "code": "12401",
+          "hex": "#F4D53F"
         },
         {
           "name": "Orange",
-          "code": "12301"
+          "code": "12301",
+          "hex": "#DC3A27"
         },
         {
           "name": "Gray",
-          "code": "12105"
+          "code": "12105",
+          "hex": "#AFB1AE"
         },
         {
           "name": "Silver",
-          "code": "12106"
+          "code": "12106",
+          "hex": "#959698"
         },
         {
           "name": "Cyan",
-          "code": "12601"
+          "code": "12601",
+          "hex": "#009BD8"
         }
+      ],
+      "filament_ids": [
+        "GFA10"
       ]
     },
     {
@@ -577,44 +802,57 @@
       "colors": [
         {
           "name": "Teal",
-          "code": "13612"
+          "code": "13612",
+          "hex": "#009FA1"
         },
         {
           "name": "Blue",
-          "code": "13611"
+          "code": "13611",
+          "hex": "#0047BB"
         },
         {
           "name": "Orange",
-          "code": "13301"
+          "code": "13301",
+          "hex": "#F74E02"
         },
         {
           "name": "Purple",
-          "code": "13710"
+          "code": "13710",
+          "hex": "#8344B0"
         },
         {
           "name": "Red",
-          "code": "13210"
+          "code": "13210",
+          "hex": "#B50011"
         },
         {
           "name": "Light Jade",
-          "code": "13510"
+          "code": "13510",
+          "hex": "#96D8AF"
         },
         {
           "name": "Mellow Yellow",
-          "code": "13410"
+          "code": "13410",
+          "hex": "#F5DBAB"
         },
         {
           "name": "Cherry Pink",
-          "code": "13211"
+          "code": "13211",
+          "hex": "#F5B6CD"
         },
         {
           "name": "Ice Blue",
-          "code": "13610"
+          "code": "13610",
+          "hex": "#B8CDE9"
         },
         {
           "name": "Lavender",
-          "code": "13711"
+          "code": "13711",
+          "hex": "#B8ACD6"
         }
+      ],
+      "filament_ids": [
+        "GFA17"
       ]
     },
     {
@@ -626,60 +864,90 @@
       "colors": [
         {
           "name": "Black",
-          "code": "33102"
+          "code": "33102",
+          "hex": "#000000",
+          "name_de": "Schwarz"
         },
         {
           "name": "White",
-          "code": "33100"
+          "code": "33100",
+          "hex": "#FFFFFF",
+          "name_de": "Weiß"
         },
         {
           "name": "Red",
-          "code": "33200"
+          "code": "33200",
+          "hex": "#BC0900",
+          "name_de": "Rot"
         },
         {
           "name": "Gray",
-          "code": "33101"
+          "code": "33101",
+          "hex": "#ADB1B2",
+          "name_de": "Grau"
         },
         {
           "name": "Dark Gray",
-          "code": "33103"
+          "code": "33103",
+          "hex": "#515151",
+          "name_de": "Dunkelgrau"
         },
         {
           "name": "Cream",
-          "code": "33401"
+          "code": "33401",
+          "hex": "#F9DFB9",
+          "name_de": "Creme"
         },
         {
           "name": "Yellow",
-          "code": "33400"
+          "code": "33400",
+          "hex": "#FFD00B",
+          "name_de": "Gelb"
         },
         {
           "name": "Orange",
-          "code": "33300"
+          "code": "33300",
+          "hex": "#F75403"
         },
         {
           "name": "Peanut Brown",
-          "code": "33801"
+          "code": "33801",
+          "hex": "#875718",
+          "name_de": "Erdnussbraun"
         },
         {
           "name": "Lime Green",
-          "code": "33501"
+          "code": "33501",
+          "hex": "#6EE53C",
+          "name_de": "Limettengrün"
         },
         {
           "name": "Green",
-          "code": "33500"
+          "code": "33500",
+          "hex": "#00AE42",
+          "name_de": "Grün"
         },
         {
           "name": "Forest Green",
-          "code": "33502"
+          "code": "33502",
+          "hex": "#39541A",
+          "name_de": "Waldgrün"
         },
         {
           "name": "Lake Blue",
-          "code": "33601"
+          "code": "33601",
+          "hex": "#1F79E5",
+          "name_de": "Blauer See"
         },
         {
           "name": "Blue",
-          "code": "33600"
+          "code": "33600",
+          "hex": "#002E96",
+          "name_de": "Blau"
         }
+      ],
+      "filament_ids": [
+        "GFG02"
       ]
     },
     {
@@ -691,44 +959,103 @@
       "colors": [
         {
           "name": "Dawn Radiance",
-          "code": "13912"
+          "code": "13912",
+          "hex": "#EC984C",
+          "hexes": [
+            "#EC984C",
+            "#6CD4BC",
+            "#A66EB9",
+            "#D87694"
+          ]
         },
         {
           "name": "Aurora Purple",
-          "code": "13909"
+          "code": "13909",
+          "hex": "#7F3696",
+          "hexes": [
+            "#7F3696",
+            "#006EC9"
+          ]
         },
         {
           "name": "South Beach",
-          "code": "13906"
+          "code": "13906",
+          "hex": "#F772A4",
+          "hexes": [
+            "#F772A4",
+            "#00918B"
+          ]
         },
         {
           "name": "Phantom Blue",
-          "code": "13916"
+          "code": "13916",
+          "hex": "#00629B",
+          "hexes": [
+            "#00629B",
+            "#000000"
+          ]
         },
         {
           "name": "Mystic Magenta",
-          "code": "13913"
+          "code": "13913",
+          "hex": "#720062",
+          "hexes": [
+            "#720062",
+            "#3A913F"
+          ]
         },
         {
           "name": "Neon City",
-          "code": "13903"
+          "code": "13903",
+          "hex": "#0047BB",
+          "hexes": [
+            "#0047BB",
+            "#BB22A3"
+          ]
         },
         {
           "name": "Midnight Blaze",
-          "code": "13902"
+          "code": "13902",
+          "hex": "#0047BB",
+          "hexes": [
+            "#0047BB",
+            "#7D1B49"
+          ],
+          "name_de": "Mitternachtsglanz"
         },
         {
           "name": "Gilded Rose",
-          "code": "13901"
+          "code": "13901",
+          "hex": "#FF9425",
+          "hexes": [
+            "#FF9425",
+            "#C16784"
+          ],
+          "name_de": "Goldenes Rosa"
         },
         {
           "name": "Blue Hawaii",
-          "code": "13904"
+          "code": "13904",
+          "hex": "#418FDE",
+          "hexes": [
+            "#418FDE",
+            "#70C884"
+          ],
+          "name_de": "Hawaii-Blau"
         },
         {
           "name": "Velvet Eclipse",
-          "code": "13905"
+          "code": "13905",
+          "hex": "#000000",
+          "hexes": [
+            "#000000",
+            "#A34342"
+          ],
+          "name_de": "Dunkler Samt (Schwarz-Rot)"
         }
+      ],
+      "filament_ids": [
+        "GFA05"
       ]
     },
     {
@@ -740,24 +1067,37 @@
       "colors": [
         {
           "name": "Glow Green",
-          "code": "15500"
+          "code": "15500",
+          "hex": "#A1FFAC",
+          "name_de": "Leuchtend-Grün"
         },
         {
           "name": "Glow Pink",
-          "code": "15200"
+          "code": "15200",
+          "hex": "#F17B8F",
+          "name_de": "Leuchtend-Pink"
         },
         {
           "name": "Glow Orange",
-          "code": "15300"
+          "code": "15300",
+          "hex": "#FF9D5B",
+          "name_de": "Leuchtend-Orange"
         },
         {
           "name": "Glow Yellow",
-          "code": "15400"
+          "code": "15400",
+          "hex": "#F8FF80",
+          "name_de": "Leuchtend-Gelb"
         },
         {
           "name": "Glow Blue",
-          "code": "15600"
+          "code": "15600",
+          "hex": "#7AC0E9",
+          "name_de": "Leuchtend-Blau"
         }
+      ],
+      "filament_ids": [
+        "GFA12"
       ]
     },
     {
@@ -769,32 +1109,49 @@
       "colors": [
         {
           "name": "Blue",
-          "code": "53600"
+          "code": "53600",
+          "hex": "#5898DD",
+          "name_de": "Blau"
         },
         {
           "name": "Red",
-          "code": "53200"
+          "code": "53200",
+          "hex": "#ED0000",
+          "name_de": "Rot"
         },
         {
           "name": "Yellow",
-          "code": "53400"
+          "code": "53400",
+          "hex": "#F9EF41",
+          "name_de": "Gelb"
         },
         {
           "name": "Neon Green",
-          "code": "53500"
+          "code": "53500",
+          "hex": "#90FF1A",
+          "name_de": "Neongrün"
         },
         {
           "name": "White",
-          "code": "53100"
+          "code": "53100",
+          "hex": "#FFFFFF",
+          "name_de": "Weiß"
         },
         {
           "name": "Gray",
-          "code": "53102"
+          "code": "53102",
+          "hex": "#939393",
+          "name_de": "Grau"
         },
         {
           "name": "Black",
-          "code": "53101"
+          "code": "53101",
+          "hex": "#000000",
+          "name_de": "Schwarz"
         }
+      ],
+      "filament_ids": [
+        "GFU02"
       ]
     },
     {
@@ -806,28 +1163,43 @@
       "colors": [
         {
           "name": "Black Walnut",
-          "code": "13107"
+          "code": "13107",
+          "hex": "#4F3F24",
+          "name_de": "Schwarze Walnuss"
         },
         {
           "name": "Rosewood",
-          "code": "13204"
+          "code": "13204",
+          "hex": "#4C241C",
+          "name_de": "Rosenholz"
         },
         {
           "name": "Clay Brown",
-          "code": "13801"
+          "code": "13801",
+          "hex": "#995F11",
+          "name_de": "Lehmbraun"
         },
         {
           "name": "Classic Birch",
-          "code": "13505"
+          "code": "13505",
+          "hex": "#918669",
+          "name_de": "Klassische Birke"
         },
         {
           "name": "White Oak",
-          "code": "13106"
+          "code": "13106",
+          "hex": "#D6CCA3",
+          "name_de": "Weiße Eiche"
         },
         {
           "name": "Ochre Yellow",
-          "code": "13403"
+          "code": "13403",
+          "hex": "#C98935",
+          "name_de": "Ockergelb"
         }
+      ],
+      "filament_ids": [
+        "GFA16"
       ]
     },
     {
@@ -839,28 +1211,43 @@
       "colors": [
         {
           "name": "White",
-          "code": "45100"
+          "code": "45100",
+          "hex": "#FFFAF2",
+          "name_de": "Weiß"
         },
         {
           "name": "Green",
-          "code": "45500"
+          "code": "45500",
+          "hex": "#00A6A0",
+          "name_de": "Grün"
         },
         {
           "name": "Black",
-          "code": "45101"
+          "code": "45101",
+          "hex": "#000000",
+          "name_de": "Schwarz"
         },
         {
           "name": "Gray",
-          "code": "45102"
+          "code": "45102",
+          "hex": "#8A949E",
+          "name_de": "Grau"
         },
         {
           "name": "Red",
-          "code": "45200"
+          "code": "45200",
+          "hex": "#E02928",
+          "name_de": "Rot"
         },
         {
           "name": "Blue",
-          "code": "45600"
+          "code": "45600",
+          "hex": "#2140B4",
+          "name_de": "Blau"
         }
+      ],
+      "filament_ids": [
+        "GFB01"
       ]
     },
     {
@@ -872,28 +1259,43 @@
       "colors": [
         {
           "name": "Indigo Blue",
-          "code": "31600"
+          "code": "31600",
+          "hex": "#324585",
+          "name_de": "Indigo-Blau"
         },
         {
           "name": "Malachite Green",
-          "code": "31500"
+          "code": "31500",
+          "hex": "#16B08E",
+          "name_de": "Malachitgrün"
         },
         {
           "name": "Titan Gray",
-          "code": "31101"
+          "code": "31101",
+          "hex": "#565656",
+          "name_de": "Titangrau"
         },
         {
           "name": "Brick Red",
-          "code": "31200"
+          "code": "31200",
+          "hex": "#9F332A",
+          "name_de": "Ziegelrot"
         },
         {
           "name": "Violet Purple",
-          "code": "31700"
+          "code": "31700",
+          "hex": "#583061",
+          "name_de": "Lila-Violett"
         },
         {
           "name": "Black",
-          "code": "31100"
+          "code": "31100",
+          "hex": "#000000",
+          "name_de": "Schwarz"
         }
+      ],
+      "filament_ids": [
+        "GFG50"
       ]
     },
     {
@@ -905,24 +1307,32 @@
       "colors": [
         {
           "name": "Cobalt Blue Metallic",
-          "code": "13600"
+          "code": "13600",
+          "hex": "#39699E"
         },
         {
           "name": "Oxide Green Metallic",
-          "code": "13500"
+          "code": "13500",
+          "hex": "#1D7C6A"
         },
         {
           "name": "Iridium Gold Metallic",
-          "code": "13400"
+          "code": "13400",
+          "hex": "#B39B84"
         },
         {
           "name": "Copper Brown Metallic",
-          "code": "13800"
+          "code": "13800",
+          "hex": "#AA6443"
         },
         {
           "name": "Iron Gray Metallic",
-          "code": "13100"
+          "code": "13100",
+          "hex": "#43403D"
         }
+      ],
+      "filament_ids": [
+        "GFA02"
       ]
     },
     {
@@ -934,56 +1344,81 @@
       "colors": [
         {
           "name": "White",
-          "code": "51105"
+          "code": "51105",
+          "hex": "#FFFFFF"
         },
         {
           "name": "Black",
-          "code": "51103"
+          "code": "51103",
+          "hex": "#000000"
         },
         {
           "name": "Black",
-          "code": "51107"
+          "code": "51107",
+          "hex": "#000000"
         },
         {
           "name": "Cocoa Brown",
-          "code": "51800"
+          "code": "51800",
+          "hex": "#5C4738"
         },
         {
           "name": "Quicksilver",
-          "code": "51106"
+          "code": "51106",
+          "hex": "#9EA2A2"
         },
         {
           "name": "Frozen",
-          "code": "51900"
+          "code": "51900",
+          "hex": "#40B6E4",
+          "hexes": [
+            "#40B6E4",
+            "#FFFFFF"
+          ]
         },
         {
           "name": "Blaze",
-          "code": "51901"
+          "code": "51901",
+          "hex": "#D21B3C",
+          "hexes": [
+            "#D21B3C",
+            "#F1AAA8"
+          ]
         },
         {
           "name": "Neon Orange",
-          "code": "51305"
+          "code": "51305",
+          "hex": "#F68B1B"
         },
         {
           "name": "Light Cyan",
-          "code": "51500"
+          "code": "51500",
+          "hex": "#C3E2D6"
         },
         {
           "name": "Grape Jelly",
-          "code": "51700"
+          "code": "51700",
+          "hex": "#D6ABFF"
         },
         {
           "name": "Crystal Blue",
-          "code": "51601"
+          "code": "51601",
+          "hex": "#7EB4E1"
         },
         {
           "name": "Rose Beige/Flesh",
-          "code": "51201"
+          "code": "51201",
+          "hex": "#F3CFB2"
         },
         {
           "name": "Lime Green",
-          "code": "51501"
+          "code": "51501",
+          "hex": "#CDEA80"
         }
+      ],
+      "filament_ids": [
+        "GFU03",
+        "GFU04"
       ]
     },
     {
@@ -995,28 +1430,42 @@
       "colors": [
         {
           "name": "Orange",
-          "code": "41300"
+          "code": "41300",
+          "hex": "#F48438"
         },
         {
           "name": "Red",
-          "code": "41200"
+          "code": "41200",
+          "hex": "#E83100",
+          "name_de": "Rot"
         },
         {
           "name": "Blue",
-          "code": "41600"
+          "code": "41600",
+          "hex": "#0C3B95",
+          "name_de": "Blau"
         },
         {
           "name": "White",
-          "code": "41100"
+          "code": "41100",
+          "hex": "#FFFFFF",
+          "name_de": "Weiß"
         },
         {
           "name": "Gray",
-          "code": "41102"
+          "code": "41102",
+          "hex": "#C6C6C6",
+          "name_de": "Grau"
         },
         {
           "name": "Black",
-          "code": "41101"
+          "code": "41101",
+          "hex": "#000000",
+          "name_de": "Schwarz"
         }
+      ],
+      "filament_ids": [
+        "GFB50"
       ]
     },
     {
@@ -1028,28 +1477,43 @@
       "colors": [
         {
           "name": "White",
-          "code": "51102"
+          "code": "51102",
+          "hex": "#FFFFFF",
+          "name_de": "Weiß"
         },
         {
           "name": "Gray",
-          "code": "51101"
+          "code": "51101",
+          "hex": "#898D8D",
+          "name_de": "Grau"
         },
         {
           "name": "Yellow",
-          "code": "51400"
+          "code": "51400",
+          "hex": "#F3E600",
+          "name_de": "Gelb"
         },
         {
           "name": "Blue",
-          "code": "51600"
+          "code": "51600",
+          "hex": "#0072CE",
+          "name_de": "Blau"
         },
         {
           "name": "Red",
-          "code": "51200"
+          "code": "51200",
+          "hex": "#C8102E",
+          "name_de": "Rot"
         },
         {
           "name": "Black",
-          "code": "51100"
+          "code": "51100",
+          "hex": "#101820",
+          "name_de": "Schwarz"
         }
+      ],
+      "filament_ids": [
+        "GFU00"
       ]
     },
     {
@@ -1061,28 +1525,43 @@
       "colors": [
         {
           "name": "Alpine Green Sparkle",
-          "code": "13501"
+          "code": "13501",
+          "hex": "#3F5443",
+          "name_de": "Glitzerndes Alpengrün"
         },
         {
           "name": "Slate Gray Sparkle",
-          "code": "13102"
+          "code": "13102",
+          "hex": "#8E9089",
+          "name_de": "Glitzerndes Schiefergrau"
         },
         {
           "name": "Royal Purple Sparkle",
-          "code": "13700"
+          "code": "13700",
+          "hex": "#483D8B",
+          "name_de": "Glitzerndes Königslila"
         },
         {
           "name": "Crimson Red Sparkle",
-          "code": "13200"
+          "code": "13200",
+          "hex": "#792B36",
+          "name_de": "Glitzerndes Karminrot"
         },
         {
           "name": "Onyx Black Sparkle",
-          "code": "13101"
+          "code": "13101",
+          "hex": "#2D2B28",
+          "name_de": "Glitzerndes Onyx-Schwarz"
         },
         {
           "name": "Classic Gold Sparkle",
-          "code": "13402"
+          "code": "13402",
+          "hex": "#CEA629",
+          "name_de": "Klassisches Glitzer-Gold"
         }
+      ],
+      "filament_ids": [
+        "GFA08"
       ]
     },
     {
@@ -1094,32 +1573,49 @@
       "colors": [
         {
           "name": "Burgundy Red",
-          "code": "14200"
+          "code": "14200",
+          "hex": "#951E23",
+          "name_de": "Burgunderrot"
         },
         {
           "name": "Matcha Green",
-          "code": "14500"
+          "code": "14500",
+          "hex": "#5C9748",
+          "name_de": "Matcha-Grün"
         },
         {
           "name": "Lava Gray",
-          "code": "14101"
+          "code": "14101",
+          "hex": "#4D5054",
+          "name_de": "Lava-Grau"
         },
         {
           "name": "Jeans Blue",
-          "code": "14600"
+          "code": "14600",
+          "hex": "#6E88BC",
+          "name_de": "Jeansblau"
         },
         {
           "name": "Black",
-          "code": "14100"
+          "code": "14100",
+          "hex": "#000000",
+          "name_de": "Schwarz"
         },
         {
           "name": "Royal Blue",
-          "code": "14601"
+          "code": "14601",
+          "hex": "#2842AD",
+          "name_de": "Königsblau"
         },
         {
           "name": "Iris Purple",
-          "code": "14700"
+          "code": "14700",
+          "hex": "#69398E",
+          "name_de": "Iris-Violett"
         }
+      ],
+      "filament_ids": [
+        "GFA50"
       ]
     },
     {
@@ -1131,12 +1627,19 @@
       "colors": [
         {
           "name": "Nature",
-          "code": "65102"
+          "code": "65102",
+          "hex": "#000000",
+          "name_de": "Natur"
         },
         {
           "name": "Black",
-          "code": "65103"
+          "code": "65103",
+          "hex": "#000000",
+          "name_de": "Schwarz"
         }
+      ],
+      "filament_ids": [
+        "GFS05"
       ]
     },
     {
@@ -1148,12 +1651,19 @@
       "colors": [
         {
           "name": "Red Granite",
-          "code": "13201"
+          "code": "13201",
+          "hex": "#AD4E38",
+          "name_de": "Granitrot"
         },
         {
           "name": "White Marble",
-          "code": "13103"
+          "code": "13103",
+          "hex": "#F7F3F0",
+          "name_de": "Weißer Marmor"
         }
+      ],
+      "filament_ids": [
+        "GFA07"
       ]
     },
     {
@@ -1165,20 +1675,31 @@
       "colors": [
         {
           "name": "Purple",
-          "code": "13602"
+          "code": "13602",
+          "hex": "#594177",
+          "name_de": "Lila"
         },
         {
           "name": "Green",
-          "code": "13503"
+          "code": "13503",
+          "hex": "#3B665E",
+          "name_de": "Grün"
         },
         {
           "name": "Nebulae",
-          "code": "13504"
+          "code": "13504",
+          "hex": "#424379",
+          "name_de": "Nebel"
         },
         {
           "name": "Brown",
-          "code": "13203"
+          "code": "13203",
+          "hex": "#684A43",
+          "name_de": "Braun"
         }
+      ],
+      "filament_ids": [
+        "GFA15"
       ]
     },
     {
@@ -1190,8 +1711,13 @@
       "colors": [
         {
           "name": "Black",
-          "code": "70100"
+          "code": "70100",
+          "hex": "#000000",
+          "name_de": "Schwarz"
         }
+      ],
+      "filament_ids": [
+        "GFN04"
       ]
     },
     {
@@ -1203,8 +1729,12 @@
       "colors": [
         {
           "name": "White",
-          "code": "65104"
+          "code": "65104",
+          "hex": "#FFFFFF"
         }
+      ],
+      "filament_ids": [
+        "GFS02"
       ]
     },
     {
@@ -1216,20 +1746,31 @@
       "colors": [
         {
           "name": "Transparent",
-          "code": "60103"
+          "code": "60103",
+          "hex": "#000000",
+          "name_de": "Durchsichtig"
         },
         {
           "name": "Clear Black",
-          "code": "60102"
+          "code": "60102",
+          "hex": "#686865",
+          "name_de": "Klares Schwarz"
         },
         {
           "name": "Black",
-          "code": "60101"
+          "code": "60101",
+          "hex": "#000000",
+          "name_de": "Schwarz"
         },
         {
           "name": "White",
-          "code": "60100"
+          "code": "60100",
+          "hex": "#FFFFFF",
+          "name_de": "Weiß"
         }
+      ],
+      "filament_ids": [
+        "GFC00"
       ]
     },
     {
@@ -1241,8 +1782,13 @@
       "colors": [
         {
           "name": "Black",
-          "code": "72100"
+          "code": "72100",
+          "hex": "#000000",
+          "name_de": "Schwarz"
         }
+      ],
+      "filament_ids": [
+        "GFN05"
       ]
     },
     {
@@ -1254,8 +1800,13 @@
       "colors": [
         {
           "name": "White",
-          "code": "66100"
+          "code": "66100",
+          "hex": "#FFFFFF",
+          "name_de": "Weiß"
         }
+      ],
+      "filament_ids": [
+        "GFS06"
       ]
     },
     {
@@ -1267,16 +1818,25 @@
       "colors": [
         {
           "name": "Black",
-          "code": "63100"
+          "code": "63100",
+          "hex": "#000000",
+          "name_de": "Schwarz"
         },
         {
           "name": "White",
-          "code": "63101"
+          "code": "63101",
+          "hex": "#FFFFFF",
+          "name_de": "Weiß"
         },
         {
           "name": "Gray",
-          "code": "63102"
+          "code": "63102",
+          "hex": "#A8A8AA",
+          "name_de": "Grau"
         }
+      ],
+      "filament_ids": [
+        "GFC01"
       ]
     },
     {
@@ -1288,24 +1848,36 @@
       "colors": [
         {
           "name": "Blue",
-          "code": "72600"
+          "code": "72600",
+          "hex": "#75AED8",
+          "name_de": "Blau"
         },
         {
           "name": "Orange",
-          "code": "72200"
+          "code": "72200",
+          "hex": "#FF4800"
         },
         {
           "name": "White",
-          "code": "72102"
+          "code": "72102",
+          "hex": "#EAEAE4",
+          "name_de": "Weiß"
         },
         {
           "name": "Gray",
-          "code": "72103"
+          "code": "72103",
+          "hex": "#353533",
+          "name_de": "Grau"
         },
         {
           "name": "Black",
-          "code": "72104"
+          "code": "72104",
+          "hex": "#000000",
+          "name_de": "Schwarz"
         }
+      ],
+      "filament_ids": [
+        "GFN08"
       ]
     },
     {
@@ -1317,8 +1889,13 @@
       "colors": [
         {
           "name": "Black",
-          "code": "73100"
+          "code": "73100",
+          "hex": "#000000",
+          "name_de": "Schwarz"
         }
+      ],
+      "filament_ids": [
+        "GFN06"
       ]
     },
     {
@@ -1330,8 +1907,13 @@
       "colors": [
         {
           "name": "Clear",
-          "code": "66400"
+          "code": "66400",
+          "hex": "#F0F1A8",
+          "name_de": "Klar"
         }
+      ],
+      "filament_ids": [
+        "GFS04"
       ]
     },
     {
@@ -1343,12 +1925,19 @@
       "colors": [
         {
           "name": "White",
-          "code": "14102"
+          "code": "14102",
+          "hex": "#FFFFFF",
+          "name_de": "Weiß"
         },
         {
           "name": "Gray",
-          "code": "14104"
+          "code": "14104",
+          "hex": "#CDCECA",
+          "name_de": "Grau"
         }
+      ],
+      "filament_ids": [
+        "GFA11"
       ]
     },
     {
@@ -1360,36 +1949,87 @@
       "colors": [
         {
           "name": "Pink Citrus",
-          "code": "10903"
+          "code": "10903",
+          "hex": "#F78F77",
+          "hexes": [
+            "#F78F77",
+            "#E4505A"
+          ],
+          "name_de": "Zitrus-Pink"
         },
         {
           "name": "Dusk Glare",
-          "code": "10906"
+          "code": "10906",
+          "hex": "#CE4406",
+          "hexes": [
+            "#CE4406",
+            "#ED9558"
+          ],
+          "name_de": "Leuchtende Abenddämmerung"
         },
         {
           "name": "Arctic Whisper",
-          "code": "10900"
+          "code": "10900",
+          "hex": "#9CDBD9",
+          "hexes": [
+            "#9CDBD9",
+            "#FFFFFF"
+          ],
+          "name_de": "Arktisches Flüstern"
         },
         {
           "name": "Solar Breeze",
-          "code": "10901"
+          "code": "10901",
+          "hex": "#E94B3C",
+          "hexes": [
+            "#E94B3C",
+            "#FFFFFF"
+          ],
+          "name_de": "Sonnenbrise"
         },
         {
           "name": "Blueberry Bubblegum",
-          "code": "10905"
+          "code": "10905",
+          "hex": "#6FCAEF",
+          "hexes": [
+            "#6FCAEF",
+            "#8573DD"
+          ],
+          "name_de": "Blaubeere-Bubblegum"
         },
         {
           "name": "Mint Lime",
-          "code": "10904"
+          "code": "10904",
+          "hex": "#B6FF43",
+          "hexes": [
+            "#B6FF43",
+            "#4EC939"
+          ],
+          "name_de": "Minze-Limette"
         },
         {
           "name": "Ocean to Meadow",
-          "code": "10902"
+          "code": "10902",
+          "hex": "#307FE2",
+          "hexes": [
+            "#307FE2",
+            "#54FF9B"
+          ],
+          "name_de": "Meer und Wiese"
         },
         {
           "name": "Cotton Candy Cloud",
-          "code": "10907"
+          "code": "10907",
+          "hex": "#E7C1D5",
+          "hexes": [
+            "#E7C1D5",
+            "#8EC9E9"
+          ],
+          "name_de": "Zuckerwatten-Wolke"
         }
+      ],
+      "filament_ids": [
+        "GFA00"
       ]
     },
     {
@@ -1401,8 +2041,13 @@
       "colors": [
         {
           "name": "White",
-          "code": "46100"
+          "code": "46100",
+          "hex": "#F5F1DD",
+          "name_de": "Weiß"
         }
+      ],
+      "filament_ids": [
+        "GFB02"
       ]
     },
     {
@@ -1414,8 +2059,13 @@
       "colors": [
         {
           "name": "Black",
-          "code": "71100"
+          "code": "71100",
+          "hex": "#000000",
+          "name_de": "Schwarz"
         }
+      ],
+      "filament_ids": [
+        "GFT01"
       ]
     },
     {
@@ -1427,8 +2077,13 @@
       "colors": [
         {
           "name": "Black",
-          "code": "76100"
+          "code": "76100",
+          "hex": "#000000",
+          "name_de": "Schwarz"
         }
+      ],
+      "filament_ids": [
+        "GFT02"
       ]
     },
     {
@@ -1440,8 +2095,13 @@
       "colors": [
         {
           "name": "Green",
-          "code": "65500"
+          "code": "65500",
+          "hex": "#C0DF16",
+          "name_de": "Grün"
         }
+      ],
+      "filament_ids": [
+        "GFS03"
       ]
     },
     {
@@ -1453,9 +2113,15 @@
       "colors": [
         {
           "name": "Black",
-          "code": "46101"
+          "code": "46101",
+          "hex": "#000000",
+          "name_de": "Schwarz"
         }
+      ],
+      "filament_ids": [
+        "GFB51"
       ]
     }
-  ]
+  ],
+  "hex_source": "https://github.com/bambulab/BambuStudio/blob/master/resources/profiles/BBL/filament/filaments_color_codes.json"
 }
