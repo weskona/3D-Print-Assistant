@@ -54,6 +54,11 @@ const TRANSLATIONS = {
     price: "Price",
     add_stock: "Add stock",
     suggest_hint: "Pick a name you already have to fill in the other fields.",
+    catalog: "Bambu Lab catalog",
+    catalog_filament: "Filament",
+    catalog_color: "Color",
+    catalog_choose: "– choose –",
+    catalog_hint: "Pick a Bambu Lab filament and color to fill in name, material, brand and color. You can still change every field.",
     stock_badge: "In stock",
     spools_of_type: "Spools of this type",
     close: "Close",
@@ -122,6 +127,11 @@ const TRANSLATIONS = {
     price: "Preis",
     add_stock: "Bestand hinzufügen",
     suggest_hint: "Wähle einen vorhandenen Namen, um die übrigen Felder auszufüllen.",
+    catalog: "Bambu-Lab-Katalog",
+    catalog_filament: "Filament",
+    catalog_color: "Farbe",
+    catalog_choose: "– wählen –",
+    catalog_hint: "Wähle ein Bambu-Lab-Filament und eine Farbe, um Name, Material, Hersteller und Farbe auszufüllen. Du kannst jedes Feld danach noch ändern.",
     stock_badge: "Vorrat",
     spools_of_type: "Spulen dieser Sorte",
     close: "Schließen",
@@ -248,6 +258,16 @@ class DruckAssistantPanel extends HTMLElement {
     this._render();
   }
 
+  /** The Bambu Lab catalog is read once; the form still works without it. */
+  async _loadCatalog() {
+    if (this._catalog !== undefined) return;
+    try {
+      this._catalog = await this._hass.connection.sendMessagePromise({ type: "druck_assistant/catalog" });
+    } catch (e) {
+      this._catalog = null;
+    }
+  }
+
   _isAdmin() { return !!this._hass?.user?.is_admin; }
 
   _field(label, input) {
@@ -312,6 +332,45 @@ class DruckAssistantPanel extends HTMLElement {
         } }, this._t("save")),
         this._el("button", { onclick: () => { this._editing = null; this._render(); } }, this._t("cancel"))));
     inputs.name.addEventListener("change", fromTemplate);
+    if (!spool.id && this._catalog && this._catalog.products?.length) {
+      const german = (this._hass?.locale?.language || this._hass?.language || "en").startsWith("de");
+      const colorLabel = (c) => `${german && c.name_de ? c.name_de : c.name} (${c.code})`;
+      const productSel = this._el("select", {}, this._el("option", { value: "" }, this._t("catalog_choose")),
+        ...this._catalog.products.map((p, i) => this._el("option", { value: String(i) }, p.name)));
+      const colorSel = this._el("select", {}, this._el("option", { value: "" }, this._t("catalog_choose")));
+      colorSel.disabled = true;
+      const swatch = this._el("span", { class: "dot", style: "background:transparent" });
+      const product = () => this._catalog.products[parseInt(productSel.value, 10)];
+      productSel.addEventListener("change", () => {
+        colorSel.replaceChildren(this._el("option", { value: "" }, this._t("catalog_choose")));
+        const p = productSel.value === "" ? null : product();
+        colorSel.disabled = !p;
+        swatch.style.background = "transparent";
+        if (!p) return;
+        p.colors.forEach((c, i) => colorSel.append(this._el("option", { value: String(i) }, colorLabel(c))));
+        inputs.name.value = p.name;
+        inputs.material.value = p.material;
+        inputs.brand.value = p.brand;
+        for (const key of ["name", "material", "brand"]) touched.add(key);
+      });
+      colorSel.addEventListener("change", () => {
+        const p = product();
+        const c = colorSel.value === "" ? null : p.colors[parseInt(colorSel.value, 10)];
+        if (!c) { swatch.style.background = "transparent"; return; }
+        inputs.color.value = c.hex.toLowerCase();
+        touched.add("color");
+        swatch.style.background = c.hex;
+        // The color name tells same-type spools apart in the notes.
+        if (!touched.has("notes")) inputs.notes.value = `${c.name} (${c.code})`;
+      });
+      const picker = this._el("div", { class: "catalog" },
+        this._el("h3", {}, this._t("catalog")),
+        this._el("div", { class: "sub notice" }, this._t("catalog_hint")),
+        this._field(this._t("catalog_filament"), productSel),
+        this._field(this._t("catalog_color"), this._el("div", { class: "row" }, colorSel, swatch)));
+      const anchor = form.querySelector("h2");
+      anchor.after(picker);
+    }
     return this._el("div", { class: "overlay" }, form);
   }
 
@@ -404,7 +463,7 @@ class DruckAssistantPanel extends HTMLElement {
     const card = this._el("div", { class: "card" }, this._el("h2", {}, this._t("spools")));
     if (admin) {
       card.append(
-        this._el("button", { class: "primary", onclick: () => { this._editing = {}; this._render(); } }, this._t("add_spool")),
+        this._el("button", { class: "primary", onclick: async () => { await this._loadCatalog(); this._editing = {}; this._render(); } }, this._t("add_spool")),
         this._el("button", { onclick: () => this._call({ type: "druck_assistant/import_ams" }, (r) =>
           r.created + r.assigned + r.adopted
             ? this._t("import_result", r)
@@ -569,6 +628,10 @@ class DruckAssistantPanel extends HTMLElement {
       .field { display: flex; flex-direction: column; gap: 2px; margin-bottom: 10px; font-size: 13px; color: var(--secondary-text-color); }
       .field input { font: inherit; padding: 6px 8px; color: var(--primary-text-color); background: var(--card-background-color); border: 1px solid var(--divider-color); border-radius: 6px; }
       .dialog.form { max-width: 480px; }
+      .catalog { margin-bottom: 12px; padding-bottom: 4px; border-bottom: 1px solid var(--divider-color); }
+      .field select { font: inherit; padding: 6px 8px; color: var(--primary-text-color); background: var(--card-background-color); border: 1px solid var(--divider-color); border-radius: 6px; }
+      .row { display: flex; align-items: center; gap: 8px; }
+      .row select { flex: 1; }
       summary { cursor: pointer; font-weight: 500; }
       details.card[open] summary { margin-bottom: 8px; }
       .overlay { position: fixed; inset: 0; z-index: 10; background: rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center; padding: 16px; }
