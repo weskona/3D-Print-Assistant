@@ -49,8 +49,11 @@ const TRANSLATIONS = {
     none: "none",
     admin_only: "Only administrators can change the filament inventory.",
     price: "Price",
-    spares: "Add full spares of this type (e.g. 3 you still have)",
-    apply_price: "Use this price for all spools of this type",
+    add_stock: "Add stock",
+    add_stock_title: "Add stock: {name}",
+    add_stock_hint: "New full spools of this type. Existing spools keep their price.",
+    purchased_quantity: "Purchased quantity",
+    add: "Add",
     in_stock: "In stock",
     rfid_tag: "RFID tag (clear to unlink)",
     correct_hint: "Wrong spool? Pick the right one: the tag moves to it, and the automatic match stays corrected. Choosing \"none\" stops automatic assignment for the spool currently in this slot.",
@@ -111,8 +114,11 @@ const TRANSLATIONS = {
     none: "keine",
     admin_only: "Nur Administratoren können den Filamentbestand ändern.",
     price: "Preis",
-    spares: "Volle Ersatzspulen dieser Sorte anlegen (z. B. 3 noch vorhandene)",
-    apply_price: "Diesen Preis für alle Spulen dieser Sorte übernehmen",
+    add_stock: "Bestand hinzufügen",
+    add_stock_title: "Bestand hinzufügen: {name}",
+    add_stock_hint: "Neue volle Spulen dieser Sorte. Vorhandene Spulen behalten ihren Preis.",
+    purchased_quantity: "Gekaufte Anzahl",
+    add: "Hinzufügen",
     in_stock: "Auf Lager",
     rfid_tag: "RFID-Tag (leeren zum Lösen)",
     correct_hint: "Falsche Spule? Wähle die richtige: Der Tag wandert zu ihr, die automatische Zuordnung bleibt korrigiert. „keine“ stoppt die automatische Zuordnung für die Spule, die gerade in diesem Slot steckt.",
@@ -135,6 +141,7 @@ class DruckAssistantPanel extends HTMLElement {
     this._selected = null;
     this._tab = "overview";
     this._editing = null;
+    this._stock = null;
     this._busy = null;
     this._error = null;
     this._unsub = [];
@@ -182,7 +189,7 @@ class DruckAssistantPanel extends HTMLElement {
     } catch (e) {
       this._error = e && e.message ? e.message : String(e);
     }
-    if (this._editing === null) this._render(); // never re-render while a form is open
+    if (this._editing === null && this._stock === null) this._render(); // never re-render while a form is open
   }
 
   _t(key, vars = {}) {
@@ -227,6 +234,7 @@ class DruckAssistantPanel extends HTMLElement {
       this._notice = e && e.message ? e.message : String(e);
     }
     this._editing = null;
+    this._stock = null;
     await this._load();
     this._render();
   }
@@ -241,8 +249,6 @@ class DruckAssistantPanel extends HTMLElement {
     const v = { name: "", material: "", brand: "", color: "#808080", price_per_kg: "", initial_weight_g: 1000, remaining_g: 1000, notes: "", rfid: "", ...spool };
     const inputs = {};
     const qty = this._el("input", { type: "number", min: "1", max: "50", step: "1", value: "1" });
-    const spares = this._el("input", { type: "number", min: "0", max: "50", step: "1", value: "0" });
-    const applyPrice = this._el("input", { type: "checkbox" });
     const mk = (key, type = "text", extra = {}) => {
       inputs[key] = this._el("input", { type, value: v[key] ?? "", ...extra });
       return inputs[key];
@@ -258,19 +264,32 @@ class DruckAssistantPanel extends HTMLElement {
       this._field(this._t("remaining_weight"), mk("remaining_g", "number", { min: "0", step: "1" })),
       this._field(this._t("notes"), mk("notes")),
       spool.id ? this._field(this._t("rfid_tag"), mk("rfid")) : this._field(this._t("quantity"), qty),
-      spool.id ? this._field(this._t("spares"), spares) : "",
-      spool.id ? this._el("label", { class: "field check" }, applyPrice, this._el("span", {}, this._t("apply_price"))) : "",
       this._el("div", { class: "actions" },
         this._el("button", { class: "primary", onclick: () => {
           const out = {};
           for (const [k, el] of Object.entries(inputs)) out[k] = el.value;
           if (spool.id) out.id = spool.id; else delete out.rfid;
-          this._call({ type: "druck_assistant/spool_save", spool: out, ...(spool.id
-            ? { spares: parseInt(spares.value, 10) || 0, apply_price: applyPrice.checked }
-            : { quantity: parseInt(qty.value, 10) || 1 }) });
+          this._call({ type: "druck_assistant/spool_save", spool: out, ...(spool.id ? {} : { quantity: parseInt(qty.value, 10) || 1 }) });
         } }, this._t("save")),
         this._el("button", { onclick: () => { this._editing = null; this._render(); } }, this._t("cancel"))));
     return form;
+  }
+
+  _renderStockForm(spool, cur) {
+    const qty = this._el("input", { type: "number", min: "1", max: "50", step: "1", value: "1" });
+    const price = this._el("input", { type: "number", min: "0", step: "0.01", value: spool.price_per_kg ?? "" });
+    return this._el("div", { class: "card form" },
+      this._el("h2", {}, this._t("add_stock_title", { name: spool.name.replace(/\s+#\d+$/, "") })),
+      this._el("div", { class: "sub notice" }, `${spool.material}${spool.brand ? `, ${spool.brand}` : ""} · ${this._t("add_stock_hint")}`),
+      this._field(this._t("purchased_quantity"), qty),
+      this._field(`${this._t("price_per_kg")} (${cur})`, price),
+      this._el("div", { class: "actions" },
+        this._el("button", { class: "primary", onclick: () => this._call({
+          type: "druck_assistant/spool_add_stock", spool_id: spool.id,
+          quantity: parseInt(qty.value, 10) || 1,
+          price_per_kg: price.value === "" ? null : price.value,
+        }) }, this._t("add")),
+        this._el("button", { onclick: () => { this._stock = null; this._render(); } }, this._t("cancel"))));
   }
 
   _renderFilament(main, printer) {
@@ -279,6 +298,7 @@ class DruckAssistantPanel extends HTMLElement {
     if (this._notice) main.append(this._el("div", { class: this._noticeOk ? "sub notice" : "error" }, this._notice));
     if (!admin) main.append(this._el("div", { class: "sub notice" }, this._t("admin_only")));
     if (this._editing !== null) { main.append(this._renderForm(this._editing)); return; }
+    if (this._stock !== null) { main.append(this._renderStockForm(this._stock, cur)); return; }
 
     const slotOf = {};
     for (const p of this._data.printers) for (const sl of p.slots || []) if (sl.spool_id) slotOf[sl.spool_id] = sl.label;
@@ -318,12 +338,13 @@ class DruckAssistantPanel extends HTMLElement {
         const actions = this._el("td", {});
         if (admin) {
           actions.append(
+            this._el("button", { onclick: () => { this._stock = sp; this._render(); } }, this._t("add_stock")),
             this._el("button", { onclick: () => { this._editing = sp; this._render(); } }, this._t("edit")),
             this._el("button", { onclick: () => this._call({ type: "druck_assistant/spool_archive", spool_id: sp.id, archived: true }) }, this._t("archive")),
             this._el("button", { onclick: () => { if (confirm(this._t("confirm_delete", { name: sp.name }))) this._call({ type: "druck_assistant/spool_delete", spool_id: sp.id }); } }, this._t("delete")));
         }
         table.append(this._el("tr", {},
-          this._el("td", admin ? { class: "link", title: this._t("edit"), onclick: () => { this._editing = sp; this._render(); } } : {}, dot, sp.name, sp.rfid ? this._el("span", { class: "badge", title: sp.rfid }, "RFID") : ""),
+          this._el("td", admin ? { class: "link", title: this._t("add_stock"), onclick: () => { this._stock = sp; this._render(); } } : {}, dot, sp.name, sp.rfid ? this._el("span", { class: "badge", title: sp.rfid }, "RFID") : ""),
           this._el("td", {}, sp.material),
           this._el("td", {}, sp.brand || "–"),
           this._el("td", {}, bar, `${this._fmtNum(sp.remaining_g, 0)} / ${this._fmtNum(sp.initial_weight_g, 0)} g (${this._fmtNum(sp.remaining_percent, 0)} %)`),
@@ -430,7 +451,6 @@ class DruckAssistantPanel extends HTMLElement {
       details.card[open] summary { margin-bottom: 8px; }
       td.link { cursor: pointer; }
       td.link:hover { text-decoration: underline; }
-      .field.check { flex-direction: row; align-items: center; gap: 8px; }
       .badge { margin-left: 6px; padding: 0 6px; border-radius: 8px; font-size: 11px; background: var(--divider-color); color: var(--secondary-text-color); }
       .notice { padding: 0 0 12px; }
       .bar { width: 120px; height: 6px; border-radius: 3px; background: var(--divider-color); margin-bottom: 4px; }

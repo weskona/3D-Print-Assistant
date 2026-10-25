@@ -13,6 +13,7 @@ from .const import (
     DOMAIN,
     WS_DATA,
     WS_IMPORT_AMS,
+    WS_SPOOL_ADD_STOCK,
     WS_SPOOL_ARCHIVE,
     WS_SPOOL_ASSIGN,
     WS_SPOOL_DELETE,
@@ -30,6 +31,7 @@ def async_register(hass: HomeAssistant) -> None:
         ws_spool_assign,
         ws_import_ams,
         ws_spool_archive,
+        ws_spool_add_stock,
     ):
         websocket_api.async_register_command(hass, command)
 
@@ -59,9 +61,6 @@ def ws_get_data(
         vol.Required("type"): WS_SPOOL_SAVE,
         vol.Required("spool"): dict,
         vol.Optional("quantity", default=1): vol.All(int, vol.Range(min=1, max=50)),
-        # Only when editing a spool: full spares of the same type, and price for all of its type.
-        vol.Optional("spares", default=0): vol.All(int, vol.Range(min=0, max=50)),
-        vol.Optional("apply_price", default=False): bool,
     }
 )
 @websocket_api.require_admin
@@ -72,12 +71,7 @@ def ws_spool_save(
     manager = hass.data[DOMAIN]["filament"]
     try:
         if msg["spool"].get("id"):
-            saved = manager.store.save_spool(msg["spool"])
-            created = [saved]
-            if msg["apply_price"]:
-                manager.store.apply_price(saved)
-            if msg["spares"]:
-                created += manager.store.add_spares(saved, msg["spares"])
+            created = [manager.store.save_spool(msg["spool"])]
         elif msg["quantity"] == 1:
             created = [manager.store.save_spool(msg["spool"])]
         else:
@@ -174,3 +168,33 @@ def ws_spool_archive(
         return
     manager.changed()
     connection.send_result(msg["id"])
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): WS_SPOOL_ADD_STOCK,
+        vol.Required("spool_id"): str,
+        vol.Required("quantity"): vol.All(int, vol.Range(min=1, max=50)),
+        vol.Optional("price_per_kg"): vol.Any(None, str, int, float),
+    }
+)
+@websocket_api.require_admin
+@callback
+def ws_spool_add_stock(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Add full spares of an existing spool's type, optionally at a new price."""
+    manager = hass.data[DOMAIN]["filament"]
+    source = manager.store.spools.get(msg["spool_id"])
+    if source is None:
+        connection.send_error(msg["id"], "unknown_spool", "unknown spool")
+        return
+    try:
+        created = manager.store.add_spares(
+            source, msg["quantity"], msg.get("price_per_kg")
+        )
+    except SpoolError as err:
+        connection.send_error(msg["id"], "invalid_spool", str(err))
+        return
+    manager.changed()
+    connection.send_result(msg["id"], {"spools": [s.as_dict() for s in created]})

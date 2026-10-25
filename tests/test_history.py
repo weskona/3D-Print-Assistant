@@ -364,27 +364,24 @@ def test_spares_and_price_for_a_detected_spool():
     assert all(s.color == "#000000FF" and s.brand == "Bambu Lab" for s in spares)
     assert len(store.assignments) == 1  # spares are stock, not in a slot
 
+    # a new batch at another price: only the new spools get it
+    batch = store.add_spares(loaded, 2, "21,5".replace(",", "."))
+    assert [s.price_per_kg for s in batch] == [21.5, 21.5] and loaded.price_per_kg == 18
+    assert all(s.price_per_kg == 18 for s in spares)
+    try:
+        store.add_spares(loaded, 1, "abc")
+    except m.SpoolError:
+        pass
+    else:
+        raise AssertionError("invalid price")
+
     # more spares continue the numbering
-    assert [s.name for s in store.add_spares(loaded, 2)] == ["Bambu PETG Basic #4", "Bambu PETG Basic #5"]
+    assert [s.name for s in store.add_spares(loaded, 1)] == ["Bambu PETG Basic #6"]
 
     # the next tagged spool uses up the stock instead of creating a new spool
     nxt = {**tray, "tray_uuid": "2" * 32}
     action, spool = store.import_slot("p:t2", nxt, include_untagged=False)
-    assert action == "adopted" and spool.id == spares[0].id and len(store.spools) == 6
-
-
-def test_apply_price_to_same_type_only():
-    m = _spools_module()
-    store = m.SpoolStore()
-    a = store.save_spool({"name": "PETG Basic", "material": "PETG", "price_per_kg": 20})
-    b = store.save_spool({"name": "PETG Basic #1", "material": "PETG"})
-    c = store.save_spool({"name": "petg basic #2", "material": "petg"})
-    other = store.save_spool({"name": "PETG HF", "material": "PETG"})
-    gone = store.save_spool({"name": "PETG Basic #3", "material": "PETG"})
-    store.archive(gone.id)
-    assert store.apply_price(a) == 2
-    assert b.price_per_kg == c.price_per_kg == 20
-    assert other.price_per_kg is None and gone.price_per_kg is None
+    assert action == "adopted" and spool.id == spares[0].id and len(store.spools) == 7
 
 
 def test_add_spares_validates_quantity():

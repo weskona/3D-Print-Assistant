@@ -202,17 +202,21 @@ class SpoolStore:
             and name_base(s.name).lower() == base
         ]
 
-    def apply_price(self, source: Spool) -> int:
-        """Copy the price of source to all other spools of the same type."""
-        others = [s for s in self._same_type(source) if s.id != source.id]
-        for spool in others:
-            spool.price_per_kg = source.price_per_kg
-        return len(others)
+    def add_spares(
+        self, source: Spool, quantity: int, price_per_kg: Any = None
+    ) -> list[Spool]:
+        """Add full, untagged copies of source (spares you bought), numbered after existing ones.
 
-    def add_spares(self, source: Spool, quantity: int) -> list[Spool]:
-        """Add full, untagged copies of source (spares you bought), numbered after existing ones."""
+        price_per_kg sets the price of the new spools (a new batch may cost something
+        else); None keeps the price of source. Existing spools are not touched.
+        """
         if not 1 <= quantity <= 50:
             raise SpoolError("quantity must be between 1 and 50")
+        price = (
+            source.price_per_kg
+            if price_per_kg in (None, "")
+            else _number(price_per_kg, "price_per_kg")
+        )
         base = name_base(source.name)
         numbers = [
             int(m.group(1))
@@ -228,7 +232,7 @@ class SpoolStore:
                     "material": source.material,
                     "brand": source.brand,
                     "color": source.color,
-                    "price_per_kg": source.price_per_kg,
+                    "price_per_kg": price,
                     "initial_weight_g": source.initial_weight_g,
                     "remaining_g": source.initial_weight_g,
                     "notes": source.notes,

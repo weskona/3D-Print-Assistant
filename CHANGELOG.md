@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Click a spool in the inventory (its name or "Edit") to enter price and stock in one place: "Add full spares of this type" creates full, untagged copies (numbered after existing ones) that are matched when a new spool is detected, and "Use this price for all spools of this type" copies the price to every active spool with the same name and material.
+- Click a spool in the inventory (its name, or "Add stock") to add stock of that type: enter the purchased quantity and the price per kg. Full, untagged copies are created (numbered after existing ones) and matched when a new spool is detected. The price applies to the new spools only, so older spools keep what they cost.
 - The Spools card shows a stock summary ("In stock: PETG Basic × 3") of all spools that are in no slot.
 
 ## [0.4.0-beta.3] - 2026-10-24
