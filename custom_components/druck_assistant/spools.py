@@ -10,6 +10,14 @@ from typing import Any
 HEX_COLOR = re.compile(r"^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$")
 
 
+_NUMBER_SUFFIX = re.compile(r"\s+#(\d+)$")
+
+
+def name_base(name: str) -> str:
+    """Spool name without a trailing " #n" number."""
+    return _NUMBER_SUFFIX.sub("", name).strip()
+
+
 MAX_COLOR_DISTANCE = 90  # RGB distance (0-441) up to which two colors count as the same
 
 
@@ -180,6 +188,52 @@ class SpoolStore:
         name = str(base.get("name", "")).strip()
         return [
             self.save_spool({**base, "name": f"{name} #{i}" if name else name})
+            for i in range(1, quantity + 1)
+        ]
+
+    def _same_type(self, spool: Spool) -> list[Spool]:
+        """Active spools of the same type: same material and same name (ignoring " #n")."""
+        base, material = name_base(spool.name).lower(), spool.material.strip().lower()
+        return [
+            s
+            for s in self.spools.values()
+            if not s.archived
+            and s.material.strip().lower() == material
+            and name_base(s.name).lower() == base
+        ]
+
+    def apply_price(self, source: Spool) -> int:
+        """Copy the price of source to all other spools of the same type."""
+        others = [s for s in self._same_type(source) if s.id != source.id]
+        for spool in others:
+            spool.price_per_kg = source.price_per_kg
+        return len(others)
+
+    def add_spares(self, source: Spool, quantity: int) -> list[Spool]:
+        """Add full, untagged copies of source (spares you bought), numbered after existing ones."""
+        if not 1 <= quantity <= 50:
+            raise SpoolError("quantity must be between 1 and 50")
+        base = name_base(source.name)
+        numbers = [
+            int(m.group(1))
+            for s in self.spools.values()
+            if name_base(s.name).lower() == base.lower()
+            and (m := _NUMBER_SUFFIX.search(s.name))
+        ]
+        start = max(numbers, default=0)
+        return [
+            self.save_spool(
+                {
+                    "name": f"{base} #{start + i}",
+                    "material": source.material,
+                    "brand": source.brand,
+                    "color": source.color,
+                    "price_per_kg": source.price_per_kg,
+                    "initial_weight_g": source.initial_weight_g,
+                    "remaining_g": source.initial_weight_g,
+                    "notes": source.notes,
+                }
+            )
             for i in range(1, quantity + 1)
         ]
 

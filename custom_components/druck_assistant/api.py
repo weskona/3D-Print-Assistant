@@ -59,6 +59,9 @@ def ws_get_data(
         vol.Required("type"): WS_SPOOL_SAVE,
         vol.Required("spool"): dict,
         vol.Optional("quantity", default=1): vol.All(int, vol.Range(min=1, max=50)),
+        # Only when editing a spool: full spares of the same type, and price for all of its type.
+        vol.Optional("spares", default=0): vol.All(int, vol.Range(min=0, max=50)),
+        vol.Optional("apply_price", default=False): bool,
     }
 )
 @websocket_api.require_admin
@@ -68,7 +71,14 @@ def ws_spool_save(
 ) -> None:
     manager = hass.data[DOMAIN]["filament"]
     try:
-        if msg["spool"].get("id") or msg["quantity"] == 1:
+        if msg["spool"].get("id"):
+            saved = manager.store.save_spool(msg["spool"])
+            created = [saved]
+            if msg["apply_price"]:
+                manager.store.apply_price(saved)
+            if msg["spares"]:
+                created += manager.store.add_spares(saved, msg["spares"])
+        elif msg["quantity"] == 1:
             created = [manager.store.save_spool(msg["spool"])]
         else:
             created = manager.store.add_spools(msg["spool"], msg["quantity"])

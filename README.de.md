@@ -27,6 +27,12 @@ Mit „Aus AMS importieren“ werden aus den belegten AMS-Slots Spulen angelegt.
 RFID-Tag werden zusätzlich automatisch übernommen (Option „Neue Bambu-Spulen automatisch übernehmen“);
 Spulen ohne Tag, etwa Fremdfilament oder die externe Spule, werden nur über den Button importiert.
 Der Restbestand wird aus der AMS-Prozentanzeige geschätzt und lässt sich von Hand korrigieren.
+**Schnelleingabe an einer erkannten Spule:** Klicke eine Spule in der Liste an (oder „Bearbeiten“),
+trage den Preis ein und lege die noch vollen Spulen an, z. B. 3 Ersatzspulen „Bambu PETG Basic“. Mit
+„Diesen Preis für alle Spulen dieser Sorte übernehmen“ gilt der Preis auch für die Ersatzspulen und alle
+anderen Spulen mit gleichem Namen und Material. Die Ersatzspulen erscheinen als Vorrat („Auf Lager: Bambu PETG Basic × 3“)
+und werden aufgebraucht, sobald neue Spulen erkannt werden.
+
 **Großeinkauf:** Lege das Paket mit dem Feld „Anzahl“ an (z. B. 4 x „PETG Basic Schwarz“, Farbe Schwarz).
 Wird eine neue Bambu-Spule erkannt, sucht die Integration zuerst eine passende Spule im Bestand
 (nicht in einem Slot, noch ohne Tag, gleiche Sorte, ähnliche Farbe) und verwendet sie, statt eine neue

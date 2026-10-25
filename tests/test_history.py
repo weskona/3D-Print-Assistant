@@ -347,3 +347,53 @@ def test_editing_the_tag_keeps_it_unique():
     assert store.spools[b.id].rfid == "F" * 32 and store.spools[a.id].rfid == ""
     store.save_spool({"id": b.id, "name": "B", "material": "PLA", "rfid": ""})  # unlink
     assert store.spools[b.id].rfid == "" and store.find_by_rfid("F" * 32) is None
+
+
+def test_spares_and_price_for_a_detected_spool():
+    m = _spools_module()
+    store = m.SpoolStore()
+    tray = {**TRAY, "type": "PETG", "name": "Bambu PETG Basic", "color": "#000000FF", "tray_uuid": "1" * 32}
+    _, loaded = store.import_slot("p:t1", tray, include_untagged=False)
+    assert loaded.price_per_kg is None
+
+    # click the detected spool: set the price and add the three full ones you still have
+    loaded = store.save_spool({"id": loaded.id, "name": loaded.name, "material": "PETG", "brand": loaded.brand, "color": loaded.color, "price_per_kg": 18})
+    spares = store.add_spares(loaded, 3)
+    assert [s.name for s in spares] == ["Bambu PETG Basic #1", "Bambu PETG Basic #2", "Bambu PETG Basic #3"]
+    assert all(s.remaining_g == s.initial_weight_g == 1000 and not s.rfid and s.price_per_kg == 18 for s in spares)
+    assert all(s.color == "#000000FF" and s.brand == "Bambu Lab" for s in spares)
+    assert len(store.assignments) == 1  # spares are stock, not in a slot
+
+    # more spares continue the numbering
+    assert [s.name for s in store.add_spares(loaded, 2)] == ["Bambu PETG Basic #4", "Bambu PETG Basic #5"]
+
+    # the next tagged spool uses up the stock instead of creating a new spool
+    nxt = {**tray, "tray_uuid": "2" * 32}
+    action, spool = store.import_slot("p:t2", nxt, include_untagged=False)
+    assert action == "adopted" and spool.id == spares[0].id and len(store.spools) == 6
+
+
+def test_apply_price_to_same_type_only():
+    m = _spools_module()
+    store = m.SpoolStore()
+    a = store.save_spool({"name": "PETG Basic", "material": "PETG", "price_per_kg": 20})
+    b = store.save_spool({"name": "PETG Basic #1", "material": "PETG"})
+    c = store.save_spool({"name": "petg basic #2", "material": "petg"})
+    other = store.save_spool({"name": "PETG HF", "material": "PETG"})
+    gone = store.save_spool({"name": "PETG Basic #3", "material": "PETG"})
+    store.archive(gone.id)
+    assert store.apply_price(a) == 2
+    assert b.price_per_kg == c.price_per_kg == 20
+    assert other.price_per_kg is None and gone.price_per_kg is None
+
+
+def test_add_spares_validates_quantity():
+    m = _spools_module()
+    store = m.SpoolStore()
+    spool = store.save_spool({"name": "x", "material": "PLA"})
+    for bad in (0, 51):
+        try:
+            store.add_spares(spool, bad)
+        except m.SpoolError:
+            continue
+        raise AssertionError(bad)
