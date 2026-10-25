@@ -275,11 +275,13 @@ class DruckAssistantPanel extends HTMLElement {
     return form;
   }
 
-  /** Spools of the same type (same name without " #n" and same material) form one inventory row. */
+  /** Spools of the same type (name without " #n", material and color) form one inventory row. */
   _groups(spools) {
     const groups = new Map();
     for (const sp of spools) {
-      const key = `${sp.name.replace(/\s+#\d+$/, "").toLowerCase()}|${sp.material.toLowerCase()}`;
+      // The alpha channel of the tray color is ignored; different colors are separate rows.
+      const color = /^#[0-9a-f]{6}/i.test(sp.color || "") ? sp.color.slice(0, 7).toLowerCase() : "";
+      const key = `${sp.name.replace(/\s+#\d+$/, "").toLowerCase()}|${sp.material.toLowerCase()}|${color}`;
       if (!groups.has(key)) {
         groups.set(key, { key, name: sp.name.replace(/\s+#\d+$/, ""), material: sp.material, brand: "", color: sp.color, spools: [], remaining: 0, initial: 0 });
       }
@@ -307,7 +309,7 @@ class DruckAssistantPanel extends HTMLElement {
 
     const dialog = this._el("div", { class: "dialog", role: "dialog" },
       this._el("h2", {}, group.name),
-      this._el("div", { class: "sub notice" }, `${group.material}${group.brand ? `, ${group.brand}` : ""}`));
+      this._el("div", { class: "sub notice" }, `${group.material}${group.brand ? `, ${group.brand}` : ""}${group.color ? `, ${group.color.slice(0, 7)}` : ""}`));
 
     if (admin) {
       dialog.append(
@@ -384,7 +386,7 @@ class DruckAssistantPanel extends HTMLElement {
         const actions = this._el("td", {});
         if (admin) actions.append(this._el("button", { onclick: open }, this._t("add_stock")));
         table.append(this._el("tr", {},
-          this._el("td", admin ? { class: "link", onclick: open } : {}, dot, g.name,
+          this._el("td", admin ? { class: "link", onclick: open, title: g.color || "" } : { title: g.color || "" }, dot, g.name,
             g.spools.length > 1 ? this._el("span", { class: "badge" }, `× ${g.spools.length}`) : ""),
           this._el("td", {}, g.material),
           this._el("td", {}, g.brand || "–"),
@@ -480,7 +482,7 @@ class DruckAssistantPanel extends HTMLElement {
       th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--divider-color); white-space: nowrap; }
       th { color: var(--secondary-text-color); font-weight: 500; }
       td.num, th.num { text-align: right; }
-      .dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; vertical-align: middle; margin-right: 6px; border: 1px solid var(--divider-color); }
+      .dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; vertical-align: middle; margin-right: 6px; border: 1px solid var(--divider-color); }
       .ok { color: var(--success-color, #4caf50); } .fail { color: var(--error-color, #f44336); }
       .tabs { display: flex; gap: 4px; }
       .tabs button { background: transparent; color: inherit; border: 0; border-bottom: 2px solid transparent; padding: 6px 10px; font: inherit; cursor: pointer; opacity: .8; }
