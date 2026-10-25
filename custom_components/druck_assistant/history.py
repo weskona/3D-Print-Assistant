@@ -114,6 +114,19 @@ class PrintSession:
         self.power_w = watts
         self.power_ts = now
 
+    def estimate_energy_kwh(self, now: datetime, energy_now_kwh: float | None) -> float:
+        """Energy used so far without changing the session (for live display)."""
+        if (
+            self.energy_start_kwh is not None
+            and energy_now_kwh is not None
+            and energy_now_kwh >= self.energy_start_kwh
+        ):
+            return energy_now_kwh - self.energy_start_kwh
+        pending = 0.0
+        if self.power_w is not None and self.power_ts is not None:
+            pending = self.power_w * (now - self.power_ts).total_seconds() / 3600 / 1000
+        return self.energy_acc_kwh + pending
+
     def energy_kwh(self, now: datetime, energy_end_kwh: float | None) -> float:
         """Energy used so far: meter delta if available, else integrated power."""
         if (

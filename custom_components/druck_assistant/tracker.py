@@ -71,6 +71,68 @@ class PrintTracker:
             prices = {}
         return price_for(material, prices, self.price_per_kg)
 
+    def current_print(self) -> dict[str, Any] | None:
+        """The print in progress for the panel, from ha-bambulab entities and our session."""
+        status = self._value("print_status")
+        session = self.history.session
+        if status not in ("running", "pause", "prepare") and session is None:
+            return None
+        now = dt_util.utcnow()
+        tray = self.current_tray
+        spool = (
+            self.filament.store.spools.get(session.spool_id)
+            if session and session.spool_id
+            else None
+        )
+        material = (
+            spool.material
+            if spool
+            else (session.material if session and session.material else None)
+            or (tray.attributes.get("type") if tray else None)
+        )
+        price = (
+            spool.price_per_kg
+            if spool is not None and spool.price_per_kg is not None
+            else self.price_for_material(material)
+        )
+        weight = self._float("print_weight")
+        energy = (
+            session.estimate_energy_kwh(now, self._external_float(CONF_ENERGY_ENTITY))
+            if session
+            else None
+        )
+        filament_cost = round(weight / 1000 * price, 2) if weight and price else None
+        energy_cost = round(energy * self.price_per_kwh, 2) if energy else None
+        total = (
+            round((filament_cost or 0) + (energy_cost or 0), 2)
+            if filament_cost is not None or energy_cost is not None
+            else None
+        )
+        return {
+            "status": status,
+            "name": self._value("subtask_name") or (session.name if session else None),
+            "progress": self._float("print_progress"),
+            "started": self._value("start_time")
+            or (session.started.isoformat() if session else None),
+            "remaining_min": self._float("remaining_time"),
+            "end": self._value("end_time"),
+            "layer": self._float("current_layer"),
+            "total_layers": self._float("total_layers"),
+            "weight_g": weight,
+            "nozzle_temp": self._float("nozzle_temp"),
+            "bed_temp": self._float("bed_temp"),
+            "spool": spool.name if spool else None,
+            "material": material,
+            "color": (spool.color if spool else None)
+            or (session.color if session else None)
+            or (tray.attributes.get("color") if tray else None),
+            "price_per_kg": price,
+            "filament_cost": filament_cost,
+            "energy_kwh": round(energy, 3) if energy is not None else None,
+            "energy_cost": energy_cost,
+            "total_cost": total,
+        }
+
     def panel_data(self) -> dict[str, Any]:
         """Everything the panel needs for this printer."""
         session = self.history.session
@@ -90,6 +152,7 @@ class PrintTracker:
                 "energy_kwh": h.total_energy_kwh,
                 "energy_cost": h.total_energy_cost,
             },
+            "current_print": self.current_print(),
             "session": None
             if session is None
             else {
