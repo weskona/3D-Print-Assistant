@@ -50,6 +50,7 @@ const TRANSLATIONS = {
     admin_only: "Only administrators can change the filament inventory.",
     price: "Price",
     add_stock: "Add stock",
+    stock_badge: "In stock",
     spools_of_type: "Spools of this type",
     close: "Close",
     add_stock_hint: "New full spools of this type. Existing spools keep their price.",
@@ -115,6 +116,7 @@ const TRANSLATIONS = {
     admin_only: "Nur Administratoren können den Filamentbestand ändern.",
     price: "Preis",
     add_stock: "Bestand hinzufügen",
+    stock_badge: "Vorrat",
     spools_of_type: "Spulen dieser Sorte",
     close: "Schließen",
     add_stock_hint: "Neue volle Spulen dieser Sorte. Vorhandene Spulen behalten ihren Preis.",
@@ -337,7 +339,8 @@ class DruckAssistantPanel extends HTMLElement {
           this._el("button", { onclick: () => { if (confirm(this._t("confirm_delete", { name: sp.name }))) this._call({ type: "druck_assistant/spool_delete", spool_id: sp.id }, null, true); } }, this._t("delete")));
       }
       table.append(this._el("tr", {},
-        this._el("td", {}, sp.name, sp.rfid ? this._el("span", { class: "badge", title: sp.rfid }, "RFID") : ""),
+        this._el("td", {}, sp.name, sp.rfid ? this._el("span", { class: "badge", title: sp.rfid }, "RFID") : "",
+          slotOf[sp.id] ? "" : this._el("span", { class: "badge stock" }, this._t("stock_badge"))),
         this._el("td", {}, `${this._fmtNum(sp.remaining_g, 0)} / ${this._fmtNum(sp.initial_weight_g, 0)} g (${this._fmtNum(sp.remaining_percent, 0)} %)`),
         this._el("td", {}, sp.price_per_kg != null ? `${this._fmtMoney(sp.price_per_kg, cur)}/kg` : "–"),
         this._el("td", {}, slotOf[sp.id] || "–"),
@@ -397,7 +400,8 @@ class DruckAssistantPanel extends HTMLElement {
             ? { class: "link", title: g.color || "", role: "button", "aria-expanded": String(expanded), onclick: toggle }
             : { title: g.color || "" },
           multi ? this._el("span", { class: "chevron" }, expanded ? "▾" : "▸") : "", dot, g.name,
-            multi ? this._el("span", { class: "badge" }, `× ${g.spools.length}`) : ""),
+            multi ? this._el("span", { class: "badge" }, `× ${g.spools.length}`) : "",
+            !multi && !slotOf[g.spools[0].id] ? this._el("span", { class: "badge stock" }, this._t("stock_badge")) : ""),
           this._el("td", {}, g.material),
           this._el("td", {}, g.brand || "–"),
           this._el("td", {}, bar, `${this._fmtNum(g.remaining, 0)} / ${this._fmtNum(g.initial, 0)} g (${this._fmtNum(g.percent, 0)} %)`),
@@ -409,7 +413,9 @@ class DruckAssistantPanel extends HTMLElement {
             table.append(this._el("tr", { class: "sub-row" },
               this._el("td", { class: "indent" }, sp.name,
                 sp.rfid ? this._el("span", { class: "badge", title: sp.rfid }, "RFID") : "",
-                slotOf[sp.id] ? this._el("span", { class: "sub" }, ` · ${slotOf[sp.id]}`) : ""),
+                slotOf[sp.id]
+                  ? this._el("span", { class: "sub" }, ` · ${slotOf[sp.id]}`)
+                  : this._el("span", { class: "badge stock" }, this._t("stock_badge"))),
               this._el("td", {}, ""),
               this._el("td", {}, ""),
               this._el("td", {},
@@ -532,6 +538,7 @@ class DruckAssistantPanel extends HTMLElement {
       .chevron { display: inline-block; width: 14px; color: var(--secondary-text-color); }
       tr.sub-row td { font-size: 13px; color: var(--secondary-text-color); border-bottom-style: dashed; }
       tr.sub-row td.indent { padding-left: 38px; }
+      .badge.stock { background: var(--primary-color); color: var(--text-primary-color, #fff); }
       .badge { margin-left: 6px; padding: 0 6px; border-radius: 8px; font-size: 11px; background: var(--divider-color); color: var(--secondary-text-color); }
       .notice { padding: 0 0 12px; }
       .bar { width: 120px; height: 6px; border-radius: 3px; background: var(--divider-color); margin-bottom: 4px; }
