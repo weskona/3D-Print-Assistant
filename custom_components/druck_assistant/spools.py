@@ -27,6 +27,11 @@ def _rgb(color: str) -> tuple[int, int, int] | None:
     return int(color[1:3], 16), int(color[3:5], 16), int(color[5:7], 16)
 
 
+def color_key(color: str) -> str:
+    """Color without alpha, lower case ("" if missing): spools of one type and color share it."""
+    return color[:7].lower() if HEX_COLOR.match(color or "") else ""
+
+
 def color_distance(a: str, b: str) -> float | None:
     """Euclidean RGB distance of two #rrggbb[aa] colors, None if either is missing."""
     ca, cb = _rgb(a), _rgb(b)
@@ -205,7 +210,8 @@ class SpoolStore:
     def add_spares(
         self, source: Spool, quantity: int, price_per_kg: Any = None
     ) -> list[Spool]:
-        """Add full, untagged copies of source (spares you bought), numbered after existing ones.
+        """Add full, untagged copies of source (spares you bought), numbered after existing ones
+        of the same type and color.
 
         price_per_kg sets the price of the new spools (a new batch may cost something
         else); None keeps the price of source. Existing spools are not touched.
@@ -222,6 +228,8 @@ class SpoolStore:
             int(m.group(1))
             for s in self.spools.values()
             if name_base(s.name).lower() == base.lower()
+            and s.material.strip().lower() == source.material.strip().lower()
+            and color_key(s.color) == color_key(source.color)
             and (m := _NUMBER_SUFFIX.search(s.name))
         ]
         start = max(numbers, default=0)

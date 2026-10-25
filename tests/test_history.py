@@ -394,3 +394,15 @@ def test_add_spares_validates_quantity():
         except m.SpoolError:
             continue
         raise AssertionError(bad)
+
+
+def test_spare_numbering_is_per_color():
+    m = _spools_module()
+    store = m.SpoolStore()
+    black = store.save_spool({"name": "Bambu PETG Basic", "material": "PETG", "color": "#000000FF"})
+    gray = store.save_spool({"name": "Bambu PETG Basic", "material": "PETG", "color": "#8E9089"})
+    assert [s.name for s in store.add_spares(black, 2)] == ["Bambu PETG Basic #1", "Bambu PETG Basic #2"]
+    # another color of the same name starts at 1 again; alpha does not make a new color
+    assert [s.name for s in store.add_spares(gray, 1)] == ["Bambu PETG Basic #1"]
+    assert m.color_key("#AABBCCFF") == m.color_key("#aabbcc") == "#aabbcc" and m.color_key("") == ""
+    assert [s.name for s in store.add_spares(black, 1)] == ["Bambu PETG Basic #3"]
