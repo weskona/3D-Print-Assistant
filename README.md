@@ -21,8 +21,8 @@ Home Assistant integration for Bambu Lab printers. It builds on
 
 ## Filament management
 
-Open the "Filament" tab of the panel (administrators can edit). Add your spools, then assign
-each spool to a slot of the printer. The slot with the active spool at print start is used:
+Open the "Filament" tab of the panel (administrators can edit) and add your spools, then assign
+each spool to a slot of the printer in the "AMS" tab. The slot with the active spool at print start is used:
 its spool's price replaces the type price, and the used weight is deducted when the print ends.
 Click "Import from AMS" to create spools from the loaded AMS slots. New Bambu spools with an RFID
 tag are also added automatically (option "Automatically add new Bambu spools"); spools without a
@@ -37,7 +37,7 @@ the entered price, existing spools keep theirs.
 When a new Bambu spool is detected, the integration first looks for a matching spool in your stock
 (not in a slot, no tag yet, same material, similar color) and uses it instead of creating a new one.
 So the stock goes from 4 to 3 and the loaded spool is tracked from then on. Without a match, a new spool is created.
-If the match is wrong, pick the right spool in the slot list of the Filament tab: the RFID tag moves to
+If the match is wrong, pick the right spool in the slot list of the AMS tab: the RFID tag moves to
 it and the correction sticks. Choosing "none" stops the automatic assignment for the spool currently in
 the slot (the "Import from AMS" button overrides this). You can also edit or clear a spool's RFID tag
 in its form. A stock spool that lost its tag simply stays in stock.

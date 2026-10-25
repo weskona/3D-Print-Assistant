@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0-beta.11] - 2026-10-25
+
+### Changed
+
+- The "Slots" card moved from the Filament tab to a new "AMS" tab of the panel (the slot assignment and its hint are unchanged); the READMEs point to the new tab.
+
 ## [0.4.0-beta.10] - 2026-10-25
 
 ### Added
@@ -126,7 +132,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Filament prices per type (e.g. `PLA=20`) in the options, sensor for the current filament including price per kg. Cost sensors in euro.
 - GitHub workflow that creates a tag and release after a push to `main`.
 
-[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.10...HEAD
+[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.11...HEAD
+[0.4.0-beta.11]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.10...v0.4.0-beta.11
 [0.4.0-beta.10]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.9...v0.4.0-beta.10
 [0.4.0-beta.9]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.8...v0.4.0-beta.9
 [0.4.0-beta.8]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.7...v0.4.0-beta.8
