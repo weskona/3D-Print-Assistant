@@ -27,6 +27,9 @@ Mit „Aus AMS importieren“ werden aus den belegten AMS-Slots Spulen angelegt.
 RFID-Tag werden zusätzlich automatisch übernommen (Option „Neue Bambu-Spulen automatisch übernehmen“);
 Spulen ohne Tag, etwa Fremdfilament oder die externe Spule, werden nur über den Button importiert.
 Der Restbestand wird aus der AMS-Prozentanzeige geschätzt und lässt sich von Hand korrigieren.
+**Filter:** Die Karte „Spulen“ hat ein Suchfeld (Name, Material, Hersteller, Notizen, Farbe) und Filter für Material,
+Hersteller und Status (Vorrat, in einem Slot, niedriger Bestand). Tabelle und Summen zeigen nur die passenden Spulen; das Popup einer Sorte listet weiterhin alle ihre Spulen.
+
 **Spule aus dem Bambu-Lab-Katalog anlegen:** Wähle in „Spule hinzufügen“ ein Filament und eine Farbe aus dem Katalog
 (`docs/bambu-filaments.md`), um Name, Material, Hersteller und Farbe auszufüllen; jedes Feld lässt sich danach ändern.
 

@@ -28,6 +28,9 @@ Click "Import from AMS" to create spools from the loaded AMS slots. New Bambu sp
 tag are also added automatically (option "Automatically add new Bambu spools"); spools without a
 tag, such as third-party filament or the external spool, are only imported with the button.
 The remaining stock of an imported spool is estimated from the AMS percentage, so correct it by hand if needed.
+**Filter:** the Spools card has a search box (name, material, brand, notes, color) and filters for material,
+brand and status (in stock, in a slot, low stock). The table and its totals show only the matching spools; the popup of a type still lists all of its spools.
+
 **Adding a spool from the Bambu Lab catalog:** in "Add spool", pick a filament and a color from the
 catalog (`docs/bambu-filaments.md`) to fill in name, material, brand and color; every field can still be changed.
 
