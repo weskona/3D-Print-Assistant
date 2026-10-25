@@ -28,7 +28,7 @@ RFID-Tag werden zusätzlich automatisch übernommen (Option „Neue Bambu-Spulen
 Spulen ohne Tag, etwa Fremdfilament oder die externe Spule, werden nur über den Button importiert.
 Der Restbestand wird aus der AMS-Prozentanzeige geschätzt und lässt sich von Hand korrigieren.
 **Bestand an einer erkannten Spule hinzufügen:** Die Liste zeigt eine Zeile pro Sorte und Farbe (z. B. „Bambu PETG Basic“ in Schwarz und in Grau sind zwei Zeilen)
-mit dem Gesamtbestand aller Spulen und dem Durchschnittspreis pro kg. Klicke „Bestand hinzufügen“, um ein Popup
+mit dem Gesamtbestand aller Spulen und dem Durchschnittspreis pro kg. Klicke auf den Namen einer Sorte mit mehreren Spulen, um sie einzeln aufzuklappen. Klicke „Bestand hinzufügen“, um ein Popup
 zu öffnen, und gib die gekaufte Anzahl und den Preis pro kg ein. Das Popup listet auch die einzelnen Spulen der Sorte, die du dort bearbeiten, archivieren oder löschen kannst. Die neuen Spulen werden voll angelegt und zum Bestand der Sorte gezählt; sie werden aufgebraucht, sobald neue Spulen erkannt werden. Nur die neuen Spulen
 bekommen den eingegebenen Preis, vorhandene behalten ihren.
 
