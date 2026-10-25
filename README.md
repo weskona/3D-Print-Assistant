@@ -34,12 +34,13 @@ brand and status (in stock, in a slot, low stock). The table and its totals show
 **Adding a spool from the Bambu Lab catalog:** in "Add spool", pick a filament and a color from the
 catalog (`docs/bambu-filaments.md`) to fill in name, material, brand and color; every field can still be changed.
 
-**Adding stock from a detected spool:** the list shows one row per type and color (e.g. "Bambu PETG Basic" in black and in gray are two rows) with
-the total stock of all its spools and the average price per kg. Click the name of a type with several spools to expand and list them one by one. Click "Add stock" to open a popup, enter
-the purchased quantity and the price per kg. The popup also lists the single spools of the type, where you can edit, archive or delete them. The new spools are created full and are added to the stock of the type; they are used up as new spools are detected. Only the new spools get
-the entered price, existing spools keep theirs.
+**Editing spools:** the list shows one row per type and color (e.g. "Bambu PETG Basic" in black and in gray are two
+rows) with the total stock of all its spools and the average price per kg. Click the name of a type with several spools to
+expand and list them one by one. Spools are edited with the "Edit" button of their row; the edit popup also has Archive and
+Delete. Bambu Lab spools can be edited once their RFID tag has been detected (the tag fills them in); spools of other
+brands, which have no tag, can always be edited.
 
-**Buying in bulk:** add the pack with the quantity field (e.g. 4 x "PETG Basic Black", color black).
+**Buying in bulk:** add the pack with "Add spool" and its quantity field (e.g. 4 x "PETG Basic Black", color black).
 When a new Bambu spool is detected, the integration first looks for a matching spool in your stock
 (not in a slot, no tag yet, same material, similar color) and uses it instead of creating a new one.
 So the stock goes from 4 to 3 and the loaded spool is tracked from then on. Without a match, a new spool is created.

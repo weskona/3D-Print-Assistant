@@ -32,7 +32,6 @@ WS_SPOOL_ASSIGN = f"{DOMAIN}/spool_assign"
 WS_IMPORT_AMS = f"{DOMAIN}/import_ams"
 WS_CATALOG = f"{DOMAIN}/catalog"
 WS_SPOOL_ARCHIVE = f"{DOMAIN}/spool_archive"
-WS_SPOOL_ADD_STOCK = f"{DOMAIN}/spool_add_stock"
 
 # Raw print_status values reported by ha-bambulab.
 STATUS_RUNNING = "running"

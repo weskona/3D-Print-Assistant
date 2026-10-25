@@ -54,7 +54,6 @@ const TRANSLATIONS = {
     none: "none",
     admin_only: "Only administrators can change the filament inventory.",
     price: "Price",
-    add_stock: "Add stock",
     suggest_hint: "Pick a name you already have to fill in the other fields.",
     catalog: "Bambu Lab catalog",
     catalog_filament: "Filament",
@@ -71,11 +70,6 @@ const TRANSLATIONS = {
     filter_reset: "Reset filter",
     no_match: "No spools match the filter.",
     stock_badge: "In stock",
-    spools_of_type: "Spools of this type",
-    close: "Close",
-    add_stock_hint: "New full spools of this type. Existing spools keep their price.",
-    purchased_quantity: "Purchased quantity",
-    add: "Add",
     rfid_tag: "RFID tag (clear to unlink)",
     correct_hint: "Wrong spool? Pick the right one: the tag moves to it, and the automatic match stays corrected. Choosing \"none\" stops automatic assignment for the spool currently in this slot.",
     quantity: "Quantity (e.g. 4 for a 4-pack)",
@@ -136,7 +130,6 @@ const TRANSLATIONS = {
     none: "keine",
     admin_only: "Nur Administratoren können den Filamentbestand ändern.",
     price: "Preis",
-    add_stock: "Bestand hinzufügen",
     suggest_hint: "Wähle einen vorhandenen Namen, um die übrigen Felder auszufüllen.",
     catalog: "Bambu-Lab-Katalog",
     catalog_filament: "Filament",
@@ -153,11 +146,6 @@ const TRANSLATIONS = {
     filter_reset: "Filter zurücksetzen",
     no_match: "Keine Spulen entsprechen dem Filter.",
     stock_badge: "Vorrat",
-    spools_of_type: "Spulen dieser Sorte",
-    close: "Schließen",
-    add_stock_hint: "Neue volle Spulen dieser Sorte. Vorhandene Spulen behalten ihren Preis.",
-    purchased_quantity: "Gekaufte Anzahl",
-    add: "Hinzufügen",
     rfid_tag: "RFID-Tag (leeren zum Lösen)",
     correct_hint: "Falsche Spule? Wähle die richtige: Der Tag wandert zu ihr, die automatische Zuordnung bleibt korrigiert. „keine“ stoppt die automatische Zuordnung für die Spule, die gerade in diesem Slot steckt.",
     quantity: "Anzahl (z. B. 4 für ein 4er-Pack)",
@@ -179,7 +167,6 @@ class DruckAssistantPanel extends HTMLElement {
     this._selected = null;
     this._tab = "overview";
     this._editing = null;
-    this._dialog = null;
     this._filter = { text: "", material: "", brand: "", status: "" };
     this._refocusSearch = null;
     this._expanded = new Set();
@@ -230,7 +217,7 @@ class DruckAssistantPanel extends HTMLElement {
     } catch (e) {
       this._error = e && e.message ? e.message : String(e);
     }
-    if (this._editing === null && this._dialog === null) this._render(); // never re-render while a form is open
+    if (this._editing === null) this._render(); // never re-render while a form is open
   }
 
   _t(key, vars = {}) {
@@ -265,7 +252,7 @@ class DruckAssistantPanel extends HTMLElement {
     return el;
   }
 
-  async _call(msg, describe, keepDialog = false) {
+  async _call(msg, describe) {
     this._notice = null;
     this._noticeOk = false;
     try {
@@ -275,7 +262,6 @@ class DruckAssistantPanel extends HTMLElement {
       this._notice = e && e.message ? e.message : String(e);
     }
     this._editing = null;
-    if (!keepDialog) this._dialog = null;
     await this._load();
     this._render();
   }
@@ -350,9 +336,13 @@ class DruckAssistantPanel extends HTMLElement {
           const out = {};
           for (const [k, el] of Object.entries(inputs)) out[k] = el.value;
           if (spool.id) out.id = spool.id; else delete out.rfid;
-          this._call({ type: "druck_assistant/spool_save", spool: out, ...(spool.id ? {} : { quantity: parseInt(qty.value, 10) || 1 }) }, null, true);
+          this._call({ type: "druck_assistant/spool_save", spool: out, ...(spool.id ? {} : { quantity: parseInt(qty.value, 10) || 1 }) });
         } }, this._t("save")),
-        this._el("button", { onclick: () => { this._editing = null; this._render(); } }, this._t("cancel"))));
+        this._el("button", { onclick: () => { this._editing = null; this._render(); } }, this._t("cancel")),
+        ...(spool.id ? [
+          this._el("button", { onclick: () => this._call({ type: "druck_assistant/spool_archive", spool_id: spool.id, archived: true }) }, this._t("archive")),
+          this._el("button", { onclick: () => { if (confirm(this._t("confirm_delete", { name: spool.name }))) this._call({ type: "druck_assistant/spool_delete", spool_id: spool.id }); } }, this._t("delete")),
+        ] : [])));
     inputs.name.addEventListener("change", fromTemplate);
     if (!spool.id && this._catalog && this._catalog.products?.length) {
       const german = (this._hass?.locale?.language || this._hass?.language || "en").startsWith("de");
@@ -394,6 +384,14 @@ class DruckAssistantPanel extends HTMLElement {
       anchor.after(picker);
     }
     return this._el("div", { class: "overlay" }, form);
+  }
+
+  /**
+   * Bambu Lab spools are filled in by the RFID tag, so they can be edited once the tag was
+   * detected; spools of other brands have no tag and can always be edited.
+   */
+  _canEdit(sp, admin) {
+    return admin && (!!sp.rfid || (sp.brand || "").trim().toLowerCase() !== "bambu lab");
   }
 
   _matchesFilter(sp, slotOf) {
@@ -473,55 +471,6 @@ class DruckAssistantPanel extends HTMLElement {
     return [...groups.values()];
   }
 
-  _renderDialog(group, slotOf, cur, admin) {
-    const qty = this._el("input", { type: "number", min: "1", max: "50", step: "1", value: "1" });
-    const last = group.spools[group.spools.length - 1];
-    const price = this._el("input", { type: "number", min: "0", step: "0.01", value: last.price_per_kg ?? "" });
-    const close = () => { this._dialog = null; this._render(); };
-
-    const dialog = this._el("div", { class: "dialog", role: "dialog" },
-      this._el("h2", {}, group.name),
-      this._el("div", { class: "sub notice" }, `${group.material}${group.brand ? `, ${group.brand}` : ""}${group.color ? `, ${group.color.slice(0, 7)}` : ""}`));
-
-    if (admin) {
-      dialog.append(
-        this._el("h3", {}, this._t("add_stock")),
-        this._el("div", { class: "sub notice" }, this._t("add_stock_hint")),
-        this._field(this._t("purchased_quantity"), qty),
-        this._field(`${this._t("price_per_kg")} (${cur})`, price),
-        this._el("div", { class: "actions" },
-          this._el("button", { class: "primary", onclick: () => this._call({
-            type: "druck_assistant/spool_add_stock", spool_id: last.id,
-            quantity: parseInt(qty.value, 10) || 1,
-            price_per_kg: price.value === "" ? null : price.value,
-          }, null, true) }, this._t("add"))));
-    }
-
-    const table = this._el("table", {});
-    table.append(this._el("tr", {}, ...["name", "stock", "price", "slot"].map((k) => this._el("th", {}, this._t(k))), this._el("th", {}, "")));
-    for (const sp of group.spools) {
-      const actions = this._el("td", {});
-      if (admin) {
-        actions.append(
-          this._el("button", { onclick: () => { this._editing = sp; this._render(); } }, this._t("edit")),
-          this._el("button", { onclick: () => this._call({ type: "druck_assistant/spool_archive", spool_id: sp.id, archived: true }, null, true) }, this._t("archive")),
-          this._el("button", { onclick: () => { if (confirm(this._t("confirm_delete", { name: sp.name }))) this._call({ type: "druck_assistant/spool_delete", spool_id: sp.id }, null, true); } }, this._t("delete")));
-      }
-      table.append(this._el("tr", {},
-        this._el("td", {}, sp.name, sp.rfid ? this._el("span", { class: "badge", title: sp.rfid }, "RFID") : "",
-          slotOf[sp.id] ? "" : this._el("span", { class: "badge stock" }, this._t("stock_badge"))),
-        this._el("td", {}, `${this._fmtNum(sp.remaining_g, 0)} / ${this._fmtNum(sp.initial_weight_g, 0)} g (${this._fmtNum(sp.remaining_percent, 0)} %)`),
-        this._el("td", {}, sp.price_per_kg != null ? `${this._fmtMoney(sp.price_per_kg, cur)}/kg` : "–"),
-        this._el("td", {}, slotOf[sp.id] || "–"),
-        actions));
-    }
-    dialog.append(this._el("h3", {}, this._t("spools_of_type")), table,
-      this._el("div", { class: "actions" }, this._el("button", { onclick: close }, this._t("close"))));
-
-    const overlay = this._el("div", { class: "overlay", onclick: (e) => { if (e.target === overlay) close(); } }, dialog);
-    return overlay;
-  }
-
   _renderFilament(main, printer) {
     const admin = this._isAdmin();
     const cur = printer?.currency || "EUR";
@@ -542,14 +491,11 @@ class DruckAssistantPanel extends HTMLElement {
             ? this._t("import_result", r)
             : this._t("import_nothing")) }, this._t("import_ams")));
     }
-    // The popup of a type always shows all its spools; the table shows the filtered ones
-    // (and sums only those, so what you see is what is added up).
-    const allGroups = this._groups(activeSpools);
-    if (this._dialog && !allGroups.some((g) => g.key === this._dialog)) this._dialog = null;
+    // The table shows the filtered spools and sums only those, so what you see is what is added up.
     const filtered = activeSpools.filter((sp) => this._matchesFilter(sp, slotOf));
     const groups = this._groups(filtered);
     if (activeSpools.length) card.append(this._renderFilter(activeSpools, filtered.length));
-    if (!allGroups.length) {
+    if (!activeSpools.length) {
       card.append(this._el("div", { class: "empty" }, this._t("no_spools")));
     } else if (!groups.length) {
       card.append(this._el("div", { class: "empty" }, this._t("no_match")));
@@ -558,12 +504,14 @@ class DruckAssistantPanel extends HTMLElement {
       const heads = ["name", "material", "brand", "stock", "price"].map((k) => this._t(k));
       table.append(this._el("tr", {}, ...heads.map((h) => this._el("th", {}, h)), this._el("th", {}, "")));
       for (const g of groups) {
-        const open = () => { this._dialog = g.key; this._render(); };
         const dot = this._el("span", { class: "dot", style: `background:${/^#[0-9a-f]{6,8}$/i.test(g.color) ? g.color : "transparent"}` });
         const pct = Math.max(0, Math.min(100, g.percent));
         const bar = this._el("div", { class: "bar" }, this._el("div", { class: "fill" + (pct <= 15 ? " low" : ""), style: `width:${pct}%` }));
         const actions = this._el("td", {});
-        if (admin) actions.append(this._el("button", { onclick: open }, this._t("add_stock")));
+        // A single-spool type is edited from its own row; several spools are edited from their sub-rows.
+        if (g.spools.length === 1 && this._canEdit(g.spools[0], admin)) {
+          actions.append(this._el("button", { onclick: () => { this._editing = g.spools[0]; this._render(); } }, this._t("edit")));
+        }
         // A type with several spools expands on a click on its name to list them one by one.
         const multi = g.spools.length > 1;
         const expanded = multi && this._expanded.has(g.key);
@@ -598,7 +546,9 @@ class DruckAssistantPanel extends HTMLElement {
                 this._el("div", { class: "bar" }, this._el("div", { class: "fill" + (spct <= 15 ? " low" : ""), style: `width:${spct}%` })),
                 `${this._fmtNum(sp.remaining_g, 0)} / ${this._fmtNum(sp.initial_weight_g, 0)} g (${this._fmtNum(sp.remaining_percent, 0)} %)`),
               this._el("td", {}, sp.price_per_kg != null ? `${this._fmtMoney(sp.price_per_kg, cur)}/kg` : "–"),
-              this._el("td", {}, "")));
+              this._el("td", {}, this._canEdit(sp, admin)
+                ? this._el("button", { onclick: () => { this._editing = sp; this._render(); } }, this._t("edit"))
+                : "")));
           }
         }
       }
@@ -633,10 +583,8 @@ class DruckAssistantPanel extends HTMLElement {
     }
     main.append(details);
 
-    // Forms are popups over the list; the form of a spool shows on top of the type popup it was opened from.
-    const open = allGroups.find((g) => g.key === this._dialog);
+    // Forms are popups over the list.
     if (this._editing !== null) main.append(this._renderForm(this._editing));
-    else if (open) main.append(this._renderDialog(open, slotOf, cur, admin));
   }
 
   _renderAms(main, printer) {

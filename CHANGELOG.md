@@ -13,6 +13,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Filter in the Spools card: search in name, material, brand, notes and color, and filter by material, brand and status (in stock, in a slot, low stock). The table and its totals show only the matching spools; the popup of a type still lists all its spools. A counter ("3 of 8 spools") and a reset button show while a filter is active.
 
+### Changed
+
+- Spools are edited with an "Edit" button on their own row (the sub-row of an expanded type, or the row of a single-spool type). Bambu Lab spools can only be edited once their RFID tag was detected; spools of other brands can always be edited. The edit popup now also has Archive and Delete.
+
+### Removed
+
+- The "Add stock" button and its popup, including the websocket command `druck_assistant/spool_add_stock`. Buy a pack with "Add spool" and its quantity field instead (catalog picker included).
+
 ## [0.5.0-beta.1] - 2026-10-25
 
 ### Added
