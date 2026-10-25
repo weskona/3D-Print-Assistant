@@ -1,4 +1,6 @@
 // Sidebar panel of the 3D Print Assistant integration (no external dependencies).
+const COMMON_MATERIALS = ["PLA", "PLA+", "PETG", "ABS", "ASA", "TPU", "PC", "PA", "PA-CF", "PET-CF", "PVA"];
+
 // English is the source language; add further languages to TRANSLATIONS.
 const TRANSLATIONS = {
   en: {
@@ -50,6 +52,7 @@ const TRANSLATIONS = {
     admin_only: "Only administrators can change the filament inventory.",
     price: "Price",
     add_stock: "Add stock",
+    suggest_hint: "Pick a name you already have to fill in the other fields.",
     stock_badge: "In stock",
     spools_of_type: "Spools of this type",
     close: "Close",
@@ -116,6 +119,7 @@ const TRANSLATIONS = {
     admin_only: "Nur Administratoren können den Filamentbestand ändern.",
     price: "Preis",
     add_stock: "Bestand hinzufügen",
+    suggest_hint: "Wähle einen vorhandenen Namen, um die übrigen Felder auszufüllen.",
     stock_badge: "Vorrat",
     spools_of_type: "Spulen dieser Sorte",
     close: "Schließen",
@@ -250,15 +254,44 @@ class DruckAssistantPanel extends HTMLElement {
 
   _renderForm(spool) {
     const v = { name: "", material: "", brand: "", color: "#808080", price_per_kg: "", initial_weight_g: 1000, remaining_g: 1000, notes: "", rfid: "", ...spool };
+    // The color picker only takes #rrggbb; the tray color may carry an alpha channel.
+    v.color = /^#[0-9a-f]{6}/i.test(v.color || "") ? v.color.slice(0, 7).toLowerCase() : "#808080";
     const inputs = {};
+    const touched = new Set();
     const qty = this._el("input", { type: "number", min: "1", max: "50", step: "1", value: "1" });
+
+    // Suggestions from everything captured so far (archived spools included).
+    const base = (name) => name.replace(/\s+#\d+$/, "").trim();
+    const unique = (values) => [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b));
+    const lists = {
+      name: unique(this._spools.map((sp) => base(sp.name))),
+      material: unique([...COMMON_MATERIALS, ...this._spools.map((sp) => sp.material)]),
+      brand: unique(["Bambu Lab", ...this._spools.map((sp) => sp.brand)]),
+    };
+    const datalists = Object.entries(lists).map(([key, options]) =>
+      this._el("datalist", { id: `suggest-${key}` }, ...options.map((o) => this._el("option", { value: o }))));
+
     const mk = (key, type = "text", extra = {}) => {
-      inputs[key] = this._el("input", { type, value: v[key] ?? "", ...extra });
+      inputs[key] = this._el("input", { type, value: v[key] ?? "", ...(lists[key] ? { list: `suggest-${key}`, autocomplete: "off" } : {}), ...extra });
+      inputs[key].addEventListener("input", () => touched.add(key));
       return inputs[key];
+    };
+    // Picking a known name fills the remaining fields from the newest spool with that name.
+    const fromTemplate = () => {
+      if (spool.id) return;
+      const name = inputs.name.value.trim().toLowerCase();
+      const tpl = [...this._spools].reverse().find((sp) => base(sp.name).toLowerCase() === name);
+      if (!tpl) return;
+      const fill = { material: tpl.material, brand: tpl.brand, price_per_kg: tpl.price_per_kg ?? "", initial_weight_g: tpl.initial_weight_g, remaining_g: tpl.initial_weight_g,
+        color: /^#[0-9a-f]{6}/i.test(tpl.color || "") ? tpl.color.slice(0, 7).toLowerCase() : "#808080" };
+      for (const [key, value] of Object.entries(fill)) {
+        if (!touched.has(key)) inputs[key].value = value;
+      }
     };
     const form = this._el("div", { class: "dialog form", role: "dialog" },
       this._el("h2", {}, spool.id ? this._t("edit") : this._t("add_spool")),
       this._field(this._t("name"), mk("name")),
+      spool.id ? "" : this._el("div", { class: "sub notice" }, this._t("suggest_hint")),
       this._field(this._t("material"), mk("material", "text", { placeholder: "PLA" })),
       this._field(this._t("brand"), mk("brand")),
       this._field(this._t("color"), mk("color", "color")),
@@ -267,6 +300,7 @@ class DruckAssistantPanel extends HTMLElement {
       this._field(this._t("remaining_weight"), mk("remaining_g", "number", { min: "0", step: "1" })),
       this._field(this._t("notes"), mk("notes")),
       spool.id ? this._field(this._t("rfid_tag"), mk("rfid")) : this._field(this._t("quantity"), qty),
+      ...datalists,
       this._el("div", { class: "actions" },
         this._el("button", { class: "primary", onclick: () => {
           const out = {};
@@ -275,6 +309,7 @@ class DruckAssistantPanel extends HTMLElement {
           this._call({ type: "druck_assistant/spool_save", spool: out, ...(spool.id ? {} : { quantity: parseInt(qty.value, 10) || 1 }) }, null, true);
         } }, this._t("save")),
         this._el("button", { onclick: () => { this._editing = null; this._render(); } }, this._t("cancel"))));
+    inputs.name.addEventListener("change", fromTemplate);
     return this._el("div", { class: "overlay" }, form);
   }
 
