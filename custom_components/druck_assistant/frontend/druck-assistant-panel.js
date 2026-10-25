@@ -1,4 +1,11 @@
 // Sidebar panel of the 3D Print Assistant integration (no external dependencies).
+// Material Design Icons paths, drawn inline so the panel needs no icon font.
+const ICONS = {
+  edit: "M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z",
+  delete: "M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z",
+  restore: "M12,3A9,9 0 0,0 3,12H0L4,16L8,12H5A7,7 0 0,1 12,5A7,7 0 0,1 19,12A7,7 0 0,1 12,19C10.5,19 9.09,18.5 7.94,17.7L6.5,19.14C8.04,20.3 9.94,21 12,21A9,9 0 0,0 21,12A9,9 0 0,0 12,3M14,12A2,2 0 0,0 12,10A2,2 0 0,0 10,12A2,2 0 0,0 12,14A2,2 0 0,0 14,12Z",
+};
+
 const LOW_PERCENT = 15; // same threshold as the red stock bar
 
 const COMMON_MATERIALS = ["PLA", "PLA+", "PETG", "ABS", "ASA", "TPU", "PC", "PA", "PA-CF", "PET-CF", "PVA"];
@@ -276,6 +283,26 @@ class DruckAssistantPanel extends HTMLElement {
 
   _isAdmin() { return !!this._hass?.user?.is_admin; }
 
+  /** A round icon button with a tooltip and an accessible name. */
+  _iconButton(icon, label, onclick, danger = false) {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("aria-hidden", "true");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", ICONS[icon]);
+    path.setAttribute("fill", "currentColor");
+    svg.append(path);
+    const button = this._el("button", { class: "icon-btn" + (danger ? " danger" : ""), title: label, "aria-label": label, onclick });
+    button.append(svg);
+    return button;
+  }
+
+  _confirmDelete(sp) {
+    if (confirm(this._t("confirm_delete", { name: sp.name }))) {
+      this._call({ type: "druck_assistant/spool_delete", spool_id: sp.id });
+    }
+  }
+
   _field(label, input) {
     return this._el("label", { class: "field" }, this._el("span", {}, label), input);
   }
@@ -338,7 +365,7 @@ class DruckAssistantPanel extends HTMLElement {
         } }, this._t("save")),
         this._el("button", { onclick: () => { this._editing = null; this._render(); } }, this._t("cancel")),
         ...(spool.id ? [
-          this._el("button", { onclick: () => { if (confirm(this._t("confirm_delete", { name: spool.name }))) this._call({ type: "druck_assistant/spool_delete", spool_id: spool.id }); } }, this._t("delete")),
+          this._el("button", { onclick: () => this._confirmDelete(spool) }, this._t("delete")),
         ] : [])));
     inputs.name.addEventListener("change", fromTemplate);
     if (!spool.id && this._catalog && this._catalog.products?.length) {
@@ -400,11 +427,12 @@ class DruckAssistantPanel extends HTMLElement {
   _rowActions(sp, admin, slotOf) {
     if (!admin) return [];
     if (this._canEdit(sp, admin, slotOf)) {
-      return [this._el("button", { onclick: () => { this._editing = sp; this._render(); } }, this._t("edit"))];
+      return [
+        this._iconButton("edit", this._t("edit"), () => { this._editing = sp; this._render(); }),
+        this._iconButton("delete", this._t("delete"), () => this._confirmDelete(sp), true),
+      ];
     }
-    return [
-      this._el("button", { onclick: () => { if (confirm(this._t("confirm_delete", { name: sp.name }))) this._call({ type: "druck_assistant/spool_delete", spool_id: sp.id }); } }, this._t("delete")),
-    ];
+    return [this._iconButton("delete", this._t("delete"), () => this._confirmDelete(sp), true)];
   }
 
   _matchesFilter(sp, slotOf) {
@@ -578,8 +606,8 @@ class DruckAssistantPanel extends HTMLElement {
         const actions = this._el("td", {});
         if (admin) {
           actions.append(
-            this._el("button", { onclick: () => this._call({ type: "druck_assistant/spool_archive", spool_id: sp.id, archived: false }) }, this._t("restore")),
-            this._el("button", { onclick: () => { if (confirm(this._t("confirm_delete", { name: sp.name }))) this._call({ type: "druck_assistant/spool_delete", spool_id: sp.id }); } }, this._t("delete")));
+            this._iconButton("restore", this._t("restore"), () => this._call({ type: "druck_assistant/spool_archive", spool_id: sp.id, archived: false })),
+            this._iconButton("delete", this._t("delete"), () => this._confirmDelete(sp), true));
         }
         table.append(this._el("tr", {},
           this._el("td", {}, sp.name, sp.rfid ? this._el("span", { class: "badge", title: sp.rfid }, "RFID") : ""),
@@ -679,6 +707,10 @@ class DruckAssistantPanel extends HTMLElement {
       .dialog h2 { margin: 0 0 4px; font-size: 18px; }
       .dialog h3 { margin: 16px 0 6px; font-size: 14px; font-weight: 500; }
       .dialog .field { max-width: 260px; }
+      .icon-btn { width: 32px; height: 32px; padding: 0; margin-right: 2px; display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 50%; background: transparent; color: var(--secondary-text-color); cursor: pointer; }
+      .icon-btn:hover { background: var(--divider-color); color: var(--primary-text-color); }
+      .icon-btn.danger:hover { color: var(--error-color, #f44336); }
+      .icon-btn svg { width: 20px; height: 20px; }
       td.link { cursor: pointer; }
       td.link:hover { text-decoration: underline; }
       .chevron { display: inline-block; width: 14px; color: var(--secondary-text-color); }
