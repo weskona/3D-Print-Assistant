@@ -386,7 +386,7 @@ class DruckAssistantPanel extends HTMLElement {
         const actions = this._el("td", {});
         if (admin) actions.append(this._el("button", { onclick: open }, this._t("add_stock")));
         table.append(this._el("tr", {},
-          this._el("td", admin ? { class: "link", onclick: open, title: g.color || "" } : { title: g.color || "" }, dot, g.name,
+          this._el("td", { title: g.color || "" }, dot, g.name,
             g.spools.length > 1 ? this._el("span", { class: "badge" }, `× ${g.spools.length}`) : ""),
           this._el("td", {}, g.material),
           this._el("td", {}, g.brand || "–"),
@@ -499,8 +499,6 @@ class DruckAssistantPanel extends HTMLElement {
       .dialog h2 { margin: 0 0 4px; font-size: 18px; }
       .dialog h3 { margin: 16px 0 6px; font-size: 14px; font-weight: 500; }
       .dialog .field { max-width: 260px; }
-      td.link { cursor: pointer; }
-      td.link:hover { text-decoration: underline; }
       .badge { margin-left: 6px; padding: 0 6px; border-radius: 8px; font-size: 11px; background: var(--divider-color); color: var(--secondary-text-color); }
       .notice { padding: 0 0 12px; }
       .bar { width: 120px; height: 6px; border-radius: 3px; background: var(--divider-color); margin-bottom: 4px; }

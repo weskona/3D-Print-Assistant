@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0-beta.7] - 2026-10-25
+
+### Changed
+
+- The filament name in the inventory is no longer clickable; the popup opens with the "Add stock" button only.
+
 ## [0.4.0-beta.6] - 2026-10-25
 
 ### Fixed
@@ -97,7 +103,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Filament prices per type (e.g. `PLA=20`) in the options, sensor for the current filament including price per kg. Cost sensors in euro.
 - GitHub workflow that creates a tag and release after a push to `main`.
 
-[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.6...HEAD
+[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.7...HEAD
+[0.4.0-beta.7]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.6...v0.4.0-beta.7
 [0.4.0-beta.6]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.5...v0.4.0-beta.6
 [0.4.0-beta.5]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.4...v0.4.0-beta.5
 [0.4.0-beta.4]: https://github.com/weskona/3D-Print-Assistant/compare/v0.4.0-beta.3...v0.4.0-beta.4
