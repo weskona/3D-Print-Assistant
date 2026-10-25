@@ -36,8 +36,9 @@ Hersteller und Status (Vorrat, in einem Slot, niedriger Bestand). Tabelle und Su
 **Spulen bearbeiten:** Die Liste zeigt eine Zeile pro Sorte und Farbe (z. B. „Bambu PETG Basic“ in Schwarz und in Grau sind
 zwei Zeilen) mit dem Gesamtbestand aller Spulen und dem Durchschnittspreis pro kg. Klicke auf den Namen einer Sorte mit
 mehreren Spulen, um sie einzeln aufzuklappen. Spulen bearbeitest du mit dem Button „Bearbeiten“ ihrer Zeile; das Bearbeiten-Popup
-bietet auch „Archivieren“ und „Löschen“. Bambu-Lab-Spulen lassen sich bearbeiten, sobald ihr RFID-Tag erkannt wurde (der Tag füllt sie aus);
-Spulen anderer Hersteller, die keinen Tag haben, sind immer bearbeitbar.
+bietet auch „Löschen“. Bambu-Lab-Spulen lassen sich bearbeiten, sobald ihr RFID-Tag erkannt wurde (der Tag füllt sie aus);
+Spulen anderer Hersteller, die keinen Tag haben, sind immer bearbeitbar. Eine Bambu-Lab-Spule ohne Tag (zum Beispiel aus dem
+Katalog angelegt) lässt sich bis zur Erkennung im AMS in ihrer Zeile löschen (archiviert wird automatisch, wenn eine Spule leer ist).
 
 **Großeinkauf:** Lege das Paket mit „Spule hinzufügen“ und dem Feld „Anzahl“ an (z. B. 4 x „PETG Basic Schwarz“, Farbe Schwarz).
 Wird eine neue Bambu-Spule erkannt, sucht die Integration zuerst eine passende Spule im Bestand
@@ -49,8 +50,8 @@ Spule, die gerade im Slot steckt (der Button „Aus AMS importieren“ hebt das 
 einer Spule kannst du auch im Formular ändern oder leeren. Eine Bestandsspule, die ihren Tag verloren hat, bleibt einfach im Bestand.
 
 Erreicht der Restbestand einer Spule nach einem Druck 0 g, kommt sie automatisch ins Archiv
-(Option „Leere Spulen automatisch archivieren“) und löst `druck_assistant_spool_empty` aus. Du kannst
-Spulen auch von Hand archivieren und in der einklappbaren Liste „Archivierte Spulen“ wiederherstellen.
+(Option „Leere Spulen automatisch archivieren“) und löst `druck_assistant_spool_empty` aus. Spulen
+stellst du in der einklappbaren Liste „Archivierte Spulen“ wieder her.
 Archivierte Spulen werden nicht automatisch wieder importiert oder zugeordnet, auch wenn sie noch im AMS stecken.
 Bei Drucken mit mehreren Spulen wird alles der beim Start aktiven Spule zugerechnet.
 

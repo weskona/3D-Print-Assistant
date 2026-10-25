@@ -73,7 +73,6 @@ const TRANSLATIONS = {
     rfid_tag: "RFID tag (clear to unlink)",
     correct_hint: "Wrong spool? Pick the right one: the tag moves to it, and the automatic match stays corrected. Choosing \"none\" stops automatic assignment for the spool currently in this slot.",
     quantity: "Quantity (e.g. 4 for a 4-pack)",
-    archive: "Archive",
     restore: "Restore",
     archived_spools: "Archived spools ({count})",
     no_archived: "No archived spools. Empty spools are archived automatically.",
@@ -149,7 +148,6 @@ const TRANSLATIONS = {
     rfid_tag: "RFID-Tag (leeren zum Lösen)",
     correct_hint: "Falsche Spule? Wähle die richtige: Der Tag wandert zu ihr, die automatische Zuordnung bleibt korrigiert. „keine“ stoppt die automatische Zuordnung für die Spule, die gerade in diesem Slot steckt.",
     quantity: "Anzahl (z. B. 4 für ein 4er-Pack)",
-    archive: "Archivieren",
     restore: "Wiederherstellen",
     archived_spools: "Archivierte Spulen ({count})",
     no_archived: "Keine archivierten Spulen. Leere Spulen werden automatisch archiviert.",
@@ -340,7 +338,6 @@ class DruckAssistantPanel extends HTMLElement {
         } }, this._t("save")),
         this._el("button", { onclick: () => { this._editing = null; this._render(); } }, this._t("cancel")),
         ...(spool.id ? [
-          this._el("button", { onclick: () => this._call({ type: "druck_assistant/spool_archive", spool_id: spool.id, archived: true }) }, this._t("archive")),
           this._el("button", { onclick: () => { if (confirm(this._t("confirm_delete", { name: spool.name }))) this._call({ type: "druck_assistant/spool_delete", spool_id: spool.id }); } }, this._t("delete")),
         ] : [])));
     inputs.name.addEventListener("change", fromTemplate);
@@ -392,6 +389,21 @@ class DruckAssistantPanel extends HTMLElement {
    */
   _canEdit(sp, admin) {
     return admin && (!!sp.rfid || (sp.brand || "").trim().toLowerCase() !== "bambu lab");
+  }
+
+  /**
+   * Row buttons of a spool: Edit where editing is allowed; an untagged Bambu Lab spool has
+   * nothing to edit yet, but can be deleted (e.g. a duplicate). Spools are archived
+   * automatically when they run empty, not by hand from the row.
+   */
+  _rowActions(sp, admin) {
+    if (!admin) return [];
+    if (this._canEdit(sp, admin)) {
+      return [this._el("button", { onclick: () => { this._editing = sp; this._render(); } }, this._t("edit"))];
+    }
+    return [
+      this._el("button", { onclick: () => { if (confirm(this._t("confirm_delete", { name: sp.name }))) this._call({ type: "druck_assistant/spool_delete", spool_id: sp.id }); } }, this._t("delete")),
+    ];
   }
 
   _matchesFilter(sp, slotOf) {
@@ -508,10 +520,8 @@ class DruckAssistantPanel extends HTMLElement {
         const pct = Math.max(0, Math.min(100, g.percent));
         const bar = this._el("div", { class: "bar" }, this._el("div", { class: "fill" + (pct <= 15 ? " low" : ""), style: `width:${pct}%` }));
         const actions = this._el("td", {});
-        // A single-spool type is edited from its own row; several spools are edited from their sub-rows.
-        if (g.spools.length === 1 && this._canEdit(g.spools[0], admin)) {
-          actions.append(this._el("button", { onclick: () => { this._editing = g.spools[0]; this._render(); } }, this._t("edit")));
-        }
+        // A single-spool type is managed from its own row; several spools from their sub-rows.
+        if (g.spools.length === 1) actions.append(...this._rowActions(g.spools[0], admin));
         // A type with several spools expands on a click on its name to list them one by one.
         const multi = g.spools.length > 1;
         const expanded = multi && this._expanded.has(g.key);
@@ -546,9 +556,7 @@ class DruckAssistantPanel extends HTMLElement {
                 this._el("div", { class: "bar" }, this._el("div", { class: "fill" + (spct <= 15 ? " low" : ""), style: `width:${spct}%` })),
                 `${this._fmtNum(sp.remaining_g, 0)} / ${this._fmtNum(sp.initial_weight_g, 0)} g (${this._fmtNum(sp.remaining_percent, 0)} %)`),
               this._el("td", {}, sp.price_per_kg != null ? `${this._fmtMoney(sp.price_per_kg, cur)}/kg` : "–"),
-              this._el("td", {}, this._canEdit(sp, admin)
-                ? this._el("button", { onclick: () => { this._editing = sp; this._render(); } }, this._t("edit"))
-                : "")));
+              this._el("td", {}, ...this._rowActions(sp, admin))));
           }
         }
       }
