@@ -1,0 +1,5787 @@
+{
+  "source": "https://github.com/Donkie/SpoolmanDB",
+  "license": "MIT, Copyright (c) 2024 Donkie",
+  "commit": "8f1a99f9cda7a58ca3118d6bd28c707647caa3db",
+  "retrieved": "2026-10-26",
+  "note": "Community-maintained filament data of the manufacturers in scripts/build_third_party_catalog.py. Product names are built from manufacturer, material and the product line; hex values are as listed in SpoolmanDB and can be approximate.",
+  "products": [
+    {
+      "name": "Anycubic ABS",
+      "product": "ABS",
+      "material": "ABS",
+      "brand": "Anycubic",
+      "weight_g": 1000,
+      "spool_weight_g": 127,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#000000"
+        },
+        {
+          "name": "Grey",
+          "hex": "#63666A"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        }
+      ]
+    },
+    {
+      "name": "Anycubic PETG",
+      "product": "PETG",
+      "material": "PETG",
+      "brand": "Anycubic",
+      "weight_g": 1000.0,
+      "spool_weight_g": 127,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#000000"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Grey",
+          "hex": "#B1B3B3"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#F3E500"
+        },
+        {
+          "name": "Green",
+          "hex": "#009639"
+        },
+        {
+          "name": "Orange",
+          "hex": "#FF7F32"
+        },
+        {
+          "name": "Purple",
+          "hex": "#6A6DCD"
+        },
+        {
+          "name": "Blue",
+          "hex": "#0762C8"
+        },
+        {
+          "name": "Clear",
+          "hex": "#00FFFF"
+        }
+      ]
+    },
+    {
+      "name": "Anycubic PLA",
+      "product": "PLA",
+      "material": "PLA",
+      "brand": "Anycubic",
+      "weight_g": 1000,
+      "spool_weight_g": 125,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#212721"
+        }
+      ]
+    },
+    {
+      "name": "Anycubic PLA Basic",
+      "product": "PLA Basic",
+      "material": "PLA",
+      "brand": "Anycubic",
+      "weight_g": 1000,
+      "spool_weight_g": 127,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#212721"
+        },
+        {
+          "name": "White",
+          "hex": "#EFF0F1"
+        },
+        {
+          "name": "Grey",
+          "hex": "#B1B3B3"
+        },
+        {
+          "name": "Texture Grey",
+          "hex": "#75787B"
+        },
+        {
+          "name": "Red",
+          "hex": "#C8102E"
+        },
+        {
+          "name": "Blue (Navy Blue)",
+          "hex": "#003594"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#F3E500"
+        },
+        {
+          "name": "Green",
+          "hex": "#009639"
+        },
+        {
+          "name": "Green Flash",
+          "hex": "#75CB5D"
+        },
+        {
+          "name": "Orange",
+          "hex": "#FF7F32"
+        },
+        {
+          "name": "Purple",
+          "hex": "#6A6DCD"
+        },
+        {
+          "name": "Pink",
+          "hex": "#FF8DA1"
+        },
+        {
+          "name": "Texture Silver",
+          "hex": "#8A8D8F"
+        },
+        {
+          "name": "Beige",
+          "hex": "#D4B996"
+        },
+        {
+          "name": "Bronze",
+          "hex": "#7C4D3A"
+        },
+        {
+          "name": "Brown",
+          "hex": "#927968"
+        },
+        {
+          "name": "Dark Brown",
+          "hex": "#975E3E"
+        },
+        {
+          "name": "Cyan",
+          "hex": "#23A3C7"
+        },
+        {
+          "name": "Magenta",
+          "hex": "#CF4F80"
+        },
+        {
+          "name": "Clear",
+          "hex": "#00FFFF"
+        }
+      ]
+    },
+    {
+      "name": "Anycubic PLA Glow",
+      "product": "PLA Glow",
+      "material": "PLA",
+      "brand": "Anycubic",
+      "weight_g": 1000,
+      "spool_weight_g": 127,
+      "colors": [
+        {
+          "name": "Yellow",
+          "hex": "#F3E500"
+        },
+        {
+          "name": "Green",
+          "hex": "#009639"
+        },
+        {
+          "name": "Blue",
+          "hex": "#0762C8"
+        }
+      ]
+    },
+    {
+      "name": "Anycubic PLA High Speed",
+      "product": "PLA High Speed",
+      "material": "PLA",
+      "brand": "Anycubic",
+      "weight_g": 1000,
+      "spool_weight_g": 125,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#212721"
+        },
+        {
+          "name": "Grey",
+          "hex": "#53565A"
+        },
+        {
+          "name": "White",
+          "hex": "#F3F4F5"
+        },
+        {
+          "name": "Red",
+          "hex": "#BA0C2F"
+        },
+        {
+          "name": "Orange",
+          "hex": "#FF7338"
+        },
+        {
+          "name": "Blue",
+          "hex": "#0762C8"
+        },
+        {
+          "name": "Green",
+          "hex": "#2DC84D"
+        }
+      ]
+    },
+    {
+      "name": "Anycubic PLA Matte",
+      "product": "PLA Matte",
+      "material": "PLA",
+      "brand": "Anycubic",
+      "weight_g": 1000,
+      "spool_weight_g": 125,
+      "colors": [
+        {
+          "name": "Grey",
+          "hex": "#E8E8E8"
+        },
+        {
+          "name": "Black",
+          "hex": "#000000"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#F3E500"
+        },
+        {
+          "name": "Blue",
+          "hex": "#0047BB"
+        },
+        {
+          "name": "Green-Brown",
+          "hex": "#744E10",
+          "hexes": [
+            "#744E10",
+            "#009639"
+          ]
+        },
+        {
+          "name": "Green",
+          "hex": "#009639"
+        },
+        {
+          "name": "Ice Blue",
+          "hex": "#8AD8ED"
+        },
+        {
+          "name": "Orange",
+          "hex": "#FF7F32"
+        },
+        {
+          "name": "Purple",
+          "hex": "#6558B1"
+        },
+        {
+          "name": "Red-Blue",
+          "hex": "#C8102E",
+          "hexes": [
+            "#C8102E",
+            "#0047BB"
+          ]
+        },
+        {
+          "name": "Red",
+          "hex": "#C8102E"
+        },
+        {
+          "name": "Sakura Pink",
+          "hex": "#F4C1E1"
+        }
+      ]
+    },
+    {
+      "name": "Anycubic PLA Metal",
+      "product": "PLA Metal",
+      "material": "PLA",
+      "brand": "Anycubic",
+      "weight_g": 1000,
+      "spool_weight_g": 127,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#43403D"
+        },
+        {
+          "name": "Blue",
+          "hex": "#3177A3"
+        },
+        {
+          "name": "Copper",
+          "hex": "#956C58"
+        },
+        {
+          "name": "Champagne",
+          "hex": "#B59C7D"
+        }
+      ]
+    },
+    {
+      "name": "Anycubic PLA+",
+      "product": "PLA+",
+      "material": "PLA+",
+      "brand": "Anycubic",
+      "weight_g": 1000,
+      "spool_weight_g": 127,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#212721"
+        },
+        {
+          "name": "Grey",
+          "hex": "#F1F0ED"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Red",
+          "hex": "#E10600"
+        },
+        {
+          "name": "Orange",
+          "hex": "#FF7338"
+        },
+        {
+          "name": "Purple",
+          "hex": "#695FA2"
+        },
+        {
+          "name": "Blue",
+          "hex": "#0762C8"
+        },
+        {
+          "name": "Green",
+          "hex": "#2DC84D"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#FDDB27"
+        },
+        {
+          "name": "Silver",
+          "hex": "#8A8D8F"
+        },
+        {
+          "name": "Light Blue",
+          "hex": "#74D1EA"
+        }
+      ]
+    },
+    {
+      "name": "Anycubic TPU",
+      "product": "TPU",
+      "material": "TPU",
+      "brand": "Anycubic",
+      "weight_g": 1000,
+      "spool_weight_g": 127,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#212721"
+        },
+        {
+          "name": "Grey",
+          "hex": "#63666A"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Red",
+          "hex": "#D22630"
+        },
+        {
+          "name": "Orange",
+          "hex": "#FF6A13"
+        },
+        {
+          "name": "Purple",
+          "hex": "#A438A8"
+        },
+        {
+          "name": "Blue",
+          "hex": "#005EB8"
+        },
+        {
+          "name": "Green",
+          "hex": "#79C000"
+        },
+        {
+          "name": "Clear",
+          "hex": "#00FFFF"
+        },
+        {
+          "name": "Milky White",
+          "hex": "#E9E9E7"
+        }
+      ]
+    },
+    {
+      "name": "Creality CR-PETG",
+      "product": "CR-PETG",
+      "material": "PETG",
+      "brand": "Creality",
+      "weight_g": 1000,
+      "spool_weight_g": 225,
+      "colors": [
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Black",
+          "hex": "#000000"
+        },
+        {
+          "name": "Transparent",
+          "hex": "#00FFFF"
+        },
+        {
+          "name": "Red",
+          "hex": "#DE3530"
+        },
+        {
+          "name": "Blue",
+          "hex": "#0000FF"
+        },
+        {
+          "name": "Grey",
+          "hex": "#AAA9A8"
+        }
+      ]
+    },
+    {
+      "name": "Creality Ender-PLA",
+      "product": "Ender-PLA",
+      "material": "PLA",
+      "brand": "Creality",
+      "weight_g": 1000,
+      "spool_weight_g": 120,
+      "colors": [
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Black",
+          "hex": "#000000"
+        },
+        {
+          "name": "Blue",
+          "hex": "#2D8CD5"
+        },
+        {
+          "name": "Red",
+          "hex": "#DE3530"
+        }
+      ]
+    },
+    {
+      "name": "Creality Hyper ABS",
+      "product": "Hyper ABS",
+      "material": "ABS",
+      "brand": "Creality",
+      "weight_g": 1000.0,
+      "spool_weight_g": 120.0,
+      "colors": [
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Grey",
+          "hex": "#AAA9A8"
+        },
+        {
+          "name": "Black",
+          "hex": "#000000"
+        }
+      ]
+    },
+    {
+      "name": "Creality PLA",
+      "product": "PLA",
+      "material": "PLA",
+      "brand": "Creality",
+      "weight_g": 1000,
+      "spool_weight_g": 120,
+      "colors": [
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Silver",
+          "hex": "#ABB3B9"
+        },
+        {
+          "name": "Grey",
+          "hex": "#666D78"
+        },
+        {
+          "name": "Black",
+          "hex": "#000000"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#E5D660"
+        },
+        {
+          "name": "Green",
+          "hex": "#5EEAAB"
+        },
+        {
+          "name": "Blue",
+          "hex": "#2D8CD5"
+        },
+        {
+          "name": "Red",
+          "hex": "#DE3530"
+        },
+        {
+          "name": "Raindow",
+          "hex": "#37C597",
+          "hexes": [
+            "#37C597",
+            "#FDFF79",
+            "#E95F2A",
+            "#A15160",
+            "#84ADCF"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Creality PLA Hyper",
+      "product": "PLA Hyper",
+      "material": "PLA",
+      "brand": "Creality",
+      "weight_g": 1000.0,
+      "spool_weight_g": 120.0,
+      "colors": [
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Grey",
+          "hex": "#AAA9A8"
+        },
+        {
+          "name": "Red",
+          "hex": "#FF0000"
+        },
+        {
+          "name": "Very Peri",
+          "hex": "#2222FF"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#FFFF00"
+        },
+        {
+          "name": "Green",
+          "hex": "#00FF00"
+        },
+        {
+          "name": "Orange",
+          "hex": "#FF8000"
+        },
+        {
+          "name": "Brown",
+          "hex": "#6E1F1F"
+        },
+        {
+          "name": "Flesh",
+          "hex": "#FFE6E6"
+        },
+        {
+          "name": "Peach Fuzz",
+          "hex": "#FF7373"
+        },
+        {
+          "name": "Viva Magenta",
+          "hex": "#FF00FF"
+        },
+        {
+          "name": "Purple",
+          "hex": "#BF00FF"
+        },
+        {
+          "name": "Gold",
+          "hex": "#FCC200"
+        },
+        {
+          "name": "Black",
+          "hex": "#000000"
+        },
+        {
+          "name": "Blue",
+          "hex": "#0000FF"
+        }
+      ]
+    },
+    {
+      "name": "Creality PLA Hyper RFID",
+      "product": "PLA Hyper RFID",
+      "material": "PLA",
+      "brand": "Creality",
+      "weight_g": 1000.0,
+      "spool_weight_g": 120.0,
+      "colors": [
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Grey",
+          "hex": "#AAA9A8"
+        },
+        {
+          "name": "Red",
+          "hex": "#FF0000"
+        },
+        {
+          "name": "Very Peri",
+          "hex": "#2222FF"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#FFFF00"
+        },
+        {
+          "name": "Green",
+          "hex": "#00FF00"
+        },
+        {
+          "name": "Orange",
+          "hex": "#FF8000"
+        },
+        {
+          "name": "Brown",
+          "hex": "#6E1F1F"
+        },
+        {
+          "name": "Skin",
+          "hex": "#FFE6E6"
+        },
+        {
+          "name": "Peach Fuzz",
+          "hex": "#FF7373"
+        },
+        {
+          "name": "Viva Magenta",
+          "hex": "#FF00FF"
+        },
+        {
+          "name": "Purple",
+          "hex": "#BF00FF"
+        },
+        {
+          "name": "Gold",
+          "hex": "#FCC200"
+        },
+        {
+          "name": "Black",
+          "hex": "#000000"
+        },
+        {
+          "name": "Blue",
+          "hex": "#0000FF"
+        }
+      ]
+    },
+    {
+      "name": "Elegoo ASA",
+      "product": "ASA",
+      "material": "ASA",
+      "brand": "Elegoo",
+      "weight_g": 1000,
+      "spool_weight_g": 154,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#000000"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        }
+      ]
+    },
+    {
+      "name": "Elegoo PETG PRO",
+      "product": "PETG PRO",
+      "material": "PETG",
+      "brand": "Elegoo",
+      "weight_g": 1000,
+      "spool_weight_g": 154,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#000000"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Grey",
+          "hex": "#8F949B"
+        },
+        {
+          "name": "Silver",
+          "hex": "#9F9F9F"
+        },
+        {
+          "name": "Pink",
+          "hex": "#F9B0BD"
+        },
+        {
+          "name": "Red",
+          "hex": "#EA140E"
+        },
+        {
+          "name": "Olive Green",
+          "hex": "#25460F"
+        },
+        {
+          "name": "Blue",
+          "hex": "#2240AF"
+        },
+        {
+          "name": "Burgundy Red",
+          "hex": "#9C2129"
+        },
+        {
+          "name": "Light Blue",
+          "hex": "#339BF7"
+        },
+        {
+          "name": "Green",
+          "hex": "#08E327"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#FBEC07"
+        },
+        {
+          "name": "Purple",
+          "hex": "#603BA0"
+        }
+      ]
+    },
+    {
+      "name": "Elegoo PLA",
+      "product": "PLA",
+      "material": "PLA",
+      "brand": "Elegoo",
+      "weight_g": 1000,
+      "spool_weight_g": 154,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#000000"
+        },
+        {
+          "name": "Brown",
+          "hex": "#9E6A4B"
+        },
+        {
+          "name": "Beige",
+          "hex": "#FEE7BF"
+        },
+        {
+          "name": "Grey",
+          "hex": "#8F949B"
+        },
+        {
+          "name": "Purple",
+          "hex": "#603BA0"
+        },
+        {
+          "name": "Pink",
+          "hex": "#F9B0BD"
+        },
+        {
+          "name": "Sky Blue",
+          "hex": "#27B2D0"
+        },
+        {
+          "name": "Sea Green",
+          "hex": "#1ABC83"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Neon Green",
+          "hex": "#02E601"
+        },
+        {
+          "name": "Dark Blue",
+          "hex": "#2240AF"
+        },
+        {
+          "name": "Red",
+          "hex": "#EA140E"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#F6D701"
+        },
+        {
+          "name": "Orange",
+          "hex": "#FD7C18"
+        },
+        {
+          "name": "Translucent",
+          "hex": "#E9E9E7"
+        },
+        {
+          "name": "Space Grey",
+          "hex": "#5D5D5D"
+        },
+        {
+          "name": "Wood Color",
+          "hex": "#B19870"
+        },
+        {
+          "name": "Wood Filled",
+          "hex": "#9D8058"
+        },
+        {
+          "name": "Bronze Filled",
+          "hex": "#895837"
+        },
+        {
+          "name": "Marble",
+          "hex": "#B1B6B6"
+        }
+      ]
+    },
+    {
+      "name": "Elegoo PLA Matte",
+      "product": "PLA Matte",
+      "material": "PLA",
+      "brand": "Elegoo",
+      "weight_g": 1000,
+      "spool_weight_g": 154,
+      "colors": [
+        {
+          "name": "Beige",
+          "hex": "#F4E0B8"
+        },
+        {
+          "name": "Black",
+          "hex": "#090909"
+        },
+        {
+          "name": "Ice Blue",
+          "hex": "#B3F3FD"
+        },
+        {
+          "name": "Lavender Purple",
+          "hex": "#9D85D1"
+        },
+        {
+          "name": "Mint Green",
+          "hex": "#DBEBBA"
+        },
+        {
+          "name": "Navy Blue",
+          "hex": "#2D3F6F"
+        },
+        {
+          "name": "Ruby Red",
+          "hex": "#BB2C2E"
+        },
+        {
+          "name": "Sakura Pink",
+          "hex": "#F9C2D5"
+        },
+        {
+          "name": "Slate Grey",
+          "hex": "#969799"
+        },
+        {
+          "name": "Sunshine Yellow",
+          "hex": "#F7D863"
+        },
+        {
+          "name": "Teal Green",
+          "hex": "#74CDC7"
+        },
+        {
+          "name": "White",
+          "hex": "#F6F6F6"
+        }
+      ]
+    },
+    {
+      "name": "Elegoo PLA Silk",
+      "product": "PLA Silk",
+      "material": "PLA",
+      "brand": "Elegoo",
+      "weight_g": 1000,
+      "spool_weight_g": 154,
+      "colors": [
+        {
+          "name": "Gold",
+          "hex": "#FFD10E"
+        },
+        {
+          "name": "Silver",
+          "hex": "#DBDDE2"
+        },
+        {
+          "name": "Bronze",
+          "hex": "#965C39"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Coral Pink",
+          "hex": "#F4717D"
+        },
+        {
+          "name": "Mint Green",
+          "hex": "#53D8D4"
+        },
+        {
+          "name": "Holly Green",
+          "hex": "#408E67"
+        },
+        {
+          "name": "Red",
+          "hex": "#ED646B"
+        },
+        {
+          "name": "Black Red",
+          "hex": "#000000",
+          "hexes": [
+            "#000000",
+            "#ED646B"
+          ]
+        },
+        {
+          "name": "Blue Magenta",
+          "hex": "#294FBA",
+          "hexes": [
+            "#294FBA",
+            "#A92D6F"
+          ]
+        },
+        {
+          "name": "Green Red",
+          "hex": "#E76099",
+          "hexes": [
+            "#E76099",
+            "#5CBC82"
+          ]
+        },
+        {
+          "name": "Black Purple",
+          "hex": "#000000",
+          "hexes": [
+            "#000000",
+            "#7433BA"
+          ]
+        },
+        {
+          "name": "Blue Green",
+          "hex": "#0565D1",
+          "hexes": [
+            "#0565D1",
+            "#22C36C"
+          ]
+        },
+        {
+          "name": "Blue Purple Black",
+          "hex": "#0565D1",
+          "hexes": [
+            "#0565D1",
+            "#7433BA",
+            "#000000"
+          ]
+        },
+        {
+          "name": "Blue Green Orange",
+          "hex": "#125CA3",
+          "hexes": [
+            "#125CA3",
+            "#DE6A21",
+            "#3F9510"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Elegoo PLA+",
+      "product": "PLA+",
+      "material": "PLA+",
+      "brand": "Elegoo",
+      "weight_g": 1000,
+      "spool_weight_g": 154,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#000000"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Grey",
+          "hex": "#B5B7B8"
+        },
+        {
+          "name": "Blue",
+          "hex": "#2240AF"
+        },
+        {
+          "name": "Red",
+          "hex": "#EA140E"
+        },
+        {
+          "name": "Orange",
+          "hex": "#FD7C18"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#FEF406"
+        },
+        {
+          "name": "Sky Blue",
+          "hex": "#27B2D0"
+        },
+        {
+          "name": "Space Grey",
+          "hex": "#5D5D5D"
+        },
+        {
+          "name": "Purple",
+          "hex": "#603BA0"
+        },
+        {
+          "name": "Sea Green",
+          "hex": "#1ABC83"
+        },
+        {
+          "name": "Wood Color",
+          "hex": "#B19870"
+        },
+        {
+          "name": "Brown",
+          "hex": "#9E6A4B"
+        }
+      ]
+    },
+    {
+      "name": "Elegoo RAPID PETG",
+      "product": "RAPID PETG",
+      "material": "PETG",
+      "brand": "Elegoo",
+      "weight_g": 1000,
+      "spool_weight_g": 154,
+      "colors": [
+        {
+          "name": "Beige",
+          "hex": "#EDE8D0"
+        },
+        {
+          "name": "Black",
+          "hex": "#000000"
+        },
+        {
+          "name": "Blue",
+          "hex": "#0000FF"
+        },
+        {
+          "name": "Brown",
+          "hex": "#743824"
+        },
+        {
+          "name": "Green",
+          "hex": "#2B9A84"
+        },
+        {
+          "name": "Grey",
+          "hex": "#828282"
+        },
+        {
+          "name": "Orange",
+          "hex": "#D0864C"
+        },
+        {
+          "name": "Red",
+          "hex": "#FF0000"
+        },
+        {
+          "name": "Transparent",
+          "hex": "#00FFFF"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#DBFF80"
+        }
+      ]
+    },
+    {
+      "name": "Elegoo RAPID PLA+",
+      "product": "RAPID PLA+",
+      "material": "PLA+",
+      "brand": "Elegoo",
+      "weight_g": 1000,
+      "spool_weight_g": 154,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#000000"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Grey",
+          "hex": "#B5B7B8"
+        },
+        {
+          "name": "Green",
+          "hex": "#02E601"
+        },
+        {
+          "name": "Blue",
+          "hex": "#2240AF"
+        },
+        {
+          "name": "Red",
+          "hex": "#EA140E"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#FEF406"
+        },
+        {
+          "name": "Orange",
+          "hex": "#FD7C18"
+        },
+        {
+          "name": "Silver",
+          "hex": "#9F9F9F"
+        },
+        {
+          "name": "Brown",
+          "hex": "#9E6A4B"
+        },
+        {
+          "name": "Beige",
+          "hex": "#FEE7BF"
+        }
+      ]
+    },
+    {
+      "name": "eSUN ABS+",
+      "product": "ABS+",
+      "material": "ABS+",
+      "brand": "eSUN",
+      "weight_g": 1000,
+      "spool_weight_g": 240,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#111214"
+        },
+        {
+          "name": "Cold White",
+          "hex": "#DBDBDD"
+        },
+        {
+          "name": "Solid Grey",
+          "hex": "#435A83"
+        },
+        {
+          "name": "Natural",
+          "hex": "#BEB8AC"
+        },
+        {
+          "name": "Blue",
+          "hex": "#153A66"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#EAE412"
+        },
+        {
+          "name": "Brown",
+          "hex": "#5B4337"
+        },
+        {
+          "name": "Green",
+          "hex": "#00AB84"
+        },
+        {
+          "name": "Orange",
+          "hex": "#E89746"
+        },
+        {
+          "name": "Red",
+          "hex": "#D12A31"
+        },
+        {
+          "name": "Silver",
+          "hex": "#797876"
+        },
+        {
+          "name": "Light Blue",
+          "hex": "#0097B7"
+        },
+        {
+          "name": "Peak Green",
+          "hex": "#4DA036"
+        },
+        {
+          "name": "Pine Green",
+          "hex": "#244435"
+        },
+        {
+          "name": "Pink",
+          "hex": "#EB586A"
+        },
+        {
+          "name": "Fire Engine Red",
+          "hex": "#952428"
+        }
+      ]
+    },
+    {
+      "name": "eSUN ePLA+HS",
+      "product": "ePLA+HS",
+      "material": "PLA+",
+      "brand": "eSUN",
+      "weight_g": 1000,
+      "spool_weight_g": 170,
+      "colors": [
+        {
+          "name": "Beige",
+          "hex": "#E8B99F"
+        },
+        {
+          "name": "Black",
+          "hex": "#000000"
+        },
+        {
+          "name": "Blue",
+          "hex": "#12296F"
+        },
+        {
+          "name": "Bone White",
+          "hex": "#A88567"
+        },
+        {
+          "name": "Brown",
+          "hex": "#6A4A3D"
+        },
+        {
+          "name": "Cold White",
+          "hex": "#EFEEF3"
+        },
+        {
+          "name": "Dark Blue",
+          "hex": "#1D2333"
+        },
+        {
+          "name": "Fire Engine Red",
+          "hex": "#A40F15"
+        },
+        {
+          "name": "Gold",
+          "hex": "#E39D3E"
+        },
+        {
+          "name": "Green",
+          "hex": "#4B585E"
+        },
+        {
+          "name": "Grey",
+          "hex": "#A6A9AE"
+        },
+        {
+          "name": "Light Blue",
+          "hex": "#29B9DE"
+        },
+        {
+          "name": "Light Brown",
+          "hex": "#B47F5F"
+        },
+        {
+          "name": "Magenta",
+          "hex": "#ED5973"
+        },
+        {
+          "name": "Olive Green",
+          "hex": "#6D6B5E"
+        },
+        {
+          "name": "Orange",
+          "hex": "#FF5216"
+        },
+        {
+          "name": "Peak Green",
+          "hex": "#7AC163"
+        },
+        {
+          "name": "Pine Green",
+          "hex": "#43634E"
+        },
+        {
+          "name": "Pink",
+          "hex": "#FF7083"
+        },
+        {
+          "name": "Purple",
+          "hex": "#3B1D4F"
+        },
+        {
+          "name": "Red",
+          "hex": "#FE4A3B"
+        },
+        {
+          "name": "Silver",
+          "hex": "#757376"
+        },
+        {
+          "name": "Space Blue",
+          "hex": "#5CB5DF"
+        },
+        {
+          "name": "Very Peri",
+          "hex": "#867EC9"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#FAD900"
+        }
+      ]
+    },
+    {
+      "name": "eSUN ePLA-Silk",
+      "product": "ePLA-Silk",
+      "material": "PLA",
+      "brand": "eSUN",
+      "weight_g": 1000,
+      "spool_weight_g": 240,
+      "colors": [
+        {
+          "name": "Lime",
+          "hex": "#A7E51E"
+        },
+        {
+          "name": "Jacinth",
+          "hex": "#EE422A"
+        },
+        {
+          "name": "Green",
+          "hex": "#00CD20"
+        },
+        {
+          "name": "Gold",
+          "hex": "#E89104"
+        },
+        {
+          "name": "Dark Yellow",
+          "hex": "#FBB351"
+        },
+        {
+          "name": "Cyan",
+          "hex": "#0A75C3"
+        },
+        {
+          "name": "Copper",
+          "hex": "#EE771B"
+        },
+        {
+          "name": "Bronze",
+          "hex": "#5B5F50"
+        },
+        {
+          "name": "Blue",
+          "hex": "#0064EE"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#E1BE1A"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Violet",
+          "hex": "#FB78BC"
+        },
+        {
+          "name": "Silver",
+          "hex": "#B1B1B3"
+        },
+        {
+          "name": "Rose Gold",
+          "hex": "#ED5973"
+        },
+        {
+          "name": "Red",
+          "hex": "#FF2C30"
+        },
+        {
+          "name": "Purple",
+          "hex": "#6D22A3"
+        },
+        {
+          "name": "Pink",
+          "hex": "#FF8FCA"
+        }
+      ]
+    },
+    {
+      "name": "eSUN HIPS",
+      "product": "HIPS",
+      "material": "HIPS",
+      "brand": "eSUN",
+      "weight_g": 1000,
+      "spool_weight_g": 240,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#000000"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Natural",
+          "hex": "#BEB8AC"
+        }
+      ]
+    },
+    {
+      "name": "eSUN PETG",
+      "product": "PETG",
+      "material": "PETG",
+      "brand": "eSUN",
+      "weight_g": 1000,
+      "spool_weight_g": 240,
+      "colors": [
+        {
+          "name": "Solid Black",
+          "hex": "#070707"
+        },
+        {
+          "name": "Solid White",
+          "hex": "#D4CAD2"
+        },
+        {
+          "name": "Solid Grey",
+          "hex": "#878696"
+        },
+        {
+          "name": "Natural",
+          "hex": "#BEB4B5"
+        },
+        {
+          "name": "Blue",
+          "hex": "#0D1553"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#CD9700"
+        },
+        {
+          "name": "Magenta",
+          "hex": "#C1484F"
+        },
+        {
+          "name": "Green",
+          "hex": "#01300E"
+        },
+        {
+          "name": "Orange",
+          "hex": "#DC4518"
+        },
+        {
+          "name": "Solid Red",
+          "hex": "#D82A33"
+        },
+        {
+          "name": "Solid Silver",
+          "hex": "#878286"
+        },
+        {
+          "name": "Solid Blue",
+          "hex": "#0F1D5C"
+        },
+        {
+          "name": "Solid Gold",
+          "hex": "#E0A000"
+        },
+        {
+          "name": "Solid Yellow",
+          "hex": "#E0A000"
+        },
+        {
+          "name": "Solid Green",
+          "hex": "#015A44"
+        },
+        {
+          "name": "Solid Purple",
+          "hex": "#865D97"
+        },
+        {
+          "name": "Solid Orange",
+          "hex": "#FF6924"
+        },
+        {
+          "name": "Fire Engine Red",
+          "hex": "#BD363A"
+        },
+        {
+          "name": "Grey",
+          "hex": "#615F6C"
+        },
+        {
+          "name": "Purple",
+          "hex": "#3E1750"
+        }
+      ]
+    },
+    {
+      "name": "eSUN PETG-CF",
+      "product": "PETG-CF",
+      "material": "PETG-CF",
+      "brand": "eSUN",
+      "weight_g": 1000,
+      "spool_weight_g": 220,
+      "colors": [
+        {
+          "name": "Antique Brass",
+          "hex": "#A8918B"
+        },
+        {
+          "name": "Dark Green",
+          "hex": "#60706F"
+        },
+        {
+          "name": "Dark Grey",
+          "hex": "#5F6366"
+        },
+        {
+          "name": "Black",
+          "hex": "#2C2C2A"
+        },
+        {
+          "name": "Dark Blue",
+          "hex": "#5C626E"
+        },
+        {
+          "name": "Black Red",
+          "hex": "#423C3E"
+        }
+      ]
+    },
+    {
+      "name": "eSUN PLA",
+      "product": "PLA",
+      "material": "PLA",
+      "brand": "eSUN",
+      "weight_g": 1000,
+      "spool_weight_g": 170,
+      "colors": [
+        {
+          "name": "Wood",
+          "hex": "#EBCFA7"
+        }
+      ]
+    },
+    {
+      "name": "eSUN PLA+",
+      "product": "PLA+",
+      "material": "PLA+",
+      "brand": "eSUN",
+      "weight_g": 1000,
+      "spool_weight_g": 170,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#000000"
+        },
+        {
+          "name": "Purple",
+          "hex": "#793EB6"
+        },
+        {
+          "name": "Red",
+          "hex": "#DC4638"
+        },
+        {
+          "name": "Silver",
+          "hex": "#9B9AA2"
+        },
+        {
+          "name": "Sky Blue",
+          "hex": "#7CD1F6"
+        },
+        {
+          "name": "Space Blue",
+          "hex": "#33AAEE"
+        },
+        {
+          "name": "Very peri",
+          "hex": "#8683EA"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#D9AA26"
+        },
+        {
+          "name": "Beige",
+          "hex": "#EABCA2"
+        },
+        {
+          "name": "Blue",
+          "hex": "#1932B3"
+        },
+        {
+          "name": "Bone White",
+          "hex": "#E0D7B6"
+        },
+        {
+          "name": "Brown",
+          "hex": "#935931"
+        },
+        {
+          "name": "Cold White",
+          "hex": "#E2F6F7"
+        },
+        {
+          "name": "Dark Blue",
+          "hex": "#232845"
+        },
+        {
+          "name": "Fire Engine Red",
+          "hex": "#952426"
+        },
+        {
+          "name": "Gold",
+          "hex": "#F2B01C"
+        },
+        {
+          "name": "Green",
+          "hex": "#00101A"
+        },
+        {
+          "name": "Grey",
+          "hex": "#606783"
+        },
+        {
+          "name": "Light Blue",
+          "hex": "#169BEA"
+        },
+        {
+          "name": "Light Brown",
+          "hex": "#9E744A"
+        },
+        {
+          "name": "Magenta",
+          "hex": "#E02552"
+        },
+        {
+          "name": "Olive Green",
+          "hex": "#455C40"
+        },
+        {
+          "name": "Orange",
+          "hex": "#E47B20"
+        },
+        {
+          "name": "Peak Green",
+          "hex": "#46CA43"
+        },
+        {
+          "name": "Pine Green",
+          "hex": "#063C22"
+        },
+        {
+          "name": "Pink",
+          "hex": "#EF7AA4"
+        },
+        {
+          "name": "Grass Green",
+          "hex": "#049840"
+        },
+        {
+          "name": "Mustard Green",
+          "hex": "#DEDF93"
+        },
+        {
+          "name": "Jade Green",
+          "hex": "#02C5A7"
+        },
+        {
+          "name": "Holly Green",
+          "hex": "#014D41"
+        },
+        {
+          "name": "Haze Blue",
+          "hex": "#468DB9"
+        },
+        {
+          "name": "RGB RED",
+          "hex": "#E62409"
+        },
+        {
+          "name": "ALMOND YELLOW",
+          "hex": "#DFD590"
+        },
+        {
+          "name": "APRICOT",
+          "hex": "#E68A1D"
+        },
+        {
+          "name": "BABY BLUE",
+          "hex": "#75C2CA"
+        },
+        {
+          "name": "BABY PINK",
+          "hex": "#CD8E89"
+        },
+        {
+          "name": "CORAL ORANGE",
+          "hex": "#FF7E23"
+        },
+        {
+          "name": "LIGHT KHAKI",
+          "hex": "#BDB7A1"
+        },
+        {
+          "name": "LILAC",
+          "hex": "#C78DBF"
+        },
+        {
+          "name": "MATCHA GREEN",
+          "hex": "#91994C"
+        },
+        {
+          "name": "MILKY WHITE",
+          "hex": "#D6D5D0"
+        },
+        {
+          "name": "MINT GREEN",
+          "hex": "#69C296"
+        },
+        {
+          "name": "PEACH PINK",
+          "hex": "#DAB4B1"
+        },
+        {
+          "name": "RGB BLUE",
+          "hex": "#303ED2"
+        },
+        {
+          "name": "RGB GREEN",
+          "hex": "#0CB234"
+        }
+      ]
+    },
+    {
+      "name": "eSUN PLA-Basic",
+      "product": "PLA-Basic",
+      "material": "PLA",
+      "brand": "eSUN",
+      "weight_g": 1000,
+      "spool_weight_g": 170,
+      "colors": [
+        {
+          "name": "Orange",
+          "hex": "#FDA42E"
+        },
+        {
+          "name": "Concrete Grey",
+          "hex": "#B3B3B3"
+        },
+        {
+          "name": "Purple",
+          "hex": "#A60056"
+        },
+        {
+          "name": "Light Grey",
+          "hex": "#536C8B"
+        },
+        {
+          "name": "Green",
+          "hex": "#068E1F"
+        },
+        {
+          "name": "Grey",
+          "hex": "#536782"
+        },
+        {
+          "name": "Light Blue",
+          "hex": "#4D9CE1"
+        },
+        {
+          "name": "Pink",
+          "hex": "#FF6762"
+        },
+        {
+          "name": "Barbie Pink",
+          "hex": "#FD838E"
+        },
+        {
+          "name": "Beige",
+          "hex": "#E1AC8C"
+        },
+        {
+          "name": "Black",
+          "hex": "#0F0F0F"
+        },
+        {
+          "name": "Blue",
+          "hex": "#1533C5"
+        },
+        {
+          "name": "Bone White",
+          "hex": "#DCC7B2"
+        },
+        {
+          "name": "Brown",
+          "hex": "#634432"
+        },
+        {
+          "name": "Cold White",
+          "hex": "#DBEEFD"
+        },
+        {
+          "name": "Dark Blue",
+          "hex": "#3A4056"
+        },
+        {
+          "name": "Fire Engine Red",
+          "hex": "#8D091E"
+        },
+        {
+          "name": "Grape Purple",
+          "hex": "#6E2D91"
+        },
+        {
+          "name": "Holly Green",
+          "hex": "#3F8278"
+        },
+        {
+          "name": "Olive Green",
+          "hex": "#535645"
+        },
+        {
+          "name": "Red",
+          "hex": "#D54837"
+        },
+        {
+          "name": "Silver",
+          "hex": "#888D93"
+        },
+        {
+          "name": "Sky Blue",
+          "hex": "#63D0F9"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#F8DF20"
+        },
+        {
+          "name": "Aqua",
+          "hex": "#42C3D7"
+        },
+        {
+          "name": "Peak Green",
+          "hex": "#A9D47B"
+        }
+      ]
+    },
+    {
+      "name": "eSUN PLA-lite",
+      "product": "PLA-lite",
+      "material": "PLA",
+      "brand": "eSUN",
+      "weight_g": 1000,
+      "spool_weight_g": 170,
+      "colors": [
+        {
+          "name": "BLACK",
+          "hex": "#101211"
+        },
+        {
+          "name": "BLUE",
+          "hex": "#0D2C7C"
+        },
+        {
+          "name": "COLD WHITE",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "FIRE ENGINE RED",
+          "hex": "#8B282D"
+        },
+        {
+          "name": "GREEN",
+          "hex": "#3E484A"
+        },
+        {
+          "name": "GREY",
+          "hex": "#1A3059"
+        },
+        {
+          "name": "ORANGE",
+          "hex": "#FC6401"
+        },
+        {
+          "name": "VERY PERI",
+          "hex": "#675DF1"
+        },
+        {
+          "name": "WHITE",
+          "hex": "#C2C1BD"
+        },
+        {
+          "name": "YELLOW",
+          "hex": "#F6DC01"
+        }
+      ]
+    },
+    {
+      "name": "eSUN PLA-Luminous",
+      "product": "PLA-Luminous",
+      "material": "PLA",
+      "brand": "eSUN",
+      "weight_g": 1000,
+      "spool_weight_g": 170,
+      "colors": [
+        {
+          "name": "Cored Luminous Orange",
+          "hex": "#FF977F"
+        },
+        {
+          "name": "Cored Luminous Purple",
+          "hex": "#997ABD"
+        },
+        {
+          "name": "Cored Luminous Blue",
+          "hex": "#2C95CC"
+        },
+        {
+          "name": "Cored Luminous Green",
+          "hex": "#3C4242"
+        },
+        {
+          "name": "Luminous Green",
+          "hex": "#3C4242"
+        },
+        {
+          "name": "Luminous Blue",
+          "hex": "#2C95CC"
+        }
+      ]
+    },
+    {
+      "name": "eSUN PLA-Matte",
+      "product": "PLA-Matte",
+      "material": "PLA",
+      "brand": "eSUN",
+      "weight_g": 1000,
+      "spool_weight_g": 170,
+      "colors": [
+        {
+          "name": "Rainbow",
+          "hex": "#D1D8AE"
+        },
+        {
+          "name": "TANGERINE",
+          "hex": "#FF7537"
+        },
+        {
+          "name": "STRAWBERRY RED",
+          "hex": "#F88BA2"
+        },
+        {
+          "name": "PEACH PINK",
+          "hex": "#F4B1C2"
+        },
+        {
+          "name": "MORANDI PURPLE",
+          "hex": "#90BA66"
+        },
+        {
+          "name": "MORANDI GREEN",
+          "hex": "#0D353D"
+        },
+        {
+          "name": "MINT GREEN",
+          "hex": "#8DBDA3"
+        },
+        {
+          "name": "MILKY WHITE",
+          "hex": "#DFDBD8"
+        },
+        {
+          "name": "MATCHA GREEN",
+          "hex": "#90BA66"
+        },
+        {
+          "name": "LILAC",
+          "hex": "#E1BAE6"
+        },
+        {
+          "name": "LIGHT KHAKI",
+          "hex": "#C7B8A5"
+        },
+        {
+          "name": "LIGHT BLUE",
+          "hex": "#85BACA"
+        },
+        {
+          "name": "DARK GREY",
+          "hex": "#596484"
+        },
+        {
+          "name": "BLACK",
+          "hex": "#272928"
+        },
+        {
+          "name": "ALMOND YELLOW",
+          "hex": "#DDECB3"
+        }
+      ]
+    },
+    {
+      "name": "eSUN PLA-Silk Magic",
+      "product": "PLA-Silk Magic",
+      "material": "PLA",
+      "brand": "eSUN",
+      "weight_g": 1000,
+      "spool_weight_g": 153,
+      "colors": [
+        {
+          "name": "Red Gold",
+          "hex": "#EE3137"
+        },
+        {
+          "name": "Red Blue",
+          "hex": "#0061AF"
+        },
+        {
+          "name": "Purple Gold",
+          "hex": "#C592A5"
+        },
+        {
+          "name": "Gold Silver",
+          "hex": "#FDCF91"
+        },
+        {
+          "name": "Blue Green",
+          "hex": "#02254B"
+        },
+        {
+          "name": "Black Red",
+          "hex": "#A82C2C"
+        },
+        {
+          "name": "Black Purple",
+          "hex": "#583A60"
+        },
+        {
+          "name": "Black Green",
+          "hex": "#5D9288"
+        },
+        {
+          "name": "Black Gold",
+          "hex": "#AB5B26"
+        },
+        {
+          "name": "Silver Blue",
+          "hex": "#0E2F8E"
+        },
+        {
+          "name": "Red Green",
+          "hex": "#0A4C1E"
+        }
+      ]
+    },
+    {
+      "name": "eSUN PLA-Silk Mystic",
+      "product": "PLA-Silk Mystic",
+      "material": "PLA",
+      "brand": "eSUN",
+      "weight_g": 1000,
+      "spool_weight_g": 154,
+      "colors": [
+        {
+          "name": "GOLD BLUE PURPLE",
+          "hex": "#3F409A"
+        },
+        {
+          "name": "GOLD GREEN BLACK",
+          "hex": "#534737"
+        },
+        {
+          "name": "GOLD GREEN PURPLE",
+          "hex": "#C58A0C"
+        },
+        {
+          "name": "GOLD RED GREEN",
+          "hex": "#B5334D"
+        },
+        {
+          "name": "GOLD SILVER COPPER",
+          "hex": "#BDBAB1"
+        },
+        {
+          "name": "RED BLACK GOLD",
+          "hex": "#2A2426"
+        },
+        {
+          "name": "RED GOLD PURPLE",
+          "hex": "#FD9E0C"
+        },
+        {
+          "name": "RED GREEN BLUE",
+          "hex": "#223265"
+        },
+        {
+          "name": "RED YELLOW BLUE",
+          "hex": "#ECE280"
+        },
+        {
+          "name": "BLUE ORANGE GREEN",
+          "hex": "#F7B585"
+        },
+        {
+          "name": "BLUE RED PURPLE",
+          "hex": "#5C0242"
+        },
+        {
+          "name": "COPPER PURPLE GREEN",
+          "hex": "#7C5F95"
+        }
+      ]
+    },
+    {
+      "name": "eSUN TPU-95A",
+      "product": "TPU-95A",
+      "material": "TPU-95A",
+      "brand": "eSUN",
+      "weight_g": 1000,
+      "spool_weight_g": 240,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#050503"
+        },
+        {
+          "name": "White",
+          "hex": "#D0CBC2"
+        },
+        {
+          "name": "Grey",
+          "hex": "#777B7C"
+        },
+        {
+          "name": "Natural",
+          "hex": "#CDC1B1"
+        },
+        {
+          "name": "Transparent Red",
+          "hex": "#982A2B"
+        },
+        {
+          "name": "Transparent Yellow",
+          "hex": "#E5E002"
+        },
+        {
+          "name": "Transparent Green",
+          "hex": "#02B31A"
+        },
+        {
+          "name": "Tansparent Blue",
+          "hex": "#108EDB"
+        },
+        {
+          "name": "Transparent Pink",
+          "hex": "#D53857"
+        },
+        {
+          "name": "Transparent Orange",
+          "hex": "#FF8126"
+        },
+        {
+          "name": "Transparent Purple",
+          "hex": "#851D4E"
+        },
+        {
+          "name": "Rainbow",
+          "hex": "#889874"
+        },
+        {
+          "name": "Change by temp",
+          "hex": "#D93325"
+        }
+      ]
+    },
+    {
+      "name": "Flashforge PLA",
+      "product": "PLA",
+      "material": "PLA",
+      "brand": "Flashforge",
+      "weight_g": 500.0,
+      "spool_weight_g": 142.0,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#0B0203"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Natural",
+          "hex": "#E7E7E7"
+        },
+        {
+          "name": "Gray",
+          "hex": "#515F6C"
+        },
+        {
+          "name": "Skin",
+          "hex": "#D4B48F"
+        },
+        {
+          "name": "Red",
+          "hex": "#D92818"
+        },
+        {
+          "name": "Blue",
+          "hex": "#172788"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#FED212"
+        },
+        {
+          "name": "Green",
+          "hex": "#149732"
+        },
+        {
+          "name": "Orange",
+          "hex": "#F08400"
+        },
+        {
+          "name": "Silver",
+          "hex": "#8C9091"
+        },
+        {
+          "name": "Light Green",
+          "hex": "#8AC54B"
+        },
+        {
+          "name": "Pink",
+          "hex": "#F3B4CD"
+        },
+        {
+          "name": "Purple",
+          "hex": "#50248B"
+        },
+        {
+          "name": "Brown",
+          "hex": "#984304"
+        },
+        {
+          "name": "Gold",
+          "hex": "#8D834E"
+        }
+      ]
+    },
+    {
+      "name": "Flashforge PLA Pro",
+      "product": "PLA Pro",
+      "material": "PLA",
+      "brand": "Flashforge",
+      "weight_g": 1000,
+      "spool_weight_g": 120,
+      "colors": [
+        {
+          "name": "Natural",
+          "hex": "#E7E7E7"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Cool White",
+          "hex": "#F6F5FA"
+        },
+        {
+          "name": "Black",
+          "hex": "#0B0203"
+        },
+        {
+          "name": "Gray",
+          "hex": "#9EACAC"
+        },
+        {
+          "name": "Silver Gray",
+          "hex": "#A2A7A7"
+        },
+        {
+          "name": "Silver",
+          "hex": "#BBBDBD"
+        },
+        {
+          "name": "Skin",
+          "hex": "#E7CEA2"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#FED212"
+        },
+        {
+          "name": "Green",
+          "hex": "#149732"
+        },
+        {
+          "name": "Light Blue",
+          "hex": "#00A3E0"
+        },
+        {
+          "name": "Blue",
+          "hex": "#172788"
+        },
+        {
+          "name": "Red",
+          "hex": "#D90C18"
+        },
+        {
+          "name": "Light Yellow",
+          "hex": "#E4E63F"
+        },
+        {
+          "name": "Rose",
+          "hex": "#BC4997"
+        },
+        {
+          "name": "Pink",
+          "hex": "#F3B4CD"
+        },
+        {
+          "name": "Purple",
+          "hex": "#5C3E93"
+        },
+        {
+          "name": "Orange",
+          "hex": "#EC6C01"
+        },
+        {
+          "name": "Light Green",
+          "hex": "#91C536"
+        },
+        {
+          "name": "Gold",
+          "hex": "#CFA74C"
+        },
+        {
+          "name": "Brown",
+          "hex": "#984304"
+        },
+        {
+          "name": "Light Red",
+          "hex": "#DB2F2B"
+        },
+        {
+          "name": "Traffic Red",
+          "hex": "#B32124"
+        },
+        {
+          "name": "Light Orange",
+          "hex": "#F08400"
+        }
+      ]
+    },
+    {
+      "name": "Flashforge Starter PLA",
+      "product": "Starter PLA",
+      "material": "PLA",
+      "brand": "Flashforge",
+      "weight_g": 250.0,
+      "spool_weight_g": 142.0,
+      "colors": [
+        {
+          "name": "Red",
+          "hex": "#D92818"
+        }
+      ]
+    },
+    {
+      "name": "Overture ABS",
+      "product": "ABS",
+      "material": "ABS",
+      "brand": "Overture",
+      "weight_g": 1000.0,
+      "spool_weight_g": 147,
+      "colors": [
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Black",
+          "hex": "#000000"
+        },
+        {
+          "name": "Gray",
+          "hex": "#CACAC9"
+        },
+        {
+          "name": "Blue",
+          "hex": "#00628F"
+        },
+        {
+          "name": "Slate Gray",
+          "hex": "#91A0B6"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#FFFF47"
+        },
+        {
+          "name": "Dark Red",
+          "hex": "#FF311F"
+        },
+        {
+          "name": "Natural",
+          "hex": "#F8F8EE"
+        },
+        {
+          "name": "Green",
+          "hex": "#3D9441"
+        },
+        {
+          "name": "Purple",
+          "hex": "#7142A3"
+        },
+        {
+          "name": "Glow Green",
+          "hex": "#EBEFEE"
+        },
+        {
+          "name": "Diamond Purple",
+          "hex": "#A04ED0"
+        },
+        {
+          "name": "Diamond Gray",
+          "hex": "#8C8C8C"
+        },
+        {
+          "name": "Diamond Orange",
+          "hex": "#FF8133"
+        }
+      ]
+    },
+    {
+      "name": "Overture ASA",
+      "product": "ASA",
+      "material": "ASA",
+      "brand": "Overture",
+      "weight_g": 1000.0,
+      "spool_weight_g": 132,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#000000"
+        },
+        {
+          "name": "Blue",
+          "hex": "#002979"
+        },
+        {
+          "name": "Brown",
+          "hex": "#785F53"
+        },
+        {
+          "name": "Diamond Blue",
+          "hex": "#324485"
+        },
+        {
+          "name": "Diamond Green",
+          "hex": "#26A648"
+        },
+        {
+          "name": "Diamond Red",
+          "hex": "#C01616"
+        },
+        {
+          "name": "Gray",
+          "hex": "#B5B9BA"
+        },
+        {
+          "name": "Green",
+          "hex": "#01AA5E"
+        },
+        {
+          "name": "Natural",
+          "hex": "#F1E6B3"
+        },
+        {
+          "name": "Olive Green",
+          "hex": "#6B7550"
+        },
+        {
+          "name": "Orange",
+          "hex": "#FF9A40"
+        },
+        {
+          "name": "Red",
+          "hex": "#AF251E"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#FFE802"
+        }
+      ]
+    },
+    {
+      "name": "Overture Matte PLA",
+      "product": "Matte PLA",
+      "material": "PLA",
+      "brand": "Overture",
+      "weight_g": 1000.0,
+      "spool_weight_g": 155,
+      "colors": [
+        {
+          "name": "Carbon Fiber Black",
+          "hex": "#000000"
+        },
+        {
+          "name": "Dark Orange",
+          "hex": "#DC4116"
+        },
+        {
+          "name": "Gray Green",
+          "hex": "#666F60"
+        },
+        {
+          "name": "Navy Blue",
+          "hex": "#072E4E"
+        },
+        {
+          "name": "Black",
+          "hex": "#1D1E1E"
+        },
+        {
+          "name": "Orange",
+          "hex": "#F3C102"
+        },
+        {
+          "name": "Army Green",
+          "hex": "#6E8451"
+        },
+        {
+          "name": "Lavender",
+          "hex": "#7E5777"
+        },
+        {
+          "name": "Repose Gray",
+          "hex": "#B1A498"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#EFDC4C"
+        },
+        {
+          "name": "Green",
+          "hex": "#519F62"
+        },
+        {
+          "name": "Purple",
+          "hex": "#8C69B5"
+        },
+        {
+          "name": "Light Grey",
+          "hex": "#BAC4C4"
+        },
+        {
+          "name": "Light Orange",
+          "hex": "#F2B87B"
+        },
+        {
+          "name": "Pale Green",
+          "hex": "#BECBA8"
+        },
+        {
+          "name": "Black-White",
+          "hex": "#000000",
+          "hexes": [
+            "#000000",
+            "#FFFFFF"
+          ]
+        },
+        {
+          "name": "White",
+          "hex": "#E6DEDE"
+        },
+        {
+          "name": "Skin",
+          "hex": "#F0DDC2"
+        },
+        {
+          "name": "Light Green",
+          "hex": "#AFDEB9"
+        },
+        {
+          "name": "Orange-Red",
+          "hex": "#FCAB59",
+          "hexes": [
+            "#FCAB59",
+            "#F02800"
+          ]
+        },
+        {
+          "name": "Light Pink",
+          "hex": "#F7E6DE"
+        },
+        {
+          "name": "Light Brown",
+          "hex": "#EDD5A6"
+        },
+        {
+          "name": "Light Teal",
+          "hex": "#C7FFE3"
+        },
+        {
+          "name": "Blue-Red",
+          "hex": "#0074BD",
+          "hexes": [
+            "#0074BD",
+            "#F00024"
+          ]
+        },
+        {
+          "name": "Pink",
+          "hex": "#FFE0E1"
+        },
+        {
+          "name": "Wood",
+          "hex": "#CAAC78"
+        },
+        {
+          "name": "Light Blue",
+          "hex": "#99FFFA"
+        },
+        {
+          "name": "Light Blue-Yellow",
+          "hex": "#B8FFFF",
+          "hexes": [
+            "#B8FFFF",
+            "#FFF49E"
+          ]
+        },
+        {
+          "name": "Jeans Red",
+          "hex": "#F76E6E"
+        },
+        {
+          "name": "Olive Green",
+          "hex": "#A88704"
+        },
+        {
+          "name": "Jeans Blue",
+          "hex": "#6787AD"
+        },
+        {
+          "name": "Rainbow",
+          "hex": "#FF0000",
+          "hexes": [
+            "#FF0000",
+            "#FF7F00",
+            "#FFFF00",
+            "#00FF00",
+            "#0000FF",
+            "#4B0082",
+            "#8B00FF"
+          ]
+        },
+        {
+          "name": "Red",
+          "hex": "#EB3B41"
+        },
+        {
+          "name": "Chocolate",
+          "hex": "#503529"
+        },
+        {
+          "name": "Slate Gray",
+          "hex": "#4F6B86"
+        },
+        {
+          "name": "Rainbow A1",
+          "hex": "#FF0000",
+          "hexes": [
+            "#FF0000",
+            "#FF7F00",
+            "#FFFF00",
+            "#00FF00",
+            "#0000FF",
+            "#4B0082",
+            "#8B00FF"
+          ]
+        },
+        {
+          "name": "Brick Red",
+          "hex": "#D22D2F"
+        },
+        {
+          "name": "Grass Green",
+          "hex": "#CEFF5C"
+        },
+        {
+          "name": "Blue",
+          "hex": "#005DA4"
+        }
+      ]
+    },
+    {
+      "name": "Overture PETG",
+      "product": "PETG",
+      "material": "PETG",
+      "brand": "Overture",
+      "weight_g": 1000.0,
+      "spool_weight_g": 132,
+      "colors": [
+        {
+          "name": "Army green",
+          "hex": "#404720"
+        },
+        {
+          "name": "Black",
+          "hex": "#000000"
+        },
+        {
+          "name": "Blue",
+          "hex": "#034E89"
+        },
+        {
+          "name": "Brown",
+          "hex": "#A47C48"
+        },
+        {
+          "name": "Digital Blue",
+          "hex": "#0378D0"
+        },
+        {
+          "name": "Gold",
+          "hex": "#CE8D00"
+        },
+        {
+          "name": "Grass Green",
+          "hex": "#C4D802"
+        },
+        {
+          "name": "Green",
+          "hex": "#38AF69"
+        },
+        {
+          "name": "Light Gray",
+          "hex": "#D5D8DD"
+        },
+        {
+          "name": "Magenta",
+          "hex": "#C80181"
+        },
+        {
+          "name": "Orange",
+          "hex": "#FF854D"
+        },
+        {
+          "name": "Pink",
+          "hex": "#F79DBC"
+        },
+        {
+          "name": "Purple",
+          "hex": "#7142A3"
+        },
+        {
+          "name": "Red",
+          "hex": "#FF0000"
+        },
+        {
+          "name": "Rock White",
+          "hex": "#F5F5F4"
+        },
+        {
+          "name": "Space Gray",
+          "hex": "#76797D"
+        },
+        {
+          "name": "Sparkle Blue",
+          "hex": "#253F56"
+        },
+        {
+          "name": "Starry Blue",
+          "hex": "#142B4B"
+        },
+        {
+          "name": "Transparent",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Transparent Blue",
+          "hex": "#0933A5"
+        },
+        {
+          "name": "Transparent Green",
+          "hex": "#29B646"
+        },
+        {
+          "name": "Transparent Red",
+          "hex": "#FF0000"
+        },
+        {
+          "name": "White",
+          "hex": "#F5F5F4"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#FFC946"
+        }
+      ]
+    },
+    {
+      "name": "Overture PLA",
+      "product": "PLA",
+      "material": "PLA",
+      "brand": "Overture",
+      "weight_g": 1000.0,
+      "spool_weight_g": 155,
+      "colors": [
+        {
+          "name": "Marble",
+          "hex": "#ACA9A6"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFEFA"
+        },
+        {
+          "name": "Black",
+          "hex": "#000000"
+        },
+        {
+          "name": "Midnight Black",
+          "hex": "#0F0E0E"
+        },
+        {
+          "name": "Cold White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Space Gray",
+          "hex": "#63646B"
+        },
+        {
+          "name": "Light Gray",
+          "hex": "#C7D4D6"
+        },
+        {
+          "name": "Cement Gray",
+          "hex": "#697272"
+        },
+        {
+          "name": "Orange",
+          "hex": "#FF8E24"
+        },
+        {
+          "name": "Pink",
+          "hex": "#F09BB5"
+        },
+        {
+          "name": "Red",
+          "hex": "#E9301E"
+        },
+        {
+          "name": "Fresh Red",
+          "hex": "#E31A1F"
+        },
+        {
+          "name": "Blue",
+          "hex": "#033877"
+        },
+        {
+          "name": "Light Blue",
+          "hex": "#3ABBDE"
+        },
+        {
+          "name": "Gray Blue",
+          "hex": "#81BAC1"
+        },
+        {
+          "name": "Green",
+          "hex": "#00C26B"
+        },
+        {
+          "name": "Olive Green",
+          "hex": "#97A014"
+        },
+        {
+          "name": "Glow in Dark",
+          "hex": "#EBF1E0"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#E6B535"
+        },
+        {
+          "name": "Highlight Yellow",
+          "hex": "#E4FF33"
+        },
+        {
+          "name": "Royal Gold",
+          "hex": "#FFCB47"
+        },
+        {
+          "name": "Brown",
+          "hex": "#D7A86A"
+        },
+        {
+          "name": "Chocolate",
+          "hex": "#57361C"
+        },
+        {
+          "name": "Purple",
+          "hex": "#6F4AB2"
+        }
+      ]
+    },
+    {
+      "name": "Overture Rock PLA",
+      "product": "Rock PLA",
+      "material": "PLA",
+      "brand": "Overture",
+      "weight_g": 1000.0,
+      "spool_weight_g": 155,
+      "colors": [
+        {
+          "name": "Rock White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Fossil Rock",
+          "hex": "#C2C0BA"
+        },
+        {
+          "name": "Sedimentary Rock",
+          "hex": "#C4B199"
+        },
+        {
+          "name": "Mars Red",
+          "hex": "#D76D3B"
+        },
+        {
+          "name": "Glacier Blue",
+          "hex": "#A3EAFF",
+          "hexes": [
+            "#A3EAFF",
+            "#FFFFFF"
+          ]
+        },
+        {
+          "name": "Rock Rainbow",
+          "hex": "#FF0000",
+          "hexes": [
+            "#FF0000",
+            "#FF7F00",
+            "#FFFF00",
+            "#00FF00",
+            "#0000FF",
+            "#4B0082",
+            "#8B00FF"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Overture Silk PLA",
+      "product": "Silk PLA",
+      "material": "PLA",
+      "brand": "Overture",
+      "weight_g": 1000.0,
+      "spool_weight_g": 155,
+      "colors": [
+        {
+          "name": "White",
+          "hex": "#DDD4CA"
+        },
+        {
+          "name": "Copper",
+          "hex": "#641501"
+        },
+        {
+          "name": "Gray",
+          "hex": "#394658"
+        },
+        {
+          "name": "Gold",
+          "hex": "#F9E352"
+        },
+        {
+          "name": "Neon green",
+          "hex": "#91C800"
+        },
+        {
+          "name": "Green",
+          "hex": "#018E63"
+        },
+        {
+          "name": "Blue",
+          "hex": "#0353BA"
+        },
+        {
+          "name": "Red",
+          "hex": "#DA445A"
+        },
+        {
+          "name": "Silk Purple",
+          "hex": "#7769BC"
+        },
+        {
+          "name": "Silver",
+          "hex": "#818FA0"
+        },
+        {
+          "name": "Fresh Red",
+          "hex": "#CC0201"
+        },
+        {
+          "name": "Christmas Red",
+          "hex": "#CE5D4C"
+        }
+      ]
+    },
+    {
+      "name": "Overture TPU High Speed 95A",
+      "product": "TPU High Speed 95A",
+      "material": "TPU",
+      "brand": "Overture",
+      "weight_g": 1000.0,
+      "spool_weight_g": 174,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#000000"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Clear",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Grass Green",
+          "hex": "#E2F641"
+        },
+        {
+          "name": "Translucent Red",
+          "hex": "#FF0000"
+        },
+        {
+          "name": "Orange",
+          "hex": "#DB8134"
+        },
+        {
+          "name": "Pink",
+          "hex": "#F0BAE9"
+        },
+        {
+          "name": "Gray",
+          "hex": "#A3AFA9"
+        },
+        {
+          "name": "Translucent Blue",
+          "hex": "#0000FF"
+        }
+      ]
+    },
+    {
+      "name": "Polymaker Fiberon™ PA12-CF10",
+      "product": "Fiberon™ PA12-CF10",
+      "material": "PA",
+      "brand": "Polymaker",
+      "weight_g": 500.0,
+      "spool_weight_g": 190.0,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#000000"
+        }
+      ]
+    },
+    {
+      "name": "Polymaker Fiberon™ PA6-CF20",
+      "product": "Fiberon™ PA6-CF20",
+      "material": "PA",
+      "brand": "Polymaker",
+      "weight_g": 500.0,
+      "spool_weight_g": 190.0,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#000000"
+        }
+      ]
+    },
+    {
+      "name": "Polymaker Fiberon™ PA6-GF25",
+      "product": "Fiberon™ PA6-GF25",
+      "material": "PA",
+      "brand": "Polymaker",
+      "weight_g": 500.0,
+      "spool_weight_g": 190.0,
+      "colors": [
+        {
+          "name": "Grey",
+          "hex": "#9B9B9B"
+        }
+      ]
+    },
+    {
+      "name": "Polymaker PLA Panchroma™ (Formerly PolyLite™) Luminous",
+      "product": "PLA Panchroma™ (Formerly PolyLite™) Luminous",
+      "material": "PLA",
+      "brand": "Polymaker",
+      "weight_g": 1000,
+      "spool_weight_g": 140,
+      "colors": [
+        {
+          "name": "Orange",
+          "hex": "#EC7626"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#CCC93C"
+        },
+        {
+          "name": "Pink",
+          "hex": "#F48079"
+        },
+        {
+          "name": "Green",
+          "hex": "#75DF69"
+        },
+        {
+          "name": "Blue",
+          "hex": "#419EC2"
+        }
+      ]
+    },
+    {
+      "name": "Polymaker PLA Panchroma™ (Formerly PolyLite™) Silk",
+      "product": "PLA Panchroma™ (Formerly PolyLite™) Silk",
+      "material": "PLA",
+      "brand": "Polymaker",
+      "weight_g": 1000.0,
+      "spool_weight_g": 140.0,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#363538"
+        },
+        {
+          "name": "Purple",
+          "hex": "#786BB0"
+        },
+        {
+          "name": "Magenta",
+          "hex": "#AA538E"
+        },
+        {
+          "name": "Rose",
+          "hex": "#CF6076"
+        },
+        {
+          "name": "Red",
+          "hex": "#C1443F"
+        },
+        {
+          "name": "Rose Gold",
+          "hex": "#CBB0B1"
+        },
+        {
+          "name": "Quartz Pink",
+          "hex": "#DBBBBB"
+        },
+        {
+          "name": "Bronze",
+          "hex": "#AF6B4C"
+        },
+        {
+          "name": "Orange",
+          "hex": "#EB6232"
+        },
+        {
+          "name": "White",
+          "hex": "#DFE4E4"
+        },
+        {
+          "name": "Gold",
+          "hex": "#C49449"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#EEC810"
+        },
+        {
+          "name": "Lime",
+          "hex": "#C4CF4C"
+        },
+        {
+          "name": "Green",
+          "hex": "#55B687"
+        },
+        {
+          "name": "Teal",
+          "hex": "#66C2B6"
+        },
+        {
+          "name": "Light Blue",
+          "hex": "#4CC1CB"
+        },
+        {
+          "name": "Blue",
+          "hex": "#4999C9"
+        },
+        {
+          "name": "Chrome",
+          "hex": "#85898B"
+        },
+        {
+          "name": "Silver",
+          "hex": "#BCC2C8"
+        },
+        {
+          "name": "Brass",
+          "hex": "#968162"
+        },
+        {
+          "name": "Peridot Green",
+          "hex": "#7F865B"
+        },
+        {
+          "name": "Periwinkle",
+          "hex": "#768EC7"
+        },
+        {
+          "name": "Dark Blue",
+          "hex": "#23599A"
+        },
+        {
+          "name": "Gunmetal Grey",
+          "hex": "#676B6A"
+        }
+      ]
+    },
+    {
+      "name": "Polymaker PLA Panchroma™ (Formerly PolyLite™) Starlight",
+      "product": "PLA Panchroma™ (Formerly PolyLite™) Starlight",
+      "material": "PLA",
+      "brand": "Polymaker",
+      "weight_g": 1000.0,
+      "spool_weight_g": 140.0,
+      "colors": [
+        {
+          "name": "Neptune",
+          "hex": "#113148"
+        },
+        {
+          "name": "Mercury",
+          "hex": "#33322D"
+        },
+        {
+          "name": "Jupiter",
+          "hex": "#774718"
+        },
+        {
+          "name": "Comet",
+          "hex": "#1F312A"
+        },
+        {
+          "name": "Meteor",
+          "hex": "#2F3117"
+        },
+        {
+          "name": "Aurora",
+          "hex": "#314530"
+        },
+        {
+          "name": "Nebula",
+          "hex": "#462F32"
+        },
+        {
+          "name": "Twilight",
+          "hex": "#1E3445"
+        },
+        {
+          "name": "Mars",
+          "hex": "#962E31"
+        },
+        {
+          "name": "Midnight",
+          "hex": "#475A64"
+        },
+        {
+          "name": "Pulsar",
+          "hex": "#5C7BC1"
+        }
+      ]
+    },
+    {
+      "name": "Polymaker PLA Panchroma™ Celestial",
+      "product": "PLA Panchroma™ Celestial",
+      "material": "PLA",
+      "brand": "Polymaker",
+      "weight_g": 1000.0,
+      "spool_weight_g": 140.0,
+      "colors": [
+        {
+          "name": "Blue",
+          "hex": "#6ADCF7"
+        },
+        {
+          "name": "Green",
+          "hex": "#6FE2D2"
+        },
+        {
+          "name": "Purple",
+          "hex": "#9678C8"
+        },
+        {
+          "name": "White",
+          "hex": "#DCDAD0"
+        },
+        {
+          "name": "Light Yellow",
+          "hex": "#D7CE89"
+        },
+        {
+          "name": "Light Pink",
+          "hex": "#C3ADB8"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#F4C76A"
+        }
+      ]
+    },
+    {
+      "name": "Polymaker PLA Panchroma™ Dual",
+      "product": "PLA Panchroma™ Dual",
+      "material": "PLA",
+      "brand": "Polymaker",
+      "weight_g": 1000.0,
+      "spool_weight_g": 140.0,
+      "colors": [
+        {
+          "name": "Chameleon (Teal-Yellow)",
+          "hex": "#5AABB1",
+          "hexes": [
+            "#5AABB1",
+            "#F0BE02"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Polymaker PLA Panchroma™ Marble (Formerly PolyTerra™ Marble)",
+      "product": "PLA Panchroma™ Marble (Formerly PolyTerra™ Marble)",
+      "material": "PLA",
+      "brand": "Polymaker",
+      "weight_g": 1000.0,
+      "spool_weight_g": 140.0,
+      "colors": [
+        {
+          "name": "White",
+          "hex": "#CFCCD6"
+        },
+        {
+          "name": "Slate Grey",
+          "hex": "#91C2CC"
+        },
+        {
+          "name": "Brick",
+          "hex": "#CF6646"
+        },
+        {
+          "name": "Limestone",
+          "hex": "#BFBFB3"
+        },
+        {
+          "name": "Sandstone",
+          "hex": "#C6C781"
+        }
+      ]
+    },
+    {
+      "name": "Polymaker PLA Panchroma™ Matte (Formerly PolyTerra™)",
+      "product": "PLA Panchroma™ Matte (Formerly PolyTerra™)",
+      "material": "PLA",
+      "brand": "Polymaker",
+      "weight_g": 1000,
+      "spool_weight_g": 140,
+      "colors": [
+        {
+          "name": "Arctic Teal",
+          "hex": "#5AABB1"
+        },
+        {
+          "name": "Army Beige",
+          "hex": "#CCA897"
+        },
+        {
+          "name": "Army Blue",
+          "hex": "#062B4D"
+        },
+        {
+          "name": "Army Brown",
+          "hex": "#724E3D"
+        },
+        {
+          "name": "Army Dark Green",
+          "hex": "#515234"
+        },
+        {
+          "name": "Army Light Green",
+          "hex": "#A78403"
+        },
+        {
+          "name": "Army Purple",
+          "hex": "#292036"
+        },
+        {
+          "name": "Army Red",
+          "hex": "#AC1A17"
+        },
+        {
+          "name": "Ash Grey",
+          "hex": "#575E75"
+        },
+        {
+          "name": "Charcoal Black",
+          "hex": "#1C1C1C"
+        },
+        {
+          "name": "Cotton White",
+          "hex": "#E6DDDB"
+        },
+        {
+          "name": "Earth Brown",
+          "hex": "#7C594A"
+        },
+        {
+          "name": "Electric Indigo",
+          "hex": "#764C99"
+        },
+        {
+          "name": "Emerald Green",
+          "hex": "#22624F"
+        },
+        {
+          "name": "Forest Green",
+          "hex": "#519F61"
+        },
+        {
+          "name": "Fossil Grey",
+          "hex": "#6F727E"
+        },
+        {
+          "name": "Grass Green",
+          "hex": "#32BC46"
+        },
+        {
+          "name": "Lavender Purple",
+          "hex": "#8A68B5"
+        },
+        {
+          "name": "Lava Red",
+          "hex": "#DE1619"
+        },
+        {
+          "name": "Lime Green",
+          "hex": "#D0E740"
+        },
+        {
+          "name": "Lotus Pink",
+          "hex": "#F98289"
+        },
+        {
+          "name": "Muted Blue",
+          "hex": "#4E6A84"
+        },
+        {
+          "name": "Muted Green",
+          "hex": "#656D60"
+        },
+        {
+          "name": "Muted Mauve",
+          "hex": "#A36D82"
+        },
+        {
+          "name": "Muted Moss",
+          "hex": "#92864F"
+        },
+        {
+          "name": "Muted Purple",
+          "hex": "#7C5577"
+        },
+        {
+          "name": "Muted Red",
+          "hex": "#DB3E14"
+        },
+        {
+          "name": "Muted Teal",
+          "hex": "#5D989E"
+        },
+        {
+          "name": "Muted Terracotta",
+          "hex": "#C06443"
+        },
+        {
+          "name": "Muted White",
+          "hex": "#AFA198"
+        },
+        {
+          "name": "Pastel Banana",
+          "hex": "#F5CF6F"
+        },
+        {
+          "name": "Pastel Beige",
+          "hex": "#E4D0B0"
+        },
+        {
+          "name": "Pastel Candy",
+          "hex": "#DABCC8"
+        },
+        {
+          "name": "Pastel Coral",
+          "hex": "#F09A7E"
+        },
+        {
+          "name": "Pastel Ice",
+          "hex": "#95C5D3"
+        },
+        {
+          "name": "Pastel Mint",
+          "hex": "#BEC9A5"
+        },
+        {
+          "name": "Pastel Peach",
+          "hex": "#F2B67A"
+        },
+        {
+          "name": "Pastel Peanut",
+          "hex": "#C29572"
+        },
+        {
+          "name": "Pastel Periwinkle",
+          "hex": "#BFB2E6"
+        },
+        {
+          "name": "Pastel Watermelon",
+          "hex": "#E93A3F"
+        },
+        {
+          "name": "Raspberry Blue",
+          "hex": "#5472D0"
+        },
+        {
+          "name": "Sakura Pink",
+          "hex": "#E0A8BB"
+        },
+        {
+          "name": "Sapphire Blue",
+          "hex": "#005AA2"
+        },
+        {
+          "name": "Savannah Yellow",
+          "hex": "#F0BE02"
+        },
+        {
+          "name": "Seafoam Green",
+          "hex": "#7DD4BE"
+        },
+        {
+          "name": "Sky Blue",
+          "hex": "#87CEEB"
+        },
+        {
+          "name": "Sunrise Orange",
+          "hex": "#F78E0E"
+        },
+        {
+          "name": "Sunshine Yellow",
+          "hex": "#F9DA07"
+        },
+        {
+          "name": "Wine Burgundy",
+          "hex": "#753E4C"
+        },
+        {
+          "name": "Wood Brown",
+          "hex": "#AD7441"
+        }
+      ]
+    },
+    {
+      "name": "Polymaker PLA Panchroma™ Regular",
+      "product": "PLA Panchroma™ Regular",
+      "material": "PLA",
+      "brand": "Polymaker",
+      "weight_g": 1000.0,
+      "spool_weight_g": 140.0,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#080A0D"
+        },
+        {
+          "name": "White",
+          "hex": "#E2DEDB"
+        },
+        {
+          "name": "Steel Grey",
+          "hex": "#616469"
+        },
+        {
+          "name": "Grey",
+          "hex": "#8C9099"
+        },
+        {
+          "name": "Purple",
+          "hex": "#6C47B2"
+        },
+        {
+          "name": "Red",
+          "hex": "#E72F1D"
+        },
+        {
+          "name": "Brown",
+          "hex": "#55331A"
+        },
+        {
+          "name": "Orange",
+          "hex": "#F67405"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#F3B400"
+        },
+        {
+          "name": "Green",
+          "hex": "#06924D"
+        },
+        {
+          "name": "Polymaker Teal",
+          "hex": "#4CC0C7"
+        },
+        {
+          "name": "Blue",
+          "hex": "#003776"
+        },
+        {
+          "name": "Cold White",
+          "hex": "#EAECF5"
+        },
+        {
+          "name": "Magenta",
+          "hex": "#F2306E"
+        },
+        {
+          "name": "Pink",
+          "hex": "#EE9BB5"
+        },
+        {
+          "name": "Wine Red",
+          "hex": "#E0191E"
+        },
+        {
+          "name": "Cream",
+          "hex": "#E5C8A2"
+        },
+        {
+          "name": "Beige",
+          "hex": "#C6AD74"
+        },
+        {
+          "name": "Lemon Yellow",
+          "hex": "#F1D335"
+        },
+        {
+          "name": "Natural",
+          "hex": "#E8E6D0"
+        },
+        {
+          "name": "Olive Green",
+          "hex": "#857C00"
+        },
+        {
+          "name": "Lime Green",
+          "hex": "#DEDE00"
+        },
+        {
+          "name": "Jungle Green",
+          "hex": "#446B20"
+        },
+        {
+          "name": "Aqua Blue",
+          "hex": "#39B9DB"
+        },
+        {
+          "name": "Stone Blue",
+          "hex": "#40719A"
+        },
+        {
+          "name": "Azure Blue",
+          "hex": "#0066D9"
+        },
+        {
+          "name": "Dark Blue",
+          "hex": "#041B3D"
+        },
+        {
+          "name": "Olive Brown",
+          "hex": "#A79565"
+        },
+        {
+          "name": "Dark Grey Green",
+          "hex": "#4C5F46"
+        }
+      ]
+    },
+    {
+      "name": "Polymaker PLA PolyWood™",
+      "product": "PLA PolyWood™",
+      "material": "PLA",
+      "brand": "Polymaker",
+      "weight_g": 600.0,
+      "spool_weight_g": 125.0,
+      "colors": [
+        {
+          "name": "Wood",
+          "hex": "#D2A273"
+        }
+      ]
+    },
+    {
+      "name": "Polymaker PolyDissolve™ S1 (PVA)",
+      "product": "PolyDissolve™ S1 (PVA)",
+      "material": "PVA",
+      "brand": "Polymaker",
+      "weight_g": 750.0,
+      "spool_weight_g": 125.0,
+      "colors": [
+        {
+          "name": "Natural",
+          "hex": "#E8E6D0"
+        }
+      ]
+    },
+    {
+      "name": "Polymaker PolyFlex™ TPU90",
+      "product": "PolyFlex™ TPU90",
+      "material": "TPU",
+      "brand": "Polymaker",
+      "weight_g": 750.0,
+      "spool_weight_g": 125.0,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#101820"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Grey",
+          "hex": "#453536"
+        },
+        {
+          "name": "Polymaker Teal",
+          "hex": "#2DCCD3"
+        },
+        {
+          "name": "Clear",
+          "hex": "#F4FAFC"
+        }
+      ]
+    },
+    {
+      "name": "Polymaker PolyFlex™ TPU95",
+      "product": "PolyFlex™ TPU95",
+      "material": "TPU",
+      "brand": "Polymaker",
+      "weight_g": 750.0,
+      "spool_weight_g": 125.0,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#101820"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Blue",
+          "hex": "#0076CF"
+        },
+        {
+          "name": "Red",
+          "hex": "#D6001C"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#FEDD00"
+        },
+        {
+          "name": "Orange",
+          "hex": "#FF9E1B"
+        }
+      ]
+    },
+    {
+      "name": "Polymaker PolyFlex™ TPU95-HF",
+      "product": "PolyFlex™ TPU95-HF",
+      "material": "TPU",
+      "brand": "Polymaker",
+      "weight_g": 1000.0,
+      "spool_weight_g": 140.0,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#101820"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Clear",
+          "hex": "#F4FAFC"
+        }
+      ]
+    },
+    {
+      "name": "Polymaker PolyLite CosPLA",
+      "product": "PolyLite CosPLA",
+      "material": "PLA",
+      "brand": "Polymaker",
+      "weight_g": 1000.0,
+      "spool_weight_g": 140.0,
+      "colors": [
+        {
+          "name": "Version A",
+          "hex": "#B1B1B1"
+        },
+        {
+          "name": "Version B",
+          "hex": "#B1B1B1"
+        }
+      ]
+    },
+    {
+      "name": "Polymaker PolyLite™ ABS",
+      "product": "PolyLite™ ABS",
+      "material": "ABS",
+      "brand": "Polymaker",
+      "weight_g": 1000.0,
+      "spool_weight_g": 140.0,
+      "colors": [
+        {
+          "name": "Galaxy Dark Grey",
+          "hex": "#474648"
+        },
+        {
+          "name": "Green",
+          "hex": "#479161"
+        },
+        {
+          "name": "Lime",
+          "hex": "#C4D100"
+        },
+        {
+          "name": "Dark Purple",
+          "hex": "#292036"
+        },
+        {
+          "name": "Natural",
+          "hex": "#E2E0C9"
+        },
+        {
+          "name": "Black",
+          "hex": "#16161A"
+        },
+        {
+          "name": "Galaxy Black",
+          "hex": "#474648"
+        },
+        {
+          "name": "Dark Grey",
+          "hex": "#474648"
+        },
+        {
+          "name": "Grey",
+          "hex": "#8C8D93"
+        },
+        {
+          "name": "White",
+          "hex": "#F0EBE8"
+        },
+        {
+          "name": "Neon Magenta",
+          "hex": "#F6162E"
+        },
+        {
+          "name": "Pink",
+          "hex": "#FFA7C4"
+        },
+        {
+          "name": "Red",
+          "hex": "#F3442B"
+        },
+        {
+          "name": "Galaxy Orange",
+          "hex": "#F57517"
+        },
+        {
+          "name": "Neon Orange",
+          "hex": "#FE602B"
+        },
+        {
+          "name": "Orange",
+          "hex": "#F57517"
+        },
+        {
+          "name": "Gold",
+          "hex": "#BD6200"
+        },
+        {
+          "name": "Neon Yellow",
+          "hex": "#FFC001"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#EDA900"
+        },
+        {
+          "name": "Metallic Green",
+          "hex": "#3D441E"
+        },
+        {
+          "name": "Neon Green",
+          "hex": "#77F0A2"
+        },
+        {
+          "name": "Blue",
+          "hex": "#003276"
+        },
+        {
+          "name": "Light Blue",
+          "hex": "#8EDBEB"
+        },
+        {
+          "name": "Metallic Blue",
+          "hex": "#043371"
+        },
+        {
+          "name": "Galaxy Purple",
+          "hex": "#6545A5"
+        },
+        {
+          "name": "Galaxy Teal",
+          "hex": "#2DCCD3"
+        },
+        {
+          "name": "Teal",
+          "hex": "#01ACBA"
+        },
+        {
+          "name": "Purple",
+          "hex": "#6545A5"
+        }
+      ]
+    },
+    {
+      "name": "Polymaker PolyLite™ ASA",
+      "product": "PolyLite™ ASA",
+      "material": "ASA",
+      "brand": "Polymaker",
+      "weight_g": 1000.0,
+      "spool_weight_g": 140.0,
+      "colors": [
+        {
+          "name": "Jet Black",
+          "hex": "#0A0A0A"
+        },
+        {
+          "name": "Black",
+          "hex": "#101820"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Grey",
+          "hex": "#888B8D"
+        },
+        {
+          "name": "Blue",
+          "hex": "#002677"
+        },
+        {
+          "name": "Red",
+          "hex": "#AF231C"
+        },
+        {
+          "name": "Green",
+          "hex": "#00A95C"
+        },
+        {
+          "name": "Orange",
+          "hex": "#FF6A13"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#FFE800"
+        },
+        {
+          "name": "Purple",
+          "hex": "#7758B3"
+        },
+        {
+          "name": "Polymaker Teal",
+          "hex": "#00B4BC"
+        },
+        {
+          "name": "Natural",
+          "hex": "#F1E6B2"
+        },
+        {
+          "name": "Army Green",
+          "hex": "#68724D"
+        },
+        {
+          "name": "Army Brown",
+          "hex": "#775C50"
+        },
+        {
+          "name": "Dark Grey",
+          "hex": "#6C6D71"
+        },
+        {
+          "name": "Pop Blue",
+          "hex": "#2A9BEE"
+        },
+        {
+          "name": "Pop Pink",
+          "hex": "#EA4E8E"
+        },
+        {
+          "name": "Pop Green",
+          "hex": "#3CEE2A"
+        },
+        {
+          "name": "Dark Purple",
+          "hex": "#292036"
+        },
+        {
+          "name": "Dark Green Grey",
+          "hex": "#4C5F46"
+        },
+        {
+          "name": "Olive Brown",
+          "hex": "#A79565"
+        }
+      ]
+    },
+    {
+      "name": "Polymaker PolyLite™ LW-PLA",
+      "product": "PolyLite™ LW-PLA",
+      "material": "PLA",
+      "brand": "Polymaker",
+      "weight_g": 800.0,
+      "spool_weight_g": 200.0,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#4C4E56"
+        },
+        {
+          "name": "White",
+          "hex": "#E1DCCD"
+        },
+        {
+          "name": "Grey",
+          "hex": "#A2AAAD"
+        },
+        {
+          "name": "Wood",
+          "hex": "#D2A273"
+        },
+        {
+          "name": "Bright Orange",
+          "hex": "#FA8423"
+        },
+        {
+          "name": "Bright Yellow",
+          "hex": "#FAD61B"
+        },
+        {
+          "name": "Bright Green",
+          "hex": "#D0ED03"
+        },
+        {
+          "name": "Bright Red",
+          "hex": "#E81313"
+        }
+      ]
+    },
+    {
+      "name": "Polymaker PolyLite™ PC",
+      "product": "PolyLite™ PC",
+      "material": "PC",
+      "brand": "Polymaker",
+      "weight_g": 1000.0,
+      "spool_weight_g": 140.0,
+      "colors": [
+        {
+          "name": "Clear",
+          "hex": "#F4FAFC"
+        }
+      ]
+    },
+    {
+      "name": "Polymaker PolyLite™ PETG",
+      "product": "PolyLite™ PETG",
+      "material": "PETG",
+      "brand": "Polymaker",
+      "weight_g": 1000.0,
+      "spool_weight_g": 140.0,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#101820"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Grey",
+          "hex": "#91999F"
+        },
+        {
+          "name": "Blue",
+          "hex": "#004B87"
+        },
+        {
+          "name": "Red",
+          "hex": "#DE4343"
+        },
+        {
+          "name": "Green",
+          "hex": "#37AD68"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#FFC845"
+        },
+        {
+          "name": "Polymaker Teal",
+          "hex": "#2DCCD3"
+        },
+        {
+          "name": "Orange",
+          "hex": "#FF671F"
+        },
+        {
+          "name": "Purple",
+          "hex": "#6E3FA3"
+        },
+        {
+          "name": "Dark Blue",
+          "hex": "#13294B"
+        },
+        {
+          "name": "Dark Green",
+          "hex": "#3D441E"
+        },
+        {
+          "name": "Silver",
+          "hex": "#75787B"
+        },
+        {
+          "name": "Gold",
+          "hex": "#CC8A00"
+        },
+        {
+          "name": "Magenta",
+          "hex": "#C6007E"
+        },
+        {
+          "name": "Pink",
+          "hex": "#F59BBB"
+        },
+        {
+          "name": "Lime",
+          "hex": "#C4D600"
+        },
+        {
+          "name": "Electric Blue",
+          "hex": "#0076CF"
+        },
+        {
+          "name": "Dark Grey",
+          "hex": "#6C6D71"
+        },
+        {
+          "name": "Dark Purple",
+          "hex": "#292036"
+        },
+        {
+          "name": "Clear",
+          "hex": "#F4FAFC"
+        }
+      ]
+    },
+    {
+      "name": "Polymaker PolyLite™ PLA",
+      "product": "PolyLite™ PLA",
+      "material": "PLA",
+      "brand": "Polymaker",
+      "weight_g": 1000.0,
+      "spool_weight_g": 140.0,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#08090D"
+        },
+        {
+          "name": "Steel Grey",
+          "hex": "#616469"
+        },
+        {
+          "name": "Grey",
+          "hex": "#8C9099"
+        },
+        {
+          "name": "Purple",
+          "hex": "#6C47B2"
+        },
+        {
+          "name": "Magenta",
+          "hex": "#F2306E"
+        },
+        {
+          "name": "Pink",
+          "hex": "#F2306E"
+        },
+        {
+          "name": "Wine Red",
+          "hex": "#E0191E"
+        },
+        {
+          "name": "Red",
+          "hex": "#E72F1D"
+        },
+        {
+          "name": "Brown",
+          "hex": "#55331A"
+        },
+        {
+          "name": "White",
+          "hex": "#E2DEDB"
+        },
+        {
+          "name": "Orange",
+          "hex": "#F67405"
+        },
+        {
+          "name": "Cream",
+          "hex": "#E5C8A2"
+        },
+        {
+          "name": "Beige",
+          "hex": "#C6AD74"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#F3B400"
+        },
+        {
+          "name": "Lemon Yellow",
+          "hex": "#F1D335"
+        },
+        {
+          "name": "Natural",
+          "hex": "#E8E6D0"
+        },
+        {
+          "name": "Olive Green",
+          "hex": "#857C00"
+        },
+        {
+          "name": "Lime Green",
+          "hex": "#DEDE00"
+        },
+        {
+          "name": "Jungle Green",
+          "hex": "#446B20"
+        },
+        {
+          "name": "Green",
+          "hex": "#06924D"
+        },
+        {
+          "name": "Polymaker Teal",
+          "hex": "#4CC0C7"
+        },
+        {
+          "name": "Aqua Blue",
+          "hex": "#39B9DB"
+        },
+        {
+          "name": "Stone Blue",
+          "hex": "#40719A"
+        },
+        {
+          "name": "Azure Blue",
+          "hex": "#0066D9"
+        },
+        {
+          "name": "Blue",
+          "hex": "#003776"
+        },
+        {
+          "name": "Dark Blue",
+          "hex": "#041B3D"
+        }
+      ]
+    },
+    {
+      "name": "Polymaker PolyLite™ PLA Pro",
+      "product": "PolyLite™ PLA Pro",
+      "material": "PLA",
+      "brand": "Polymaker",
+      "weight_g": 1000.0,
+      "spool_weight_g": 140.0,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#0C0E0C"
+        },
+        {
+          "name": "White",
+          "hex": "#E6E1DE"
+        },
+        {
+          "name": "Cold White",
+          "hex": "#EAECF5"
+        },
+        {
+          "name": "Orange",
+          "hex": "#EC6A01"
+        },
+        {
+          "name": "Army Beige",
+          "hex": "#AA6F3E"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#F7B300"
+        },
+        {
+          "name": "Light Yellow",
+          "hex": "#F3D561"
+        },
+        {
+          "name": "Army Green",
+          "hex": "#665A28"
+        },
+        {
+          "name": "Light Green",
+          "hex": "#BBD39B"
+        },
+        {
+          "name": "Green",
+          "hex": "#178D4A"
+        },
+        {
+          "name": "Polymaker Teal",
+          "hex": "#2FA5AE"
+        },
+        {
+          "name": "Blue-Green",
+          "hex": "#00272F"
+        },
+        {
+          "name": "Light Blue",
+          "hex": "#72AECB"
+        },
+        {
+          "name": "Blue",
+          "hex": "#00307E"
+        },
+        {
+          "name": "Grey",
+          "hex": "#73767D"
+        },
+        {
+          "name": "Purple",
+          "hex": "#6843B1"
+        },
+        {
+          "name": "Dark Purple",
+          "hex": "#292036"
+        },
+        {
+          "name": "Magenta",
+          "hex": "#E42363"
+        },
+        {
+          "name": "Pink",
+          "hex": "#ED92B0"
+        },
+        {
+          "name": "Light Red",
+          "hex": "#CC4C4B"
+        },
+        {
+          "name": "Red",
+          "hex": "#E62216"
+        },
+        {
+          "name": "Brown",
+          "hex": "#4F2E1E"
+        },
+        {
+          "name": "Dark2 Grey",
+          "hex": "#6C6D71"
+        }
+      ]
+    },
+    {
+      "name": "Polymaker Polymaker PC-ABS",
+      "product": "Polymaker PC-ABS",
+      "material": "PC",
+      "brand": "Polymaker",
+      "weight_g": 1000.0,
+      "spool_weight_g": 140.0,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#101820"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        }
+      ]
+    },
+    {
+      "name": "Polymaker Polymaker PC-PBT",
+      "product": "Polymaker PC-PBT",
+      "material": "PC",
+      "brand": "Polymaker",
+      "weight_g": 1000.0,
+      "spool_weight_g": 140.0,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#101820"
+        },
+        {
+          "name": "Natural",
+          "hex": "#E8E6D0"
+        }
+      ]
+    },
+    {
+      "name": "Polymaker PolyMax™ PC",
+      "product": "PolyMax™ PC",
+      "material": "PC",
+      "brand": "Polymaker",
+      "weight_g": 750.0,
+      "spool_weight_g": 125.0,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#101820"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Grey",
+          "hex": "#A2AAAD"
+        },
+        {
+          "name": "Blue",
+          "hex": "#0076CF"
+        },
+        {
+          "name": "Red",
+          "hex": "#D6001C"
+        }
+      ]
+    },
+    {
+      "name": "Polymaker PolyMax™ PC-FR",
+      "product": "PolyMax™ PC-FR",
+      "material": "PC",
+      "brand": "Polymaker",
+      "weight_g": 1000.0,
+      "spool_weight_g": 140.0,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#101820"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        }
+      ]
+    },
+    {
+      "name": "Polymaker PolyMax™ PETG",
+      "product": "PolyMax™ PETG",
+      "material": "PETG",
+      "brand": "Polymaker",
+      "weight_g": 750.0,
+      "spool_weight_g": 125.0,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#101820"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        }
+      ]
+    },
+    {
+      "name": "Polymaker PolyMax™ PLA",
+      "product": "PolyMax™ PLA",
+      "material": "PLA",
+      "brand": "Polymaker",
+      "weight_g": 750.0,
+      "spool_weight_g": 125.0,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#101820"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Grey",
+          "hex": "#91999F"
+        },
+        {
+          "name": "Blue",
+          "hex": "#006EB6"
+        },
+        {
+          "name": "Red",
+          "hex": "#DE4343"
+        },
+        {
+          "name": "Green",
+          "hex": "#00A95C"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#FFE800"
+        },
+        {
+          "name": "Orange",
+          "hex": "#FF9940"
+        },
+        {
+          "name": "Polymaker Teal",
+          "hex": "#00B4BC"
+        },
+        {
+          "name": "Purple",
+          "hex": "#7758B3"
+        },
+        {
+          "name": "FDE",
+          "hex": "#8E7B63"
+        },
+        {
+          "name": "Pink",
+          "hex": "#FD4BAB"
+        }
+      ]
+    },
+    {
+      "name": "Polymaker PolyMide™ CoPA",
+      "product": "PolyMide™ CoPA",
+      "material": "PA",
+      "brand": "Polymaker",
+      "weight_g": 750.0,
+      "spool_weight_g": 125.0,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#101820"
+        }
+      ]
+    },
+    {
+      "name": "Polymaker PolySonic™ PLA",
+      "product": "PolySonic™ PLA",
+      "material": "PLA",
+      "brand": "Polymaker",
+      "weight_g": 1000.0,
+      "spool_weight_g": 140.0,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#080A0D"
+        },
+        {
+          "name": "White",
+          "hex": "#E2DEDB"
+        },
+        {
+          "name": "Grey",
+          "hex": "#8C9099"
+        },
+        {
+          "name": "Red",
+          "hex": "#E72F1D"
+        },
+        {
+          "name": "Blue",
+          "hex": "#003776"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#F4C032"
+        },
+        {
+          "name": "Green",
+          "hex": "#2D9E59"
+        },
+        {
+          "name": "Orange",
+          "hex": "#F97429"
+        },
+        {
+          "name": "Polymaker Teal",
+          "hex": "#50DAE4"
+        },
+        {
+          "name": "Purple",
+          "hex": "#6C5BB1"
+        }
+      ]
+    },
+    {
+      "name": "Polymaker PolySonic™ PLA Pro",
+      "product": "PolySonic™ PLA Pro",
+      "material": "PLA",
+      "brand": "Polymaker",
+      "weight_g": 1000.0,
+      "spool_weight_g": 140.0,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#080A0D"
+        },
+        {
+          "name": "White",
+          "hex": "#E2DEDB"
+        },
+        {
+          "name": "Red",
+          "hex": "#E20010"
+        },
+        {
+          "name": "Blue",
+          "hex": "#003287"
+        },
+        {
+          "name": "Grey",
+          "hex": "#959FA1"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#F4C032"
+        },
+        {
+          "name": "Orange",
+          "hex": "#F97429"
+        },
+        {
+          "name": "Purple",
+          "hex": "#6C5BB1"
+        },
+        {
+          "name": "Polymaker Teal",
+          "hex": "#50DAE4"
+        },
+        {
+          "name": "Green",
+          "hex": "#2D9E59"
+        }
+      ]
+    },
+    {
+      "name": "Polymaker PVB PolyCast™",
+      "product": "PVB PolyCast™",
+      "material": "PVB",
+      "brand": "Polymaker",
+      "weight_g": 750.0,
+      "spool_weight_g": 125.0,
+      "colors": [
+        {
+          "name": "Natural",
+          "hex": "#E8E6D0"
+        }
+      ]
+    },
+    {
+      "name": "Polymaker PVB PolySmooth™",
+      "product": "PVB PolySmooth™",
+      "material": "PVB",
+      "brand": "Polymaker",
+      "weight_g": 750.0,
+      "spool_weight_g": 125.0,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#101820"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Slate Grey",
+          "hex": "#7A99AC"
+        },
+        {
+          "name": "Blue",
+          "hex": "#0076CF"
+        },
+        {
+          "name": "Coral Red",
+          "hex": "#E10600"
+        },
+        {
+          "name": "Green",
+          "hex": "#37AD68"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#FFC72C"
+        },
+        {
+          "name": "Orange",
+          "hex": "#FF671F"
+        },
+        {
+          "name": "Polymaker Teal",
+          "hex": "#3CCBDA"
+        },
+        {
+          "name": "Pink",
+          "hex": "#FFB1BB"
+        },
+        {
+          "name": "Beige",
+          "hex": "#E9DF97"
+        },
+        {
+          "name": "Clear",
+          "hex": "#F4FAFC"
+        }
+      ]
+    },
+    {
+      "name": "Prusament ASA",
+      "product": "ASA",
+      "material": "ASA",
+      "brand": "Prusament",
+      "weight_g": 800.0,
+      "spool_weight_g": 193.0,
+      "colors": [
+        {
+          "name": "Natural",
+          "hex": "#DFDFD3"
+        },
+        {
+          "name": "Lipstick Red",
+          "hex": "#D02F37"
+        },
+        {
+          "name": "Signal White",
+          "hex": "#E3DFD9"
+        },
+        {
+          "name": "Prusa Orange",
+          "hex": "#EA5E1A"
+        },
+        {
+          "name": "Jet Black",
+          "hex": "#24292A"
+        },
+        {
+          "name": "Galaxy Black",
+          "hex": "#3D3E3D"
+        },
+        {
+          "name": "Prusa Pro Green",
+          "hex": "#5AECCB"
+        },
+        {
+          "name": "Sapphire Blue",
+          "hex": "#3B4468"
+        },
+        {
+          "name": "Olive Green",
+          "hex": "#636B2F"
+        }
+      ]
+    },
+    {
+      "name": "Prusament ASA (NFC)",
+      "product": "ASA (NFC)",
+      "material": "ASA",
+      "brand": "Prusament",
+      "weight_g": 800.0,
+      "spool_weight_g": 280.0,
+      "colors": [
+        {
+          "name": "Natural",
+          "hex": "#DFDFD3"
+        },
+        {
+          "name": "Lipstick Red",
+          "hex": "#D02F37"
+        },
+        {
+          "name": "Signal White",
+          "hex": "#E3DFD9"
+        },
+        {
+          "name": "Prusa Orange",
+          "hex": "#EA5E1A"
+        },
+        {
+          "name": "Jet Black",
+          "hex": "#24292A"
+        },
+        {
+          "name": "Galaxy Black",
+          "hex": "#3D3E3D"
+        },
+        {
+          "name": "Prusa Pro Green",
+          "hex": "#5AECCB"
+        },
+        {
+          "name": "Sapphire Blue",
+          "hex": "#3B4468"
+        },
+        {
+          "name": "Olive Green",
+          "hex": "#636B2F"
+        }
+      ]
+    },
+    {
+      "name": "Prusament PC Blend",
+      "product": "PC Blend",
+      "material": "PC",
+      "brand": "Prusament",
+      "weight_g": 1000.0,
+      "spool_weight_g": 186.0,
+      "colors": [
+        {
+          "name": "Jet Black",
+          "hex": "#24292A"
+        },
+        {
+          "name": "Prusa Orange",
+          "hex": "#EA5E1A"
+        },
+        {
+          "name": "Prusa Pro Green",
+          "hex": "#5AECCB"
+        }
+      ]
+    },
+    {
+      "name": "Prusament PC-CF PC Blend Carbon Fiber",
+      "product": "PC-CF PC Blend Carbon Fiber",
+      "material": "PC-CF",
+      "brand": "Prusament",
+      "weight_g": 800.0,
+      "spool_weight_g": 200.0,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#262727"
+        }
+      ]
+    },
+    {
+      "name": "Prusament PETG",
+      "product": "PETG",
+      "material": "PETG",
+      "brand": "Prusament",
+      "weight_g": 1000.0,
+      "spool_weight_g": 193.0,
+      "colors": [
+        {
+          "name": "Matte Black",
+          "hex": "#303635"
+        },
+        {
+          "name": "Anthracite Grey",
+          "hex": "#3F4647"
+        },
+        {
+          "name": "Galaxy Black",
+          "hex": "#3D3E3D"
+        },
+        {
+          "name": "Urban Grey",
+          "hex": "#999596"
+        },
+        {
+          "name": "Chalky Blue",
+          "hex": "#6F9AAA"
+        },
+        {
+          "name": "Jungle Green",
+          "hex": "#007249"
+        },
+        {
+          "name": "Neon Green Transparent",
+          "hex": "#A6EC5F"
+        },
+        {
+          "name": "Ocean Blue",
+          "hex": "#194C55"
+        },
+        {
+          "name": "Pistachio Green",
+          "hex": "#93A683"
+        },
+        {
+          "name": "Terracotta Light",
+          "hex": "#B87F6A"
+        },
+        {
+          "name": "Yellow Gold",
+          "hex": "#9A8524"
+        },
+        {
+          "name": "Jet Black",
+          "hex": "#24292A"
+        },
+        {
+          "name": "Prusa Orange",
+          "hex": "#EA5E1A"
+        },
+        {
+          "name": "Signal White",
+          "hex": "#E3DFD9"
+        },
+        {
+          "name": "Lipstick Red",
+          "hex": "#D02F37"
+        },
+        {
+          "name": "Mango Yellow",
+          "hex": "#F2B70A"
+        },
+        {
+          "name": "Ultramarine Blue",
+          "hex": "#2B3B61"
+        },
+        {
+          "name": "Clear",
+          "hex": "#DCDCDC"
+        },
+        {
+          "name": "Carmine Red",
+          "hex": "#B54230"
+        }
+      ]
+    },
+    {
+      "name": "Prusament PLA",
+      "product": "PLA",
+      "material": "PLA",
+      "brand": "Prusament",
+      "weight_g": 1000.0,
+      "spool_weight_g": 193.0,
+      "colors": [
+        {
+          "name": "Galaxy Black",
+          "hex": "#3D3E3D"
+        },
+        {
+          "name": "Galaxy Silver",
+          "hex": "#999AA0"
+        },
+        {
+          "name": "Lipstick Red",
+          "hex": "#D02F37"
+        },
+        {
+          "name": "Azure Blue",
+          "hex": "#0082AD"
+        },
+        {
+          "name": "Pearl Mouse",
+          "hex": "#A49D8E"
+        },
+        {
+          "name": "Vanilla White",
+          "hex": "#D9D4C6"
+        },
+        {
+          "name": "Gentleman's Grey",
+          "hex": "#354047"
+        },
+        {
+          "name": "Army Green",
+          "hex": "#5E6345"
+        },
+        {
+          "name": "Galaxy Purple",
+          "hex": "#453A72"
+        },
+        {
+          "name": "Jet Black",
+          "hex": "#24292A"
+        },
+        {
+          "name": "Opal Green",
+          "hex": "#065B4A"
+        },
+        {
+          "name": "Prusa Orange",
+          "hex": "#EA5E1A"
+        },
+        {
+          "name": "Pineapple Yellow",
+          "hex": "#EFD00B"
+        },
+        {
+          "name": "Gravity Grey",
+          "hex": "#9FA4A8"
+        },
+        {
+          "name": "Simply Green",
+          "hex": "#70A641"
+        },
+        {
+          "name": "Marble Grey",
+          "hex": "#B0B4B5"
+        },
+        {
+          "name": "Galaxy Green",
+          "hex": "#42663A"
+        },
+        {
+          "name": "Pristine White",
+          "hex": "#E6EAEF"
+        },
+        {
+          "name": "Natural",
+          "hex": "#DFDFD3"
+        },
+        {
+          "name": "Galaxy Red",
+          "hex": "#D94A5A"
+        }
+      ]
+    },
+    {
+      "name": "Prusament PVB",
+      "product": "PVB",
+      "material": "PVB",
+      "brand": "Prusament",
+      "weight_g": 1000.0,
+      "spool_weight_g": 193.0,
+      "colors": [
+        {
+          "name": "Dark Blue",
+          "hex": "#0A4EA5"
+        },
+        {
+          "name": "Bright Green",
+          "hex": "#C3D65F"
+        },
+        {
+          "name": "Prusa Orange",
+          "hex": "#FA9235"
+        },
+        {
+          "name": "Smoky Black",
+          "hex": "#B4B4B4"
+        },
+        {
+          "name": "Light Yellow",
+          "hex": "#F0DB52"
+        }
+      ]
+    },
+    {
+      "name": "Prusament TPU-95A",
+      "product": "TPU-95A",
+      "material": "TPU-95A",
+      "brand": "Prusament",
+      "weight_g": 500.0,
+      "spool_weight_g": 220.0,
+      "colors": [
+        {
+          "name": "Natural",
+          "hex": "#FFFCF4"
+        }
+      ]
+    },
+    {
+      "name": "Sunlu ABS",
+      "product": "ABS",
+      "material": "ABS",
+      "brand": "Sunlu",
+      "weight_g": 1000,
+      "spool_weight_g": 130,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#3A3C3B"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Red",
+          "hex": "#FF0000"
+        },
+        {
+          "name": "Blue",
+          "hex": "#0000FF"
+        },
+        {
+          "name": "Grey",
+          "hex": "#808080"
+        },
+        {
+          "name": "Green",
+          "hex": "#5FC50D"
+        }
+      ]
+    },
+    {
+      "name": "Sunlu ASA",
+      "product": "ASA",
+      "material": "ASA",
+      "brand": "Sunlu",
+      "weight_g": 1000,
+      "spool_weight_g": 130,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#000000"
+        },
+        {
+          "name": "Natural",
+          "hex": "#F4F2EB"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Grey",
+          "hex": "#75787B"
+        },
+        {
+          "name": "Red",
+          "hex": "#BC2726"
+        },
+        {
+          "name": "Blue (Klein Blue)",
+          "hex": "#1729AB"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#FFF13F"
+        },
+        {
+          "name": "Green",
+          "hex": "#1DAA27"
+        },
+        {
+          "name": "Lavender Purple",
+          "hex": "#685BC7"
+        },
+        {
+          "name": "Mocha Mousse",
+          "hex": "#A47B67"
+        }
+      ]
+    },
+    {
+      "name": "Sunlu High Speed Matte PETG",
+      "product": "High Speed Matte PETG",
+      "material": "PETG",
+      "brand": "Sunlu",
+      "weight_g": 1000,
+      "spool_weight_g": 168,
+      "colors": [
+        {
+          "name": "Yellow",
+          "hex": "#FBFB49"
+        },
+        {
+          "name": "Pink",
+          "hex": "#FCA2D3"
+        },
+        {
+          "name": "Mint",
+          "hex": "#40AA98"
+        },
+        {
+          "name": "Sky Blue",
+          "hex": "#5DC0F0"
+        },
+        {
+          "name": "Grey",
+          "hex": "#838589"
+        },
+        {
+          "name": "Blue",
+          "hex": "#3A39BB"
+        },
+        {
+          "name": "Green",
+          "hex": "#2EC835"
+        },
+        {
+          "name": "White",
+          "hex": "#EEEEEE"
+        },
+        {
+          "name": "Black",
+          "hex": "#151616"
+        },
+        {
+          "name": "Olive Green",
+          "hex": "#64794B"
+        },
+        {
+          "name": "Orange",
+          "hex": "#F55F35"
+        },
+        {
+          "name": "Red",
+          "hex": "#C72C2F"
+        }
+      ]
+    },
+    {
+      "name": "Sunlu PETG",
+      "product": "PETG",
+      "material": "PETG",
+      "brand": "Sunlu",
+      "weight_g": 1000.0,
+      "spool_weight_g": 209.0,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#000000"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Red",
+          "hex": "#FF0000"
+        },
+        {
+          "name": "Blue",
+          "hex": "#0000FF"
+        },
+        {
+          "name": "Orange",
+          "hex": "#F25602"
+        },
+        {
+          "name": "Green",
+          "hex": "#5FC50D"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#F6FA00"
+        },
+        {
+          "name": "Purple",
+          "hex": "#942192"
+        },
+        {
+          "name": "Grey",
+          "hex": "#808080"
+        },
+        {
+          "name": "Transparent",
+          "hex": "#C4C2C8"
+        },
+        {
+          "name": "Transparent Yellow",
+          "hex": "#E2CC5B"
+        },
+        {
+          "name": "Transparent Red",
+          "hex": "#FF4747"
+        },
+        {
+          "name": "Transparent Purple",
+          "hex": "#8E8AF8"
+        },
+        {
+          "name": "Transparent Orange",
+          "hex": "#FDB958"
+        },
+        {
+          "name": "Transparent Green",
+          "hex": "#44F867"
+        },
+        {
+          "name": "Transparent Blue",
+          "hex": "#3A87FE"
+        },
+        {
+          "name": "Chocolate",
+          "hex": "#793D00"
+        },
+        {
+          "name": "Roasted Chestnut",
+          "hex": "#3C3027"
+        },
+        {
+          "name": "Midnight",
+          "hex": "#0B1F2D"
+        }
+      ]
+    },
+    {
+      "name": "Sunlu PLA",
+      "product": "PLA",
+      "material": "PLA",
+      "brand": "Sunlu",
+      "weight_g": 1000.0,
+      "spool_weight_g": 130.0,
+      "colors": [
+        {
+          "name": "White (Glow Green)",
+          "hex": "#000000"
+        },
+        {
+          "name": "White (Glow Blue)",
+          "hex": "#000000"
+        },
+        {
+          "name": "Yellow (Glow Yellow)",
+          "hex": "#FFFF00"
+        },
+        {
+          "name": "Red (Glow Orange)",
+          "hex": "#FF0000"
+        },
+        {
+          "name": "Black",
+          "hex": "#2B2B2D"
+        },
+        {
+          "name": "White",
+          "hex": "#C7CDD7"
+        },
+        {
+          "name": "Grey",
+          "hex": "#636767"
+        },
+        {
+          "name": "Red",
+          "hex": "#AC3638"
+        },
+        {
+          "name": "Sunny Orange",
+          "hex": "#D8631E"
+        },
+        {
+          "name": "Clear",
+          "hex": "#FFFFFF"
+        }
+      ]
+    },
+    {
+      "name": "Sunlu PLA High Speed Marble",
+      "product": "PLA High Speed Marble",
+      "material": "PLA",
+      "brand": "Sunlu",
+      "weight_g": 1000.0,
+      "spool_weight_g": 130.0,
+      "colors": [
+        {
+          "name": "Chestnut Brown",
+          "hex": "#E1E0DE"
+        },
+        {
+          "name": "Brick Red",
+          "hex": "#8F4938"
+        },
+        {
+          "name": "Oreo",
+          "hex": "#DDDFE3"
+        },
+        {
+          "name": "Shadow Storm",
+          "hex": "#D8D7D8"
+        },
+        {
+          "name": "Ashen",
+          "hex": "#838383"
+        },
+        {
+          "name": "Forest Green",
+          "hex": "#C3D3D0"
+        }
+      ]
+    },
+    {
+      "name": "Sunlu PLA Meta",
+      "product": "PLA Meta",
+      "material": "PLA",
+      "brand": "Sunlu",
+      "weight_g": 1000.0,
+      "spool_weight_g": 130.0,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#000000"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Grey",
+          "hex": "#75787B"
+        },
+        {
+          "name": "Cherry Red",
+          "hex": "#ED374D"
+        },
+        {
+          "name": "Sky Blue",
+          "hex": "#0AB4E5"
+        },
+        {
+          "name": "Lemon Yellow",
+          "hex": "#FBF9AF"
+        },
+        {
+          "name": "Mint Green",
+          "hex": "#03CCB5"
+        },
+        {
+          "name": "Sakura Pink",
+          "hex": "#FDD4DE"
+        },
+        {
+          "name": "Chocolate",
+          "hex": "#895A4E"
+        },
+        {
+          "name": "Taro Purple",
+          "hex": "#AF98DF"
+        },
+        {
+          "name": "Cream White",
+          "hex": "#EEE7D4"
+        },
+        {
+          "name": "Apple Green",
+          "hex": "#A9EAA7"
+        },
+        {
+          "name": "Ice Blue",
+          "hex": "#9FECF7"
+        },
+        {
+          "name": "Olive Green",
+          "hex": "#5A6D3D"
+        },
+        {
+          "name": "Sunny Orange",
+          "hex": "#FC8B4C"
+        }
+      ]
+    },
+    {
+      "name": "Sunlu PLA+",
+      "product": "PLA+",
+      "material": "PLA+",
+      "brand": "Sunlu",
+      "weight_g": 1000.0,
+      "spool_weight_g": 130,
+      "colors": [
+        {
+          "name": "Transparent Green",
+          "hex": "#16BA36"
+        },
+        {
+          "name": "Black",
+          "hex": "#000000"
+        },
+        {
+          "name": "White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Sky Blue",
+          "hex": "#69E2FF"
+        },
+        {
+          "name": "Sakura Pink",
+          "hex": "#F6C7B3"
+        },
+        {
+          "name": "Red",
+          "hex": "#FF0000"
+        },
+        {
+          "name": "Blue",
+          "hex": "#0000FF"
+        },
+        {
+          "name": "Orange",
+          "hex": "#F25602"
+        },
+        {
+          "name": "Green",
+          "hex": "#5FC50D"
+        },
+        {
+          "name": "Yellow",
+          "hex": "#F6FA00"
+        },
+        {
+          "name": "Purple",
+          "hex": "#942192"
+        },
+        {
+          "name": "Grey",
+          "hex": "#808080"
+        },
+        {
+          "name": "Mint Green",
+          "hex": "#0CCEB4"
+        },
+        {
+          "name": "Blue Grey",
+          "hex": "#3E53D5"
+        },
+        {
+          "name": "Beige",
+          "hex": "#FFE8DB"
+        },
+        {
+          "name": "Cherry Red",
+          "hex": "#E63034"
+        },
+        {
+          "name": "Chocolate",
+          "hex": "#563835"
+        },
+        {
+          "name": "Cyan",
+          "hex": "#39D0F1"
+        },
+        {
+          "name": "Coffee",
+          "hex": "#715E3E"
+        },
+        {
+          "name": "Fuchsia",
+          "hex": "#B63ED4"
+        },
+        {
+          "name": "Gold",
+          "hex": "#EFA537"
+        },
+        {
+          "name": "Grass Green",
+          "hex": "#328169"
+        },
+        {
+          "name": "Lemon Yellow",
+          "hex": "#E6E55F"
+        },
+        {
+          "name": "Light Gold",
+          "hex": "#FADD47"
+        },
+        {
+          "name": "Pink",
+          "hex": "#FFABD3"
+        },
+        {
+          "name": "Silver",
+          "hex": "#9299A9"
+        },
+        {
+          "name": "Sunny Orange",
+          "hex": "#FC743A"
+        }
+      ]
+    },
+    {
+      "name": "Sunlu TPU Silk",
+      "product": "TPU Silk",
+      "material": "TPU",
+      "brand": "Sunlu",
+      "weight_g": 1000.0,
+      "spool_weight_g": 130,
+      "colors": [
+        {
+          "name": "Cream White",
+          "hex": "#F7F1D1"
+        },
+        {
+          "name": "Black",
+          "hex": "#000000"
+        },
+        {
+          "name": "Light Blue",
+          "hex": "#92CECC"
+        },
+        {
+          "name": "Dark Blue",
+          "hex": "#1D2353"
+        },
+        {
+          "name": "Burgundy",
+          "hex": "#3F2028"
+        }
+      ]
+    },
+    {
+      "name": "Sunlu Wood",
+      "product": "Wood",
+      "material": "WOOD",
+      "brand": "Sunlu",
+      "weight_g": 1000.0,
+      "spool_weight_g": 130,
+      "colors": [
+        {
+          "name": "Wood",
+          "hex": "#CFAF94"
+        },
+        {
+          "name": "Cherry",
+          "hex": "#6C4F4C"
+        },
+        {
+          "name": "Maple",
+          "hex": "#C7AA8D"
+        },
+        {
+          "name": "Walnut",
+          "hex": "#564E44"
+        }
+      ]
+    }
+  ]
+}

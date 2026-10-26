@@ -387,3 +387,27 @@ def test_cost_split_in_totals_handles_older_records():
     assert h.total_filament_cost == 3.0  # 2.0 + 1.0
     assert h.total_energy_cost == 0.5
     assert round(h.total_filament_cost + h.total_energy_cost, 2) == h.total_cost
+
+
+def test_filament_catalog_is_consistent():
+    import re as _re
+
+    spec = importlib.util.spec_from_file_location("druck_assistant.catalog", PKG / "catalog.py")
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules["druck_assistant.catalog"] = mod
+    spec.loader.exec_module(mod)
+    products = mod.load_catalog()["products"]
+
+    brands = {p["brand"] for p in products}
+    assert {"Bambu Lab", "Anycubic", "Elegoo", "Sunlu", "Creality", "eSUN", "Polymaker", "Prusament", "Overture", "Flashforge"} <= brands
+    names = [p["name"] for p in products]
+    assert len(names) == len(set(names)), "product names must be unique"
+    for p in products:
+        assert p["name"].startswith(p["brand"].split()[0]) and p["material"] and p["colors"], p["name"]
+        colors = [c["name"].lower() for c in p["colors"]]
+        assert len(colors) == len(set(colors)) or p["brand"] == "Bambu Lab", p["name"]
+        for c in p["colors"]:
+            assert _re.fullmatch(r"#[0-9A-F]{6}", c["hex"]), (p["name"], c)
+            assert all(_re.fullmatch(r"#[0-9A-F]{6}", h) for h in c.get("hexes", []))
+    anycubic = {p["name"] for p in products if p["brand"] == "Anycubic"}
+    assert "Anycubic PLA Basic" in anycubic and len(anycubic) == 10

@@ -30,8 +30,11 @@ Der Restbestand wird aus der AMS-Prozentanzeige geschätzt und lässt sich von H
 **Filter:** Die Karte „Spulen“ hat ein Suchfeld (Name, Material, Hersteller, Notizen, Farbe) und Filter für Material,
 Hersteller und Status (Vorrat, in einem Slot, niedriger Bestand). Tabelle und Summen zeigen nur die passenden Spulen; das Popup einer Sorte listet weiterhin alle ihre Spulen.
 
-**Spule aus dem Bambu-Lab-Katalog anlegen:** Wähle in „Spule hinzufügen“ ein Filament und eine Farbe aus dem Katalog
-(`docs/bambu-filaments.md`), um Name, Material, Hersteller und Farbe auszufüllen; jedes Feld lässt sich danach ändern.
+**Spule aus dem Katalog anlegen:** Wähle in „Spule hinzufügen“ Hersteller, Filament und Farbe aus dem Katalog, um Name,
+Material, Hersteller und Farbe auszufüllen; jedes Feld lässt sich danach ändern. Der Katalog enthält Bambu Lab
+(`docs/bambu-filaments.md`) sowie Anycubic, Creality, Elegoo, eSUN, Flashforge, Overture, Polymaker, Prusament und Sunlu
+(`docs/third-party-filaments.md`, aus der Community-Datenbank [SpoolmanDB](https://github.com/Donkie/SpoolmanDB), MIT-Lizenz;
+deren Farbwerte können ungenau sein).
 
 **Spulen bearbeiten:** Die Liste zeigt eine Zeile pro Sorte und Farbe (z. B. „Bambu PETG Basic“ in Schwarz und in Grau sind
 zwei Zeilen) mit dem Gesamtbestand aller Spulen und dem Durchschnittspreis pro kg. Klicke auf den Namen einer Sorte mit
