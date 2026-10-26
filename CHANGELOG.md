@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0-beta.2] - 2026-10-28
+
+### Added
+
+- Spools can be archived by hand: the filament list has a new Archive button next to Edit and Delete. An archived spool leaves its slot and can be brought back with Restore in the archive.
+
 ## [0.7.0-beta.1] - 2026-10-28
 
 ### Changed

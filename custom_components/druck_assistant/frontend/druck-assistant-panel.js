@@ -3,6 +3,7 @@
 const ICONS = {
   edit: "M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z",
   delete: "M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z",
+  archive: "M3,3H21V7H3V3M4,8H20V21H4V8M9.5,11A0.5,0.5 0 0,0 9,11.5V13H15V11.5A0.5,0.5 0 0,0 14.5,11H9.5Z",
   restore: "M12,3A9,9 0 0,0 3,12H0L4,16L8,12H5A7,7 0 0,1 12,5A7,7 0 0,1 19,12A7,7 0 0,1 12,19C10.5,19 9.09,18.5 7.94,17.7L6.5,19.14C8.04,20.3 9.94,21 12,21A9,9 0 0,0 21,12A9,9 0 0,0 12,3M14,12A2,2 0 0,0 12,10A2,2 0 0,0 10,12A2,2 0 0,0 12,14A2,2 0 0,0 14,12Z",
 };
 
@@ -102,6 +103,7 @@ const TRANSLATIONS = {
     correct_hint: "Wrong spool? Pick the right one: the tag moves to it, and the automatic match stays corrected. Choosing \"none\" stops automatic assignment for the spool currently in this slot.",
     quantity: "Quantity (e.g. 4 for a 4-pack)",
     restore: "Restore",
+    archive: "Archive",
     archived_spools: "Archived spools ({count})",
     no_archived: "No archived spools. Empty spools are archived automatically.",
     import_ams: "Import from AMS",
@@ -198,6 +200,7 @@ const TRANSLATIONS = {
     correct_hint: "Falsche Spule? Wähle die richtige: Der Tag wandert zu ihr, die automatische Zuordnung bleibt korrigiert. „keine“ stoppt die automatische Zuordnung für die Spule, die gerade in diesem Slot steckt.",
     quantity: "Anzahl (z. B. 4 für ein 4er-Pack)",
     restore: "Wiederherstellen",
+    archive: "Archivieren",
     archived_spools: "Archivierte Spulen ({count})",
     no_archived: "Keine archivierten Spulen. Leere Spulen werden automatisch archiviert.",
     import_ams: "Aus AMS importieren",
@@ -515,19 +518,18 @@ class DruckAssistantPanel extends HTMLElement {
   }
 
   /**
-   * Row buttons of a spool: Edit where editing is allowed; an untagged Bambu Lab spool in a
-   * slot has nothing to edit, but can be deleted. Spools are archived automatically when they
-   * run empty, not by hand from the row.
+   * Row buttons of a spool: Edit where editing is allowed (an untagged Bambu Lab spool in a
+   * slot has nothing to edit), Archive and Delete. Spools are also archived automatically when
+   * they run empty; archiving by hand is undone with Restore in the archive.
    */
   _rowActions(sp, admin, slotOf) {
     if (!admin) return [];
+    const archive = this._iconButton("archive", this._t("archive"), () => this._call({ type: "druck_assistant/spool_archive", spool_id: sp.id, archived: true }));
+    const del = this._iconButton("delete", this._t("delete"), () => this._confirmDelete(sp), true);
     if (this._canEdit(sp, admin, slotOf)) {
-      return [
-        this._iconButton("edit", this._t("edit"), () => { this._editing = sp; this._render(); }),
-        this._iconButton("delete", this._t("delete"), () => this._confirmDelete(sp), true),
-      ];
+      return [this._iconButton("edit", this._t("edit"), () => { this._editing = sp; this._render(); }), archive, del];
     }
-    return [this._iconButton("delete", this._t("delete"), () => this._confirmDelete(sp), true)];
+    return [archive, del];
   }
 
   _matchesFilter(sp, slotOf) {
