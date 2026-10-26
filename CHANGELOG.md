@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0-beta.8] - 2026-10-26
+
+### Fixed
+
+- The loaded filament in the Overview tab (and the `price_per_kg` attribute of the "Current filament" sensor) showed the default price per kg (25) instead of the price of the spool assigned to the active slot. It now uses the spool's price and falls back to the type price and the default only when the spool has none. The cost calculation of prints was not affected.
+
 ## [0.5.0-beta.7] - 2026-10-25
 
 ### Added
