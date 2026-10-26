@@ -116,7 +116,7 @@ SENSORS: tuple[DruckSensorDescription, ...] = (
                 "name": t.current_tray.attributes.get("name"),
                 "color": t.current_tray.attributes.get("color"),
                 "remain": t.current_tray.attributes.get("remain"),
-                "price_per_kg": t.price_for_material(t.current_tray.attributes.get("type")),
+                "price_per_kg": t.tray_price_per_kg(),
             }
             if t.current_tray
             else {}

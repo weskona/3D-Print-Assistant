@@ -71,6 +71,14 @@ class PrintTracker:
             prices = {}
         return price_for(material, prices, self.price_per_kg)
 
+    def tray_price_per_kg(self) -> float:
+        """Price per kg of the active tray: its assigned spool if that has a price, else the material price."""
+        tray = self.current_tray
+        spool = self.filament.store.spool_for_slot(self.active_slot_key())
+        if spool is not None and spool.price_per_kg is not None:
+            return spool.price_per_kg
+        return self.price_for_material(tray.attributes.get("type") if tray else None)
+
     def current_print(self) -> dict[str, Any] | None:
         """The print in progress for the panel, from ha-bambulab entities and our session."""
         status = self._value("print_status")
@@ -169,7 +177,7 @@ class PrintTracker:
                 "name": tray.attributes.get("name"),
                 "color": tray.attributes.get("color"),
                 "remain": tray.attributes.get("remain"),
-                "price_per_kg": self.price_for_material(tray.attributes.get("type")),
+                "price_per_kg": self.tray_price_per_kg(),
             },
             "history": h.records[::-1],
             "slots": self.slots(),
