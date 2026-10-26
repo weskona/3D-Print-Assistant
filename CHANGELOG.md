@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0-beta.1] - 2026-10-26
+
+### Added
+
+- The filament catalog covers more manufacturers: Anycubic, Creality, Elegoo, eSUN, Flashforge, Overture, Polymaker, Prusament and Sunlu (103 filaments, 1,163 colors with hex values) next to Bambu Lab. The add spool form has a manufacturer select before filament and color, and uses the spool size of the product line when the catalog knows it. The data comes from the community database SpoolmanDB (MIT license, commit `8f1a99f9ca`, retrieved 2026-10-26) as `custom_components/druck_assistant/data/third_party_filaments.json` and a readable list in `docs/third-party-filaments.md`; `scripts/build_third_party_catalog.py` rebuilds it.
+
 ## [0.5.0-beta.8] - 2026-10-26
 
 ### Fixed
@@ -196,7 +202,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Filament prices per type (e.g. `PLA=20`) in the options, sensor for the current filament including price per kg. Cost sensors in euro.
 - GitHub workflow that creates a tag and release after a push to `main`.
 
-[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.5.0-beta.7...HEAD
+[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.6.0-beta.1...HEAD
+[0.6.0-beta.1]: https://github.com/weskona/3D-Print-Assistant/compare/v0.5.0-beta.7...v0.6.0-beta.1
 [0.5.0-beta.7]: https://github.com/weskona/3D-Print-Assistant/compare/v0.5.0-beta.6...v0.5.0-beta.7
 [0.5.0-beta.6]: https://github.com/weskona/3D-Print-Assistant/compare/v0.5.0-beta.5...v0.5.0-beta.6
 [0.5.0-beta.5]: https://github.com/weskona/3D-Print-Assistant/compare/v0.5.0-beta.4...v0.5.0-beta.5

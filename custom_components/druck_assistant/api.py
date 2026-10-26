@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import json
-from pathlib import Path
 from typing import Any
 
 import voluptuous as vol
@@ -21,14 +19,8 @@ from .const import (
     WS_SPOOL_DELETE,
     WS_SPOOL_SAVE,
 )
+from .catalog import load_catalog
 from .spools import SpoolError
-
-
-CATALOG_FILE = Path(__file__).parent / "data" / "bambu_filaments.json"
-
-
-def _load_catalog() -> dict[str, Any]:
-    return json.loads(CATALOG_FILE.read_text(encoding="utf-8"))
 
 
 @callback
@@ -184,8 +176,8 @@ def ws_spool_archive(
 async def ws_catalog(
     hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
 ) -> None:
-    """Return the Bambu Lab filament catalog (read once, then cached)."""
+    """Return the filament catalog of Bambu Lab and other manufacturers (read once, then cached)."""
     domain_data = hass.data[DOMAIN]
     if "catalog" not in domain_data:
-        domain_data["catalog"] = await hass.async_add_executor_job(_load_catalog)
+        domain_data["catalog"] = await hass.async_add_executor_job(load_catalog)
     connection.send_result(msg["id"], domain_data["catalog"])

@@ -31,8 +31,11 @@ The remaining stock of an imported spool is estimated from the AMS percentage, s
 **Filter:** the Spools card has a search box (name, material, brand, notes, color) and filters for material,
 brand and status (in stock, in a slot, low stock). The table and its totals show only the matching spools; the popup of a type still lists all of its spools.
 
-**Adding a spool from the Bambu Lab catalog:** in "Add spool", pick a filament and a color from the
-catalog (`docs/bambu-filaments.md`) to fill in name, material, brand and color; every field can still be changed.
+**Adding a spool from the catalog:** in "Add spool", pick a manufacturer, a filament and a color from the
+catalog to fill in name, material, brand and color; every field can still be changed. The catalog has Bambu Lab
+(`docs/bambu-filaments.md`) and Anycubic, Creality, Elegoo, eSUN, Flashforge, Overture, Polymaker, Prusament and Sunlu
+(`docs/third-party-filaments.md`, from the community database [SpoolmanDB](https://github.com/Donkie/SpoolmanDB), MIT license;
+its hex values can be approximate).
 
 **Editing spools:** the list shows one row per type and color (e.g. "Bambu PETG Basic" in black and in gray are two
 rows) with the total stock of all its spools and the average price per kg. Click the name of a type with several spools to

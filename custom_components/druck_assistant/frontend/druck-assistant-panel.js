@@ -79,11 +79,12 @@ const TRANSLATIONS = {
     admin_only: "Only administrators can change the filament inventory.",
     price: "Price",
     suggest_hint: "Pick a name you already have to fill in the other fields.",
-    catalog: "Bambu Lab catalog",
+    catalog: "Filament catalog",
+    catalog_brand: "Manufacturer",
     catalog_filament: "Filament",
     catalog_color: "Color",
     catalog_choose: "– choose –",
-    catalog_hint: "Pick a Bambu Lab filament and color to fill in name, material, brand and color. You can still change every field.",
+    catalog_hint: "Pick a manufacturer, filament and color to fill in name, material, brand and color. You can still change every field.",
     filter_search: "Search name, material, brand, notes",
     all: "All",
     status: "Status",
@@ -171,11 +172,12 @@ const TRANSLATIONS = {
     admin_only: "Nur Administratoren können den Filamentbestand ändern.",
     price: "Preis",
     suggest_hint: "Wähle einen vorhandenen Namen, um die übrigen Felder auszufüllen.",
-    catalog: "Bambu-Lab-Katalog",
+    catalog: "Filament-Katalog",
+    catalog_brand: "Hersteller",
     catalog_filament: "Filament",
     catalog_color: "Farbe",
     catalog_choose: "– wählen –",
-    catalog_hint: "Wähle ein Bambu-Lab-Filament und eine Farbe, um Name, Material, Hersteller und Farbe auszufüllen. Du kannst jedes Feld danach noch ändern.",
+    catalog_hint: "Wähle Hersteller, Filament und Farbe, um Name, Material, Hersteller und Farbe auszufüllen. Du kannst jedes Feld danach noch ändern.",
     filter_search: "Suche in Name, Material, Hersteller, Notizen",
     all: "Alle",
     status: "Status",
@@ -409,15 +411,31 @@ class DruckAssistantPanel extends HTMLElement {
     inputs.name.addEventListener("change", fromTemplate);
     if (!spool.id && this._catalog && this._catalog.products?.length) {
       const german = (this._hass?.locale?.language || this._hass?.language || "en").startsWith("de");
-      const colorLabel = (c) => `${german && c.name_de ? c.name_de : c.name} (${c.code})`;
-      const productSel = this._el("select", {}, this._el("option", { value: "" }, this._t("catalog_choose")),
-        ...this._catalog.products.map((p, i) => this._el("option", { value: String(i) }, p.name)));
-      const colorSel = this._el("select", {}, this._el("option", { value: "" }, this._t("catalog_choose")));
+      const colorLabel = (c) => `${german && c.name_de ? c.name_de : c.name}${c.code ? ` (${c.code})` : ""}`;
+      const products = this._catalog.products;
+      // Bambu Lab first, the other brands alphabetically.
+      const brands = [...new Set(products.map((p) => p.brand))].sort((a, b) =>
+        (a === "Bambu Lab" ? -1 : b === "Bambu Lab" ? 1 : a.localeCompare(b)));
+      const choose = () => this._el("option", { value: "" }, this._t("catalog_choose"));
+      const brandSel = this._el("select", {}, choose(), ...brands.map((b) => this._el("option", { value: b }, b)));
+      const productSel = this._el("select", {}, choose());
+      const colorSel = this._el("select", {}, choose());
+      productSel.disabled = true;
       colorSel.disabled = true;
       const swatch = this._el("span", { class: "dot", style: "background:transparent" });
-      const product = () => this._catalog.products[parseInt(productSel.value, 10)];
+      const product = () => products[parseInt(productSel.value, 10)];
+      brandSel.addEventListener("change", () => {
+        productSel.replaceChildren(choose());
+        colorSel.replaceChildren(choose());
+        colorSel.disabled = true;
+        swatch.style.background = "transparent";
+        productSel.disabled = brandSel.value === "";
+        products.forEach((p, i) => {
+          if (p.brand === brandSel.value) productSel.append(this._el("option", { value: String(i) }, p.name));
+        });
+      });
       productSel.addEventListener("change", () => {
-        colorSel.replaceChildren(this._el("option", { value: "" }, this._t("catalog_choose")));
+        colorSel.replaceChildren(choose());
         const p = productSel.value === "" ? null : product();
         colorSel.disabled = !p;
         swatch.style.background = "transparent";
@@ -427,6 +445,11 @@ class DruckAssistantPanel extends HTMLElement {
         inputs.material.value = p.material;
         inputs.brand.value = p.brand;
         for (const key of ["name", "material", "brand"]) touched.add(key);
+        // Spool size of the product line, when the catalog knows it.
+        if (p.weight_g && !touched.has("initial_weight_g")) {
+          inputs.initial_weight_g.value = p.weight_g;
+          if (!touched.has("remaining_g")) inputs.remaining_g.value = p.weight_g;
+        }
       });
       colorSel.addEventListener("change", () => {
         const p = product();
@@ -436,11 +459,12 @@ class DruckAssistantPanel extends HTMLElement {
         touched.add("color");
         swatch.style.background = c.hex;
         // The color name tells same-type spools apart in the notes.
-        if (!touched.has("notes")) inputs.notes.value = `${c.name} (${c.code})`;
+        if (!touched.has("notes")) inputs.notes.value = `${c.name}${c.code ? ` (${c.code})` : ""}`;
       });
       const picker = this._el("div", { class: "catalog" },
         this._el("h3", {}, this._t("catalog")),
         this._el("div", { class: "sub notice" }, this._t("catalog_hint")),
+        this._field(this._t("catalog_brand"), brandSel),
         this._field(this._t("catalog_filament"), productSel),
         this._field(this._t("catalog_color"), this._el("div", { class: "row" }, colorSel, swatch)));
       const anchor = form.querySelector("h2");
