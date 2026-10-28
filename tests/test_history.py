@@ -428,3 +428,16 @@ def test_stock_matching_skips_another_variant_of_the_same_product_line():
     store.archive(basic.id)
     store.save_spool({"name": "Red PLA", "material": "PLA", "color": "#C12E1F"})
     assert store.find_stock({**tray, "tray_uuid": "E" * 32}) is not None
+
+
+def test_stock_matching_needs_a_near_identical_color_within_the_same_product_line():
+    m = _spools_module()
+    store = m.SpoolStore()
+    brown = store.save_spool({"name": "Bambu PLA Matte", "material": "PLA", "color": "#d3b7a7"})
+    pink = {**TRAY, "name": "Bambu PLA Matte", "color": "#E8AFCFFF", "tray_uuid": "F" * 32}
+    assert store.find_stock(pink) is None  # distance 46: close for other names, not for the same product
+    action, created = store.import_slot("p:t1", pink, include_untagged=False)
+    assert action == "created" and created.id != brown.id and brown.rfid == ""
+
+    same = {**pink, "color": "#D3B7A7FF", "tray_uuid": "9" * 32}
+    assert store.find_stock(same).id == brown.id
