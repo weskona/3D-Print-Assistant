@@ -11,6 +11,9 @@ HEX_COLOR = re.compile(r"^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$")
 
 
 MAX_COLOR_DISTANCE = 90  # RGB distance (0-441) up to which two colors count as the same
+# Catalog spools carry the exact manufacturer color, so within one product line
+# (Bambu PLA Matte vs. Bambu PLA Matte) only a near-identical color is the same spool.
+MAX_SAME_PRODUCT_DISTANCE = 20
 
 
 def _rgb(color: str) -> tuple[int, int, int] | None:
@@ -103,21 +106,18 @@ def spool_data_from_tray(attrs: dict[str, Any], rfid: str) -> dict[str, Any]:
     }
 
 
-def _other_product(stock_name: str, tray_name: str) -> bool:
-    """True when both names are "<brand> <material> <variant>" of different variants.
+def _product_line(stock_name: str, tray_name: str) -> str:
+    """Compare two "<brand> <material> <variant>" names: "same", "other" or "".
 
-    "Bambu PLA Matte" and "Bambu PLA Basic" share brand and material, so a close
-    color must not make one of them stand in for the other. Names that do not
-    follow this shape (like "Black PETG") never exclude a spool.
+    "Bambu PLA Matte" and "Bambu PLA Basic" share brand and material but are
+    "other" variants, so a close color must not make one stand in for the other.
+    Names that do not follow this shape (like "Black PETG") give "".
     """
     stock = re.sub(r"\s+#\d+$", "", stock_name.strip()).lower().split()
     tray = re.sub(r"\s+#\d+$", "", tray_name.strip()).lower().split()
-    return (
-        len(stock) >= 3
-        and len(tray) >= 3
-        and stock[:2] == tray[:2]
-        and stock[2:] != tray[2:]
-    )
+    if len(stock) < 3 or len(tray) < 3 or stock[:2] != tray[:2]:
+        return ""
+    return "same" if stock[2:] == tray[2:] else "other"
 
 
 class SpoolStore:
@@ -205,7 +205,9 @@ class SpoolStore:
 
         The color must be close to the tray color (or unknown on the stock spool),
         and a spool of another variant of the same product line (PLA Matte for
-        PLA Basic) never counts; among matches the closest color wins, then the fullest spool.
+        PLA Basic) never counts. Within the same product line the color must be
+        nearly identical (a pink PLA Matte is not the stock's latte brown one).
+        Among matches the closest color wins, then the fullest spool.
         """
         material = str(attrs.get("type") or "").strip().lower()
         color = str(attrs.get("color") or "")
@@ -219,14 +221,17 @@ class SpoolStore:
                 or spool.rfid
                 or spool.id in assigned
                 or spool.material.strip().lower() != material
-                or _other_product(spool.name, tray_name)
             ):
                 continue
+            line = _product_line(spool.name, tray_name)
+            if line == "other":
+                continue
+            limit = MAX_SAME_PRODUCT_DISTANCE if line == "same" else MAX_COLOR_DISTANCE
             distance = color_distance(spool.color, color)
             if distance is None:
                 # No usable color on one side: a weaker match than any close color.
-                distance = MAX_COLOR_DISTANCE + 1
-            elif distance > MAX_COLOR_DISTANCE:
+                distance = limit + 1
+            elif distance > limit:
                 continue
             rank = (distance, -spool.remaining_g)
             if best is None or rank < best:

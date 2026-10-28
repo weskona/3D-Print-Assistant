@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0-beta.4] - 2026-10-28
+
+### Fixed
+
+- The stock matching of a new AMS spool was still too lenient within one product line: a pink Bambu PLA Matte was taken for a latte brown Bambu PLA Matte in stock because the colors were "close". Catalog spools carry the exact manufacturer color, so a stock spool with the same name now only matches a nearly identical color. Spools with other names keep the looser color match.
+
 ## [0.7.0-beta.3] - 2026-10-28
 
 ### Fixed
