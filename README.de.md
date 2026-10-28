@@ -8,13 +8,15 @@ Home-Assistant-Integration für Bambu-Lab-Drucker. Sie setzt auf
 [ha-bambulab](https://github.com/greghesp/ha-bambulab) auf und liest dessen Entitäten
 (Druckstatus, Gewicht, aktives Filament), statt selbst mit dem Drucker zu sprechen.
 
+![Übersicht](docs/screenshots/overview.png)
+
 ## Funktionen
 
 - Druckhistorie (letzte 200 Drucke, persistent) mit Dauer, Ergebnis, Gewicht, Material und Farbe
 - Filamentverbrauch und -kosten pro Druck und gesamt
 - Stromkosten pro Druck über einen Energiezähler (kWh) oder einen Leistungssensor (W, wird über die Druckdauer integriert); Strompreis fest oder aus einer Entität
 - Filamentverwaltung: Spulenbestand mit Restgewicht, Preis und Farbe, zugeordnet zu AMS-/Externe-Spule-Slots; nach jedem Druck wird das verbrauchte Filament abgezogen, bei niedrigem Bestand gibt es ein Ereignis
-- Eigenes Panel „3D Print Assistant“ in der Seitenleiste mit Kennzahlen, laufendem Druck (Fortschritt, Zeiten, Schicht, Gewicht, Temperaturen, Kostenschätzung), geladenem Filament und Druckhistorie (aktualisiert sich live bei Druckstart und -ende)
+- Eigenes Panel „3D Print Assistant“ in der Seitenleiste mit Kennzahlen, laufendem Druck (Arbeitsschritt live, Fortschritt, Zeiten, Schicht, Gewicht, Temperaturen, Kostenschätzung), geladenem Filament und Druckhistorie (aktualisiert sich live bei Druckstart und -ende)
 - Ereignisse für Automationen: `druck_assistant_print_started`, `druck_assistant_print_finished`,
   `druck_assistant_print_failed`, `druck_assistant_filament_low`
 
@@ -73,6 +75,13 @@ wird er angelegt und ein GitHub Release mit `druck_assistant.zip` erstellt. Die 
 stammen aus dem passenden Abschnitt `## [<version>]` der `CHANGELOG.md`, sonst werden sie
 automatisch erzeugt. Zum Veröffentlichen also Version im Manifest erhöhen und den
 `[Unreleased]`-Abschnitt in `## [<version>] - <Datum>` umbenennen.
+
+## Design
+
+Das Panel ist immer dunkel und unabhängig vom Home-Assistant-Theme. Die Optik ist an
+[glow-dashboard](https://github.com/deepblue120/glow-dashboard) angelehnt (Farben, runde Karten, Tab-Leiste); der Code ist eigener.
+Die Schrift ist [Outfit](https://github.com/Outfitio/Outfit-Fonts) unter der SIL Open Font License
+(`custom_components/druck_assistant/frontend/fonts/OFL-Outfit.txt`). Weitere Screenshots: `docs/screenshots/`.
 
 ## Sprachen
 

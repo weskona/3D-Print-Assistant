@@ -162,6 +162,8 @@ class PrintTracker:
                 "filament_cost": h.total_filament_cost,
             },
             "current_print": self.current_print(),
+            # The panel reads this entity's state live from Home Assistant.
+            "stage_entity": self.entity_id("stage"),
             "session": None
             if session is None
             else {

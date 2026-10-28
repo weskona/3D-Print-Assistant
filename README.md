@@ -8,6 +8,8 @@ Home Assistant integration for Bambu Lab printers. It builds on
 [ha-bambulab](https://github.com/greghesp/ha-bambulab) and reads its entities
 (print status, weight, active filament) instead of talking to the printer itself.
 
+![Overview](docs/screenshots/overview.png)
+
 ## Features
 
 - Print history (last 200 prints, persistent) with duration, result, weight, material and color
@@ -15,7 +17,7 @@ Home Assistant integration for Bambu Lab printers. It builds on
 - Filament price per type (e.g. `PLA=20`) with a default price per kg
 - Electricity cost via an energy meter (kWh) or a power sensor (W, integrated over the print duration); fixed price or price from an entity
 - Filament management: spool inventory with remaining weight, price and color, assigned to AMS/external spool slots; used filament is deducted after each print and low stock fires an event
-- Own "3D Print Assistant" sidebar panel with totals, the print in progress (progress, times, layer, weight, temperatures, cost estimate), loaded filament and print history (updates live on print start and end)
+- Own "3D Print Assistant" sidebar panel with totals, the print in progress (live stage, progress, times, layer, weight, temperatures, cost estimate), loaded filament and print history (updates live on print start and end)
 - Events for automations: `druck_assistant_print_started`, `druck_assistant_print_finished`,
   `druck_assistant_print_failed`, `druck_assistant_filament_low`, `druck_assistant_spool_imported`, `druck_assistant_spool_empty`
 
@@ -64,6 +66,13 @@ Prints with several spools or materials are booked to the spool active at the st
 2. Copy `custom_components/druck_assistant` to `config/custom_components/` (or add this repository as a custom repository in HACS).
 3. Restart Home Assistant, add the "3D Print Assistant" integration and select the printer.
 4. Set filament prices, electricity price and the low filament threshold in the integration options.
+
+## Design
+
+The panel is always dark and independent of the Home Assistant theme. Its look is inspired by
+[glow-dashboard](https://github.com/deepblue120/glow-dashboard) (colors, rounded cards, pill tabs); the code is our own.
+The font is [Outfit](https://github.com/Outfitio/Outfit-Fonts) under the SIL Open Font License
+(`custom_components/druck_assistant/frontend/fonts/OFL-Outfit.txt`). More screenshots: `docs/screenshots/`.
 
 ## Languages
 

@@ -35,9 +35,12 @@ const TRANSLATIONS = {
     success: "Successful",
     failed: "Failed",
     unknown: "unknown",
+    idle: "Idle",
+    totals: "Totals",
     electricity_cost: "Electricity cost",
     total: "Total",
     cost_split: "Filament {filament} · Electricity {energy}",
+    stage_label: "Current stage",
     current_print: "Current print",
     status_running: "Printing",
     status_pause: "Paused",
@@ -128,9 +131,12 @@ const TRANSLATIONS = {
     success: "Erfolgreich",
     failed: "Fehlgeschlagen",
     unknown: "unbekannt",
+    idle: "Bereit",
+    totals: "Gesamt",
     electricity_cost: "Stromkosten",
     total: "Gesamt",
     cost_split: "Filament {filament} · Strom {energy}",
+    stage_label: "Aktueller Arbeitsschritt",
     current_print: "Aktueller Druck",
     status_running: "Druckt",
     status_pause: "Pausiert",
@@ -221,6 +227,22 @@ class DruckAssistantPanel extends HTMLElement {
     const first = !this._hass;
     this._hass = hass;
     if (first) this._start();
+    else this._updateLive();
+  }
+
+  /** The state of an entity as Home Assistant shows it (translated), or null if unknown. */
+  _entityText(entityId) {
+    const state = entityId ? this._hass?.states?.[entityId] : null;
+    if (!state || state.state === "unavailable" || state.state === "unknown") return null;
+    return this._hass.formatEntityState ? this._hass.formatEntityState(state) : state.state;
+  }
+
+  /** Refresh the live values (they follow the entity state, not the 10 second reload). */
+  _updateLive() {
+    for (const el of this.shadowRoot.querySelectorAll("[data-live-entity]")) {
+      const text = this._entityText(el.dataset.liveEntity) ?? "–";
+      if (el.textContent !== text) el.textContent = text;
+    }
   }
 
   set narrow(v) { this._narrow = v; }
@@ -237,7 +259,17 @@ class DruckAssistantPanel extends HTMLElement {
     this._timer = null;
   }
 
+  /** The panel font; @font-face does not work inside a shadow root, so it is registered on the page. */
+  _loadFont() {
+    if (this._fontRequested || !window.FontFace || !document.fonts) return;
+    this._fontRequested = true;
+    if ([...document.fonts].some((f) => f.family.replace(/"/g, "") === "Outfit")) return;
+    const font = new FontFace("Outfit", "url(/druck_assistant_static/fonts/Outfit-variable.woff2)", { weight: "100 900", display: "swap" });
+    font.load().then((loaded) => document.fonts.add(loaded)).catch(() => { /* fallback fonts */ });
+  }
+
   async _start() {
+    this._loadFont();
     this._render();
     await this._load();
     for (const ev of ["druck_assistant_print_started", "druck_assistant_print_finished", "druck_assistant_print_failed"]) {
@@ -697,8 +729,7 @@ class DruckAssistantPanel extends HTMLElement {
     if (!slots.length) {
       slotsCard.append(this._el("div", { class: "empty" }, this._t("no_slots")));
     } else {
-      const table = this._el("table", {});
-      table.append(this._el("tr", {}, ...["slot", "material", "assign_spool"].map((k) => this._el("th", {}, this._t(k)))));
+      const grid = this._el("div", { class: "slots" });
       for (const sl of slots) {
         const sel = this._el("select", { onchange: (e) => this._call({ type: "druck_assistant/spool_assign", slot_key: sl.key, spool_id: e.target.value || null }) },
           this._el("option", { value: "" }, this._t("none")),
@@ -709,12 +740,14 @@ class DruckAssistantPanel extends HTMLElement {
           }));
         if (!admin) sel.disabled = true;
         const dot = this._el("span", { class: "dot", style: `background:${/^#[0-9a-f]{6,8}$/i.test(sl.color || "") ? sl.color : "transparent"}` });
-        table.append(this._el("tr", {},
-          this._el("td", {}, sl.active ? "▶ " : "", sl.label, sl.tagged ? this._el("span", { class: "badge" }, "RFID") : ""),
-          this._el("td", {}, dot, `${sl.type || "–"}${sl.remain != null ? `, ${sl.remain} %` : ""}`),
-          this._el("td", {}, sel)));
+        const remain = sl.remain != null ? Math.max(0, Math.min(100, sl.remain)) : null;
+        grid.append(this._el("div", { class: "slot" + (sl.active ? " active" : "") },
+          this._el("div", { class: "top" }, dot, sl.label, sl.tagged ? this._el("span", { class: "badge" }, "RFID") : "",
+            this._el("span", { class: "sub" }, `${sl.type || "–"}${remain !== null ? ` · ${remain} %` : ""}`)),
+          remain !== null ? this._el("div", { class: "bar", style: "width:100%" }, this._el("div", { class: "fill" + (remain <= 15 ? " low" : ""), style: `width:${remain}%` })) : "",
+          this._el("label", { class: "field", style: "margin:0" }, this._el("span", {}, this._t("assign_spool")), sel)));
       }
-      slotsCard.append(table);
+      slotsCard.append(grid);
     }
     if (slots.length && admin) slotsCard.append(this._el("div", { class: "sub notice" }, this._t("correct_hint")));
     main.append(slotsCard);
@@ -725,10 +758,18 @@ class DruckAssistantPanel extends HTMLElement {
     const card = this._el("div", { class: "card" });
     const c = printer.current_print;
     const f = printer.filament;
+    const statusName = (status) => (this._t(`status_${status}`) === `status_${status}` ? status : this._t(`status_${status}`));
+    // The current stage (heating, auto bed leveling, printing, ...) follows its entity live.
+    const stage = printer.stage_entity
+      ? this._el("div", { class: "stage" }, `${this._t("stage_label")}: `,
+        this._el("strong", { "data-live-entity": printer.stage_entity }, this._entityText(printer.stage_entity) ?? "–"))
+      : null;
     if (!c) {
-      card.append(this._el("h2", {}, this._t("current")), this._el("div", { class: "sub" }, this._t("no_active_print")));
+      card.append(this._el("div", { class: "hd" }, this._el("h2", {}, this._t("current")), this._el("span", { class: "chip" }, this._t("idle"))),
+        this._el("div", { class: "sub" }, this._t("no_active_print")));
+      if (stage) card.append(stage);
       if (f && f.type) {
-        const line = this._el("div", { style: "margin-top:6px" });
+        const line = this._el("div", { style: "margin-top:10px" });
         if (f.color) line.append(this._el("span", { class: "dot", style: `background:${/^#[0-9a-f]{3,8}$/i.test(f.color) ? f.color : "transparent"}` }));
         line.append(`${f.name || f.type}, ${f.price_per_kg != null ? this._fmtMoney(f.price_per_kg, cur) + "/kg" : ""}${f.remain != null ? `, ${this._t("remaining", { value: f.remain })}` : ""}`);
         card.append(line);
@@ -741,14 +782,17 @@ class DruckAssistantPanel extends HTMLElement {
     const pct = known(c.progress) ? Math.max(0, Math.min(100, c.progress)) : null;
     const dot = /^#[0-9a-f]{6,8}$/i.test(c.color || "") ? this._el("span", { class: "dot", style: `background:${c.color}` }) : "";
 
-    card.append(this._el("h2", {}, this._t("current_print")),
-      this._el("div", { class: "print-title" }, c.name || this._t("unknown"),
-        this._el("span", { class: "badge stock" }, this._t(`status_${c.status}`) === `status_${c.status}` ? c.status : this._t(`status_${c.status}`))));
+    card.append(this._el("div", { class: "hd" }, this._el("h2", {}, this._t("current_print")),
+      this._el("span", { class: `chip ${c.status}` }, statusName(c.status))));
+    if (pct !== null) {
+      card.append(this._el("div", { class: "bignum" }, this._el("b", {}, this._fmtNum(pct, 0)), this._el("small", {}, "%")));
+    }
+    card.append(this._el("div", { class: "print-title" }, c.name || this._t("unknown")));
     if (pct !== null) {
       card.append(this._el("div", { class: "progress" },
-        this._el("div", { class: "bar wide" }, this._el("div", { class: "fill", style: `width:${pct}%` })),
-        this._el("span", {}, `${this._fmtNum(pct, 0)} %`)));
+        this._el("div", { class: "bar wide" }, this._el("div", { class: "fill", style: `width:${pct}%` }))));
     }
+    if (stage) card.append(stage);
     const tiles = [
       [this._t("elapsed"), elapsedMin !== null ? this._fmtDuration(elapsedMin) : "–"],
       [this._t("time_remaining"), known(c.remaining_min) ? this._fmtDuration(c.remaining_min) : "–"],
@@ -764,7 +808,7 @@ class DruckAssistantPanel extends HTMLElement {
       this._tile(this._t("cost_estimate"), money(c.total_cost), this._t("cost_hint")));
     card.append(grid);
     const spoolLine = [c.spool, c.material].filter(Boolean).join(" · ");
-    if (spoolLine) card.append(this._el("div", { class: "sub", style: "margin-top:8px" }, `${this._t("spool_label")}: `, dot, spoolLine));
+    if (spoolLine) card.append(this._el("div", { class: "sub", style: "margin-top:12px" }, `${this._t("spool_label")}: `, dot, spoolLine));
     return card;
   }
 
@@ -778,68 +822,121 @@ class DruckAssistantPanel extends HTMLElement {
   _render() {
     const root = this.shadowRoot;
     root.replaceChildren(this._el("style", {}, `
-      :host { display: block; background: var(--primary-background-color); color: var(--primary-text-color); min-height: 100vh; }
-      header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--app-header-background-color, var(--primary-color)); color: var(--app-header-text-color, #fff); }
-      header h1 { font-size: 20px; font-weight: 400; margin: 0; flex: 1; }
-      select { font: inherit; padding: 4px 8px; }
-      main { padding: 16px; max-width: 1100px; margin: 0 auto; }
-      .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
-      .print-title { font-size: 18px; margin: 2px 0 10px; }
-      .progress { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-      .bar.wide { width: auto; flex: 1; height: 8px; margin: 0; }
-      .tiles.small { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); margin-bottom: 0; }
+      :host {
+        --bg: #0b0d12; --panel: #14171e; --line: rgba(255,255,255,.065);
+        --tile: rgba(255,255,255,.032); --tile-line: rgba(255,255,255,.07);
+        --text: #f3f5f9; --muted: #8b91a1; --dim: #5d6373;
+        --green: #34d399; --orange: #fb923c; --gold: #f7b733; --red: #f87171; --blue: #60a5fa; --cyan: #38bdf8;
+        display: block; min-height: 100vh; background: var(--bg); color: var(--text); container-type: inline-size;
+        font-family: "Outfit", "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif; -webkit-font-smoothing: antialiased;
+        color-scheme: dark;
+      }
+      * { box-sizing: border-box; }
+      .wrap { padding: 18px 22px 28px; }
+      header { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; position: relative; }
+      header h1 { position: absolute; left: 0; margin: 0; font-size: 13px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--dim); }
+      header .printer-select { position: absolute; right: 0; }
+      @container (max-width: 900px) { header h1 { display: none; } header .printer-select { position: static; } }
+      select, input { font: inherit; color: var(--text); }
+      select { height: 38px; padding: 0 12px; border-radius: 13px; border: 1px solid var(--line); background: rgba(255,255,255,.05); }
+      select option { background: #171a21; color: var(--text); }
+      input { height: 38px; padding: 0 12px; border-radius: 13px; border: 1px solid var(--line); background: rgba(255,255,255,.04); }
+      input:focus, select:focus { outline: 2px solid rgba(56,189,248,.5); outline-offset: 1px; }
+      input[type=color] { padding: 3px; width: 56px; }
+      input[type=checkbox] { height: auto; }
+      .tabs { display: inline-flex; gap: 2px; padding: 4px; border-radius: 18px; border: 1px solid var(--line); background: rgba(255,255,255,.03); }
+      .tabs button { height: 36px; padding: 0 16px; margin: 0; border: 0; border-radius: 14px; background: transparent; color: var(--muted); font-size: 14.5px; font-weight: 500; }
+      .tabs button:hover { color: var(--text); }
+      .tabs button.active { background: rgba(255,255,255,.09); color: var(--text); font-weight: 600; }
+      main { max-width: 1500px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+      .grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 20px; align-items: start; }
+      .col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+      @container (max-width: 900px) { .grid { grid-template-columns: minmax(0, 1fr); } .wrap { padding: 12px 12px 24px; } }
+      .card { background: linear-gradient(180deg, #161920, #12151b); border: 1px solid var(--line); border-radius: 30px; padding: 20px 22px; margin: 0; overflow-x: auto; position: relative; }
+      .card h2, .dialog h2 { margin: 0 0 14px; font-size: 15px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+      .card .hd { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 34px; margin-bottom: 14px; }
+      .card .hd h2 { margin: 0; }
+      .chip { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px; border-radius: 999px; font-size: 13.5px; font-weight: 600; background: rgba(255,255,255,.06); border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+      .chip.running { color: var(--green); background: rgba(52,211,153,.12); border-color: rgba(52,211,153,.3); }
+      .chip.pause { color: var(--orange); background: rgba(251,146,60,.1); border-color: rgba(251,146,60,.3); }
+      .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; }
+      .tile { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 15px; background: var(--tile); border: 1px solid var(--tile-line); min-width: 0; }
+      .label { font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .value { font-size: 19px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+      .tiles.small { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       .tiles.small .value { font-size: 18px; }
-      .tile, .card { background: var(--card-background-color); border-radius: var(--ha-card-border-radius, 12px); box-shadow: var(--ha-card-box-shadow, 0 1px 3px rgba(0,0,0,.2)); padding: 12px 16px; }
-      .label { color: var(--secondary-text-color); font-size: 13px; }
-      .value { font-size: 24px; margin-top: 4px; }
-      .sub { color: var(--secondary-text-color); font-size: 12px; margin-top: 2px; }
-      .card { margin-bottom: 16px; overflow-x: auto; }
-      .card h2 { font-size: 16px; font-weight: 500; margin: 0 0 8px; }
+      .tiles.small .label { white-space: normal; }
+      @container (max-width: 560px) { .tiles.small { grid-template-columns: repeat(2, minmax(0, 1fr)); } .tiles.small .tile:last-child { grid-column: 1 / -1; } }
+      .sub { color: var(--muted); font-size: 12px; font-weight: 500; }
+      .notice { padding: 0 0 12px; }
+      .bignum { display: flex; align-items: baseline; gap: 4px; line-height: 1; margin: 4px 0 2px; }
+      .bignum b { font-size: 84px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+      .bignum small { font-size: 30px; font-weight: 500; color: var(--muted); }
+      .print-title { font-size: 18px; font-weight: 600; margin: 0 0 12px; color: rgba(243,245,249,.9); overflow-wrap: anywhere; }
+      .stage { margin: 0 0 12px; color: var(--muted); font-size: 14.5px; }
+      .stage strong { color: var(--text); font-weight: 600; }
+      .progress { display: flex; align-items: center; gap: 10px; margin: 6px 0 14px; }
+      .bar { position: relative; width: 120px; height: 8px; border-radius: 6px; background: rgba(255,255,255,.07); margin-bottom: 4px; overflow: hidden; }
+      .bar.wide { width: auto; flex: 1; height: 12px; margin: 0; }
+      .bar .fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, #34d399, #5eead4); }
+      .bar .fill.low { background: linear-gradient(90deg, #f87171, #fb923c); }
       table { width: 100%; border-collapse: collapse; font-size: 14px; }
-      th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--divider-color); white-space: nowrap; }
-      th { color: var(--secondary-text-color); font-weight: 500; }
+      th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+      th { font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; font-weight: 600; color: var(--muted); }
+      tr:last-child td { border-bottom: 0; }
       td.num, th.num { text-align: right; }
-      .dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; vertical-align: middle; margin-right: 6px; border: 1px solid var(--divider-color); }
-      .ok { color: var(--success-color, #4caf50); } .fail { color: var(--error-color, #f44336); }
-      .tabs { display: flex; gap: 4px; }
-      .tabs button { background: transparent; color: inherit; border: 0; border-bottom: 2px solid transparent; padding: 6px 10px; font: inherit; cursor: pointer; opacity: .8; }
-      .tabs button.active { border-bottom-color: currentColor; opacity: 1; }
-      button { font: inherit; padding: 4px 12px; margin-right: 6px; border-radius: 6px; border: 1px solid var(--divider-color); background: var(--card-background-color); color: var(--primary-text-color); cursor: pointer; }
-      button.primary { background: var(--primary-color); color: var(--text-primary-color, #fff); border-color: transparent; }
-      .field { display: flex; flex-direction: column; gap: 2px; margin-bottom: 10px; font-size: 13px; color: var(--secondary-text-color); }
-      .field input { font: inherit; padding: 6px 8px; color: var(--primary-text-color); background: var(--card-background-color); border: 1px solid var(--divider-color); border-radius: 6px; }
-      .filter { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0; }
-      .filter input, .filter select { font: inherit; padding: 5px 8px; color: var(--primary-text-color); background: var(--card-background-color); border: 1px solid var(--divider-color); border-radius: 6px; }
-      .filter-search { flex: 1; min-width: 200px; }
-      .dialog.form { max-width: 480px; }
-      .catalog { margin-bottom: 12px; padding-bottom: 4px; border-bottom: 1px solid var(--divider-color); }
-      .field select { font: inherit; padding: 6px 8px; color: var(--primary-text-color); background: var(--card-background-color); border: 1px solid var(--divider-color); border-radius: 6px; }
+      tr.sub-row td { font-size: 13px; color: var(--muted); background: rgba(255,255,255,.02); }
+      tr.sub-row td.indent { padding-left: 38px; }
+      td.link { cursor: pointer; }
+      td.link:hover { color: var(--green); }
+      .chevron { display: inline-block; width: 14px; color: var(--dim); }
+      .dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; vertical-align: middle; margin-right: 8px; border: 1px solid rgba(255,255,255,.25); }
+      .ok { color: var(--green); } .fail { color: var(--red); }
+      .badge { margin-left: 8px; padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; background: rgba(255,255,255,.07); color: var(--muted); border: 1px solid var(--line); }
+      .badge.stock { color: var(--cyan); background: rgba(56,189,248,.1); border-color: rgba(56,189,248,.3); }
+      button { font: inherit; font-size: 14px; font-weight: 600; height: 38px; padding: 0 14px; margin-right: 8px; border-radius: 13px; border: 1px solid var(--line); background: rgba(255,255,255,.04); color: var(--muted); cursor: pointer; }
+      button:hover { color: var(--text); background: rgba(255,255,255,.08); }
+      button:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+      button.primary { background: rgba(52,211,153,.14); border-color: rgba(52,211,153,.35); color: var(--green); }
+      button.primary:hover { background: rgba(52,211,153,.22); }
+      .icon-btn { width: 36px; height: 36px; padding: 0; margin: 0 2px 0 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; background: transparent; border-color: transparent; color: var(--muted); }
+      .icon-btn:hover { background: rgba(255,255,255,.07); border-color: var(--line); color: var(--text); }
+      .icon-btn.danger:hover { color: var(--red); }
+      .icon-btn svg { width: 19px; height: 19px; }
+      .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; font-size: 12.5px; letter-spacing: .04em; color: var(--muted); }
+      .field input, .field select { width: 100%; letter-spacing: 0; font-size: 15px; }
+      .field.check { flex-direction: row; align-items: center; gap: 8px; }
       .row { display: flex; align-items: center; gap: 8px; }
       .row select { flex: 1; }
-      summary { cursor: pointer; font-weight: 500; }
-      details.card[open] summary { margin-bottom: 8px; }
-      .overlay { position: fixed; inset: 0; z-index: 10; background: rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center; padding: 16px; }
-      .dialog { background: var(--card-background-color, Canvas); color: var(--primary-text-color, CanvasText); border-radius: var(--ha-card-border-radius, 12px); padding: 16px 20px; width: 100%; max-width: 880px; max-height: 90vh; overflow: auto; }
-      .dialog h2 { margin: 0 0 4px; font-size: 18px; }
-      .dialog h3 { margin: 16px 0 6px; font-size: 14px; font-weight: 500; }
-      .dialog .field { max-width: 260px; }
-      .icon-btn { width: 32px; height: 32px; padding: 0; margin-right: 2px; display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 50%; background: transparent; color: var(--secondary-text-color); cursor: pointer; }
-      .icon-btn:hover { background: var(--divider-color); color: var(--primary-text-color); }
-      .icon-btn.danger:hover { color: var(--error-color, #f44336); }
-      .icon-btn svg { width: 20px; height: 20px; }
-      td.link { cursor: pointer; }
-      td.link:hover { text-decoration: underline; }
-      .chevron { display: inline-block; width: 14px; color: var(--secondary-text-color); }
-      tr.sub-row td { font-size: 13px; color: var(--secondary-text-color); border-bottom-style: dashed; }
-      tr.sub-row td.indent { padding-left: 38px; }
-      .badge.stock { background: var(--primary-color); color: var(--text-primary-color, #fff); }
-      .badge { margin-left: 6px; padding: 0 6px; border-radius: 8px; font-size: 11px; background: var(--divider-color); color: var(--secondary-text-color); }
-      .notice { padding: 0 0 12px; }
-      .bar { width: 120px; height: 6px; border-radius: 3px; background: var(--divider-color); margin-bottom: 4px; }
-      .bar .fill { height: 100%; border-radius: 3px; background: var(--success-color, #4caf50); }
-      .bar .fill.low { background: var(--error-color, #f44336); }
-      .empty, .error { color: var(--secondary-text-color); padding: 16px; }
-      .error { color: var(--error-color, #f44336); }
+      .filter { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0; }
+      .filter-search { flex: 1; min-width: 200px; }
+      .filter .sub { margin-left: 4px; }
+      .catalog { margin-bottom: 14px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+      .catalog h3, .dialog h3 { margin: 0 0 6px; font-size: 13px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+      details.card summary { cursor: pointer; font-size: 15px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+      details.card[open] summary { margin-bottom: 12px; }
+      .overlay { position: fixed; inset: 0; z-index: 10; background: rgba(5,6,9,.62); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; padding: 16px; }
+      .dialog { background: linear-gradient(180deg, #171a21, #111419); color: var(--text); border: 1px solid rgba(255,255,255,.09); border-radius: 30px; box-shadow: 0 30px 80px rgba(0,0,0,.6); padding: 22px 24px; width: 100%; max-width: 880px; max-height: 90vh; overflow: auto; }
+      .dialog.form { max-width: 480px; }
+      .dialog .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+      .dialog .actions button { margin: 0; }
+      .history { display: flex; flex-direction: column; gap: 8px; }
+      .hrow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 11px 14px; border-radius: 18px; background: var(--tile); border: 1px solid var(--tile-line); }
+      .hrow .when { display: flex; flex-direction: column; align-items: center; min-width: 52px; font-size: 12px; color: var(--muted); line-height: 1.25; }
+      .hrow .when b { font-size: 15px; color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
+      .hrow .what { min-width: 0; }
+      .hrow .what b { display: block; font-size: 15.5px; font-weight: 600; overflow-wrap: anywhere; }
+      .hrow .cost { text-align: right; white-space: nowrap; }
+      .hrow .cost b { display: block; font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+      .hrow.failed { border-color: rgba(248,113,113,.25); }
+      .slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+      .slot { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; border-radius: 20px; background: var(--tile); border: 1px solid var(--tile-line); }
+      .slot.active { border-color: rgba(52,211,153,.4); background: rgba(52,211,153,.06); }
+      .slot .top { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-weight: 600; white-space: nowrap; }
+      .slot .top .sub { margin-left: auto; }
+      .slot select { width: 100%; }
+      .empty, .error { color: var(--dim); font-size: 14px; padding: 14px 4px; }
+      .error { color: var(--red); }
     `));
 
     const printers = this._data?.printers || [];
@@ -853,6 +950,7 @@ class DruckAssistantPanel extends HTMLElement {
           if (p.entry_id === this._selected) o.selected = true;
           return o;
         }));
+      sel.classList.add("printer-select");
       header.append(sel);
     }
     const tabs = this._el("div", { class: "tabs" },
@@ -860,11 +958,13 @@ class DruckAssistantPanel extends HTMLElement {
         class: this._tab === k ? "active" : "",
         onclick: () => { this._tab = k; this._editing = null; this._render(); },
       }, this._t(`tab_${k}`))));
-    header.append(tabs);
-    root.append(header);
+    header.insertBefore(tabs, header.querySelector(".printer-select"));
+    const wrap = this._el("div", { class: "wrap" });
+    root.append(wrap);
+    wrap.append(header);
 
     const main = this._el("main");
-    root.append(main);
+    wrap.append(main);
 
     if (this._error) { main.append(this._el("div", { class: "error" }, this._error)); return; }
     if (!this._data) { main.append(this._el("div", { class: "empty" }, "…")); return; }
@@ -875,42 +975,42 @@ class DruckAssistantPanel extends HTMLElement {
     const t = printer.totals;
     const cur = printer.currency;
     const rate = t.prints ? Math.round((t.successful / t.prints) * 100) : 0;
-    main.append(this._el("div", { class: "tiles" },
-      this._tile(this._t("prints"), t.prints, this._t("success_rate", { rate })),
-      this._tile(this._t("filament"), `${this._fmtNum(t.weight_g, 0)} g`),
-      this._tile(this._t("energy"), `${this._fmtNum(t.energy_kwh, 2)} kWh`, `${this._fmtNum(printer.price_per_kwh, 4)} ${cur}/kWh`),
-      this._tile(this._t("total_cost"), this._fmtMoney(t.cost, cur),
-        this._t("cost_split", { filament: this._fmtMoney(t.filament_cost ?? t.cost - t.energy_cost, cur), energy: this._fmtMoney(t.energy_cost, cur) })),
-    ));
-
-    main.append(this._renderCurrentPrint(printer, cur));
+    const totals = this._el("div", { class: "card" }, this._el("h2", {}, this._t("totals")),
+      this._el("div", { class: "tiles" },
+        this._tile(this._t("prints"), t.prints, this._t("success_rate", { rate })),
+        this._tile(this._t("filament"), `${this._fmtNum(t.weight_g, 0)} g`),
+        this._tile(this._t("energy"), `${this._fmtNum(t.energy_kwh, 2)} kWh`, `${this._fmtNum(printer.price_per_kwh, 4)} ${cur}/kWh`),
+        this._tile(this._t("total_cost"), this._fmtMoney(t.cost, cur),
+          this._t("cost_split", { filament: this._fmtMoney(t.filament_cost ?? t.cost - t.energy_cost, cur), energy: this._fmtMoney(t.energy_cost, cur) }))));
 
     const hist = this._el("div", { class: "card" }, this._el("h2", {}, this._t("history")));
     if (!printer.history.length) {
       hist.append(this._el("div", { class: "empty" }, this._t("no_history")));
     } else {
-      const table = this._el("table", {});
-      table.append(this._el("tr", {},
-        ...["end", "name", "result", "duration", "material", "weight", "filament_cost", "electricity_cost", "total"].map((k) => this._t(k)).map((h, i) =>
-          this._el("th", { class: i >= 5 ? "num" : "" }, h))));
+      const list = this._el("div", { class: "history" });
       for (const r of printer.history) {
         const ok = r.result !== "failed";
-        table.append(this._el("tr", {},
-          this._el("td", {}, this._fmtDate(r.finished)),
-          this._el("td", {}, r.name),
-          this._el("td", { class: ok ? "ok" : "fail" }, this._t(ok ? "success" : "failed")),
-          this._el("td", {}, this._fmtDuration(r.duration_min)),
-          this._el("td", {}, r.material || "–"),
-          this._el("td", { class: "num" }, `${this._fmtNum(r.weight_g)} g`),
-          this._el("td", { class: "num", title: r.price_per_kg ? `${this._fmtMoney(r.price_per_kg, cur)}/kg` : "" },
-            this._fmtMoney(r.filament_cost ?? r.cost - (r.energy_cost || 0), cur)),
-          this._el("td", { class: "num", title: `${this._fmtNum(r.energy_kwh || 0, 3)} kWh` },
-            this._fmtMoney(r.energy_cost || 0, cur), this._el("div", { class: "sub" }, `${this._fmtNum(r.energy_kwh || 0, 2)} kWh`)),
-          this._el("td", { class: "num" }, this._fmtMoney(r.cost, cur))));
+        const finished = new Date(r.finished);
+        const lang = this._hass.locale?.language;
+        const filamentCost = r.filament_cost ?? r.cost - (r.energy_cost || 0);
+        list.append(this._el("div", { class: "hrow" + (ok ? "" : " failed") },
+          this._el("div", { class: "when" },
+            this._el("span", {}, finished.toLocaleDateString(lang, { day: "2-digit", month: "short" })),
+            this._el("b", {}, finished.toLocaleTimeString(lang, { hour: "2-digit", minute: "2-digit" }))),
+          this._el("div", { class: "what" },
+            this._el("b", {}, r.name),
+            this._el("span", { class: "sub" },
+              [this._fmtDuration(r.duration_min), r.material || null, `${this._fmtNum(r.weight_g)} g`, `${this._fmtNum(r.energy_kwh || 0, 2)} kWh`].filter(Boolean).join(" · ")),
+            ok ? "" : this._el("span", { class: "badge", style: "color:var(--red);margin-left:8px" }, this._t("failed"))),
+          this._el("div", { class: "cost", title: this._t("cost_split", { filament: this._fmtMoney(filamentCost, cur), energy: this._fmtMoney(r.energy_cost || 0, cur) }) },
+            this._el("b", {}, this._fmtMoney(r.cost, cur)),
+            this._el("span", { class: "sub" }, `${this._fmtMoney(filamentCost, cur)} + ${this._fmtMoney(r.energy_cost || 0, cur)}`))));
       }
-      hist.append(table);
+      hist.append(list);
     }
-    main.append(hist);
+    main.append(this._el("div", { class: "grid" },
+      this._el("div", { class: "col" }, this._renderCurrentPrint(printer, cur)),
+      this._el("div", { class: "col" }, totals, hist)));
   }
 }
 
