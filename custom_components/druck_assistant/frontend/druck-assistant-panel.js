@@ -122,6 +122,7 @@ const TRANSLATIONS = {
     tab_stats: "Statistics",
     stats_materials: "By material",
     stats_months: "Cost per month",
+    energy_cost: "Electricity cost",
     stats_top: "Most expensive prints",
     stats_waste: "Failed prints",
     stats_prices: "Price per kg of the purchases",
@@ -273,6 +274,7 @@ const TRANSLATIONS = {
     tab_stats: "Auswertung",
     stats_materials: "Nach Material",
     stats_months: "Kosten pro Monat",
+    energy_cost: "Stromkosten",
     stats_top: "Teuerste Drucke",
     stats_waste: "Fehlgeschlagene Drucke",
     stats_prices: "Preis pro kg der Einkäufe",
@@ -1091,15 +1093,23 @@ class DruckAssistantPanel extends HTMLElement {
       const d = new Date(r.finished);
       if (Number.isNaN(d.getTime())) continue;
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-      months.set(key, (months.get(key) || 0) + (r.cost || 0));
+      const m = months.get(key) || { filament: 0, energy: 0 };
+      m.energy += r.energy_cost || 0;
+      m.filament += filamentCost(r) || 0;
+      months.set(key, m);
     }
     const shown = [...months.entries()].sort().slice(-6);
-    const top = Math.max(...shown.map(([, v]) => v), 0.01);
+    const top = Math.max(...shown.map(([, m]) => m.filament + m.energy), 0.01);
     const mon = this._el("div", { class: "card" }, this._el("h2", {}, this._t("stats_months")));
-    for (const [key, value] of shown) {
-      mon.append(this._el("div", { class: "mbar" }, this._el("span", {}, key),
-        this._el("span", { class: "track" }, this._el("i", { style: `width:${Math.round((value / top) * 100)}%` })),
-        this._el("span", {}, this._fmtMoney(value, cur))));
+    mon.append(this._el("div", { class: "mlegend" },
+      this._el("span", {}, this._el("i", { class: "filament" }), this._t("filament_cost")),
+      this._el("span", {}, this._el("i", { class: "energy" }), this._t("energy_cost"))));
+    for (const [key, m] of shown) {
+      const pct = (v) => `width:${(v / top) * 100}%`;
+      mon.append(this._el("div", { class: "mbar", title: this._t("cost_split", { filament: this._fmtMoney(m.filament, cur), energy: this._fmtMoney(m.energy, cur) }) }, this._el("span", {}, key),
+        this._el("span", { class: "track" }, this._el("i", { class: "filament", style: pct(m.filament) }), this._el("i", { class: "energy", style: pct(m.energy) })),
+        this._el("span", {}, this._el("b", {}, this._fmtMoney(m.filament + m.energy, cur)),
+          this._el("span", { class: "sub" }, `${this._fmtMoney(m.filament, cur)} + ${this._fmtMoney(m.energy, cur)}`))));
     }
 
     const exp = this._el("div", { class: "card" }, this._el("h2", {}, this._t("stats_top")));
@@ -1444,8 +1454,14 @@ class DruckAssistantPanel extends HTMLElement {
       .toolbar button { margin: 0; }
       .under { color: var(--red); font-weight: 600; }
       .mbar { display: grid; grid-template-columns: 70px minmax(0, 1fr) auto; align-items: center; gap: 10px; margin: 6px 0; font-size: 13px; }
-      .mbar .track { height: 10px; border-radius: 999px; background: rgba(255,255,255,.06); overflow: hidden; }
-      .mbar .track i { display: block; height: 100%; background: var(--cyan); border-radius: 999px; }
+      .mbar .track { display: flex; height: 10px; border-radius: 999px; background: rgba(255,255,255,.06); overflow: hidden; }
+      .mbar .track i { display: block; height: 100%; }
+      .mbar .sub { display: block; font-size: 11px; opacity: .7; text-align: right; }
+      .mbar > span:last-child { text-align: right; }
+      .mbar i.filament, .mlegend i.filament { background: var(--cyan); }
+      .mbar i.energy, .mlegend i.energy { background: #fbbf24; }
+      .mlegend { display: flex; gap: 14px; font-size: 12px; opacity: .8; margin-bottom: 4px; }
+      .mlegend i { display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 5px; }
       .camera { display: block; width: 100%; border-radius: 18px; background: #000; aspect-ratio: 16 / 9; object-fit: contain; }
       .hrow .spools { display: block; }
       .cover { display: block; max-width: 100%; max-height: 220px; margin: 4px auto 12px; border-radius: 18px; object-fit: contain; }

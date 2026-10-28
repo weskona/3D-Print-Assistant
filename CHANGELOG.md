@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0-beta.2] - 2026-10-29
+
+### Changed
+
+- Statistics tab: the cost per month is split into filament and electricity (two-color bar, legend and both amounts per month).
+
 ## [0.9.0-beta.1] - 2026-10-28
 
 ### Added

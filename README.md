@@ -82,7 +82,7 @@ at your consumption of the last 30 days, with a button that copies the shopping 
 once when a type falls below its minimum.
 
 **Corrections, statistics and lists:** the arrows button of a print in the history charges it to another spool and moves the
-filament. The "Statistics" tab shows cost, filament, failure rate and wasted money per material, the cost per month, the most
+filament. The "Statistics" tab shows cost, filament, failure rate and wasted money per material, the cost per month (split into filament and electricity), the most
 expensive prints and the price per kg of your purchases. Spools and the history can be exported as CSV, and spools can be imported from a CSV file.
 A spool is shared by all printers.
 
