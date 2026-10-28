@@ -38,6 +38,7 @@ const TRANSLATIONS = {
     electricity_cost: "Electricity cost",
     total: "Total",
     cost_split: "Filament {filament} · Electricity {energy}",
+    stage_label: "Current stage",
     current_print: "Current print",
     status_running: "Printing",
     status_pause: "Paused",
@@ -131,6 +132,7 @@ const TRANSLATIONS = {
     electricity_cost: "Stromkosten",
     total: "Gesamt",
     cost_split: "Filament {filament} · Strom {energy}",
+    stage_label: "Aktueller Arbeitsschritt",
     current_print: "Aktueller Druck",
     status_running: "Druckt",
     status_pause: "Pausiert",
@@ -221,6 +223,22 @@ class DruckAssistantPanel extends HTMLElement {
     const first = !this._hass;
     this._hass = hass;
     if (first) this._start();
+    else this._updateLive();
+  }
+
+  /** The state of an entity as Home Assistant shows it (translated), or null if unknown. */
+  _entityText(entityId) {
+    const state = entityId ? this._hass?.states?.[entityId] : null;
+    if (!state || state.state === "unavailable" || state.state === "unknown") return null;
+    return this._hass.formatEntityState ? this._hass.formatEntityState(state) : state.state;
+  }
+
+  /** Refresh the live values (they follow the entity state, not the 10 second reload). */
+  _updateLive() {
+    for (const el of this.shadowRoot.querySelectorAll("[data-live-entity]")) {
+      const text = this._entityText(el.dataset.liveEntity) ?? "–";
+      if (el.textContent !== text) el.textContent = text;
+    }
   }
 
   set narrow(v) { this._narrow = v; }
@@ -725,8 +743,14 @@ class DruckAssistantPanel extends HTMLElement {
     const card = this._el("div", { class: "card" });
     const c = printer.current_print;
     const f = printer.filament;
+    // The current stage (heating, auto bed leveling, printing, ...) follows its entity live.
+    const stage = printer.stage_entity
+      ? this._el("div", { class: "stage" }, `${this._t("stage_label")}: `,
+        this._el("strong", { "data-live-entity": printer.stage_entity }, this._entityText(printer.stage_entity) ?? "–"))
+      : null;
     if (!c) {
       card.append(this._el("h2", {}, this._t("current")), this._el("div", { class: "sub" }, this._t("no_active_print")));
+      if (stage) card.append(stage);
       if (f && f.type) {
         const line = this._el("div", { style: "margin-top:6px" });
         if (f.color) line.append(this._el("span", { class: "dot", style: `background:${/^#[0-9a-f]{3,8}$/i.test(f.color) ? f.color : "transparent"}` }));
@@ -744,6 +768,7 @@ class DruckAssistantPanel extends HTMLElement {
     card.append(this._el("h2", {}, this._t("current_print")),
       this._el("div", { class: "print-title" }, c.name || this._t("unknown"),
         this._el("span", { class: "badge stock" }, this._t(`status_${c.status}`) === `status_${c.status}` ? c.status : this._t(`status_${c.status}`))));
+    if (stage) card.append(stage);
     if (pct !== null) {
       card.append(this._el("div", { class: "progress" },
         this._el("div", { class: "bar wide" }, this._el("div", { class: "fill", style: `width:${pct}%` })),
@@ -784,6 +809,7 @@ class DruckAssistantPanel extends HTMLElement {
       select { font: inherit; padding: 4px 8px; }
       main { padding: 16px; max-width: 1100px; margin: 0 auto; }
       .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
+      .stage { margin: 0 0 10px; }
       .print-title { font-size: 18px; margin: 2px 0 10px; }
       .progress { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
       .bar.wide { width: auto; flex: 1; height: 8px; margin: 0; }

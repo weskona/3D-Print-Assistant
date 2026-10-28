@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0-beta.2] - 2026-10-28
+
+### Added
+
+- The Overview tab shows the current stage of the printer (ha-bambulab's "Current stage" sensor, e.g. heating the hotend, auto bed leveling, printing) live in the "Current print" card, and in the idle card as well. The value follows the entity directly, so it changes the moment Home Assistant gets the new state, without waiting for the panel reload, and it uses Home Assistant's own translated state names.
+
 ## [0.6.0-beta.1] - 2026-10-26
 
 ### Added
@@ -202,7 +208,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Filament prices per type (e.g. `PLA=20`) in the options, sensor for the current filament including price per kg. Cost sensors in euro.
 - GitHub workflow that creates a tag and release after a push to `main`.
 
-[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.6.0-beta.1...HEAD
+[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.6.0-beta.2...HEAD
+[0.6.0-beta.2]: https://github.com/weskona/3D-Print-Assistant/compare/v0.6.0-beta.1...v0.6.0-beta.2
 [0.6.0-beta.1]: https://github.com/weskona/3D-Print-Assistant/compare/v0.5.0-beta.7...v0.6.0-beta.1
 [0.5.0-beta.7]: https://github.com/weskona/3D-Print-Assistant/compare/v0.5.0-beta.6...v0.5.0-beta.7
 [0.5.0-beta.6]: https://github.com/weskona/3D-Print-Assistant/compare/v0.5.0-beta.5...v0.5.0-beta.6
