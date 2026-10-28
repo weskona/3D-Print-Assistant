@@ -139,7 +139,7 @@ def ws_import_ams(
     hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
 ) -> None:
     """Create or link spools for everything currently loaded in the AMS."""
-    counts = {"created": 0, "assigned": 0, "adopted": 0}
+    counts = {"created": 0, "assigned": 0, "adopted": 0, "synced": 0}
     for entry in hass.config_entries.async_loaded_entries(DOMAIN):
         for action, items in entry.runtime_data.import_from_ams(
             include_untagged=True

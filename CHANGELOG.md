@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0-beta.5] - 2026-10-28
+
+### Fixed
+
+- A new AMS spool stayed at its full weight: the AMS first reports an unknown remaining amount, so the spool was created as full, and the value reported a little later was never taken over. A spool that is still exactly full now takes the remaining amount the AMS reports; spools whose weight is tracked by prints are not touched.
+
 ## [0.7.0-beta.4] - 2026-10-28
 
 ### Fixed

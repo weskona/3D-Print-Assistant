@@ -248,7 +248,7 @@ class SpoolStore:
         """Create or link a spool for an AMS slot from ha-bambulab tray attributes.
 
         Returns (action, spool) with action one of "created", "assigned",
-        "adopted", "skipped". New spools are matched against the stock first
+        "adopted", "synced", "skipped". New spools are matched against the stock first
         (see find_stock), so a pre-entered 4-pack is used up instead of duplicated. Spools with an RFID tag are matched by tag, so the
         same spool is recognized when it moves to another slot. Untagged spools
         are only imported when include_untagged is set (manual import).
@@ -268,7 +268,7 @@ class SpoolStore:
             known = self.find_by_rfid(rfid)
             if known is not None:
                 if current is not None and current.id == known.id:
-                    return "skipped", known
+                    return ("synced" if self._sync_remaining(known, attrs) else "skipped"), known
                 if known.archived:
                     # An archived spool is still in the AMS (e.g. just ran empty).
                     # Never bring it back automatically: restore it from the archive.
@@ -292,6 +292,25 @@ class SpoolStore:
         spool = self.save_spool(spool_data_from_tray(attrs, rfid))
         self.assign(slot, spool.id)
         return "created", spool
+
+    @staticmethod
+    def _sync_remaining(spool: Spool, attrs: dict[str, Any]) -> bool:
+        """Take the AMS remaining amount for a spool that still counts as full.
+
+        A new spool is first reported with an unknown remaining amount (-1), so it
+        is created as full; the real value follows a little later. Only a spool
+        that is still exactly full is corrected, never one tracked by prints.
+        """
+        remain = attrs.get("remain")
+        if (
+            not attrs.get("remain_enabled", True)
+            or not isinstance(remain, (int, float))
+            or not 0 <= remain < 100
+            or spool.remaining_g != spool.initial_weight_g
+        ):
+            return False
+        spool.remaining_g = round(spool.initial_weight_g * remain / 100, 1)
+        return True
 
     def delete_spool(self, spool_id: str) -> None:
         if self.spools.pop(spool_id, None) is None:

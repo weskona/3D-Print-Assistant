@@ -228,7 +228,7 @@ class PrintTracker:
     def import_from_ams(self, *, include_untagged: bool) -> dict[str, list[dict[str, Any]]]:
         """Create or link spools for the current AMS contents."""
         result: dict[str, list[dict[str, Any]]] = {
-            "created": [], "assigned": [], "adopted": [],
+            "created": [], "assigned": [], "adopted": [], "synced": [],
         }
         for key, entity_id in self.slot_entities().items():
             state = self.hass.states.get(entity_id)
