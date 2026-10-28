@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- AMS tab: the spool list of a slot shows color, grams left, location and the slot a spool already sits in, so spools with the same name can be told apart; spools of the slot's material come first.
 - Statistics tab: the cost per month is split into filament and electricity (two-color bar, legend and both amounts per month).
 
 ## [0.9.0-beta.1] - 2026-10-28

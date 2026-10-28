@@ -82,6 +82,9 @@ const TRANSLATIONS = {
     no_spools: "No spools yet. Add your first spool.",
     no_slots: "No AMS or external spool slots found for this printer.",
     assign_spool: "Spool",
+    in_slot: "in {slot}",
+    color_black: "black", color_white: "white", color_gray: "gray", color_red: "red", color_orange: "orange", color_yellow: "yellow",
+    color_green: "green", color_cyan: "cyan", color_blue: "blue", color_purple: "purple", color_pink: "pink", color_brown: "brown",
     none: "none",
     admin_only: "Only administrators can change the filament inventory.",
     price: "Price",
@@ -234,6 +237,9 @@ const TRANSLATIONS = {
     no_spools: "Noch keine Spulen. Lege deine erste Spule an.",
     no_slots: "Keine AMS- oder Externe-Spule-Slots für diesen Drucker gefunden.",
     assign_spool: "Spule",
+    in_slot: "in {slot}",
+    color_black: "schwarz", color_white: "weiß", color_gray: "grau", color_red: "rot", color_orange: "orange", color_yellow: "gelb",
+    color_green: "grün", color_cyan: "türkis", color_blue: "blau", color_purple: "violett", color_pink: "rosa", color_brown: "braun",
     none: "keine",
     admin_only: "Nur Administratoren können den Filamentbestand ändern.",
     price: "Preis",
@@ -1231,6 +1237,40 @@ class DruckAssistantPanel extends HTMLElement {
     input.click();
   }
 
+  // rough color name from an #rrggbb value, so spools with the same name can be told apart
+  _colorName(hex) {
+    const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i.exec(hex || "");
+    if (!m) return "";
+    const [r, g, b] = [m[1], m[2], m[3]].map((x) => parseInt(x, 16) / 255);
+    const max = Math.max(r, g, b), min = Math.min(r, g, b), l = (max + min) / 2, d = max - min;
+    const sat = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
+    let key;
+    if (l < 0.13) key = "black";
+    else if (l > 0.9 && sat < 0.5) key = "white";
+    else if (sat < 0.15) key = l > 0.8 ? "white" : "gray";
+    else {
+      let h = d === 0 ? 0 : max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+      h = (h * 60 + 360) % 360;
+      if (h < 15 || h >= 345) key = l > 0.7 ? "pink" : "red";
+      else if (h < 40) key = l < 0.42 ? "brown" : "orange";
+      else if (h < 70) key = "yellow";
+      else if (h < 165) key = "green";
+      else if (h < 195) key = "cyan";
+      else if (h < 255) key = "blue";
+      else if (h < 295) key = "purple";
+      else key = "pink";
+    }
+    return this._t(`color_${key}`);
+  }
+
+  // one line that tells spools of the same product apart: name, color, grams left and the slot it sits in
+  _spoolOption(sp, slots) {
+    const slot = slots.find((x) => x.spool_id === sp.id);
+    const parts = [sp.name, sp.name.toLowerCase().includes(String(sp.material).toLowerCase()) ? "" : sp.material, this._colorName(sp.color),
+      `${this._fmtNum(sp.remaining_g, 0)} g`, sp.location || "", slot ? this._t("in_slot", { slot: /(AMS|Ext).*$/i.exec(slot.label)?.[0] || slot.label }) : ""];
+    return parts.filter(Boolean).join(" · ");
+  }
+
   _renderAms(main, printer) {
     const admin = this._isAdmin();
     if (this._notice) main.append(this._el("div", { class: this._noticeOk ? "sub notice" : "error" }, this._notice));
@@ -1246,8 +1286,8 @@ class DruckAssistantPanel extends HTMLElement {
       for (const sl of slots) {
         const sel = this._el("select", { onchange: (e) => this._call({ type: "druck_assistant/spool_assign", slot_key: sl.key, spool_id: e.target.value || null }) },
           this._el("option", { value: "" }, this._t("none")),
-          ...activeSpools.map((sp) => {
-            const o = this._el("option", { value: sp.id }, `${sp.name} (${sp.material})`);
+          ...[...activeSpools].sort((a, b) => (b.material === sl.type) - (a.material === sl.type)).map((sp) => {
+            const o = this._el("option", { value: sp.id }, this._spoolOption(sp, slots));
             if (sp.id === sl.spool_id) o.selected = true;
             return o;
           }));
