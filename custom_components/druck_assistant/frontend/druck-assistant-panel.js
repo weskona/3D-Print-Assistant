@@ -1263,10 +1263,16 @@ class DruckAssistantPanel extends HTMLElement {
     return this._t(`color_${key}`);
   }
 
+  // the color as the user wrote it into the notes ("Plum (11204)"), else the rough name of the color value
+  _colorLabel(sp) {
+    const note = String(sp.notes || "").split("\n")[0].trim();
+    return note ? (note.length > 40 ? `${note.slice(0, 39)}…` : note) : this._colorName(sp.color);
+  }
+
   // one line that tells spools of the same product apart: name, color, grams left and the slot it sits in
   _spoolOption(sp, slots) {
     const slot = slots.find((x) => x.spool_id === sp.id);
-    const parts = [sp.name, sp.name.toLowerCase().includes(String(sp.material).toLowerCase()) ? "" : sp.material, this._colorName(sp.color),
+    const parts = [sp.name, sp.name.toLowerCase().includes(String(sp.material).toLowerCase()) ? "" : sp.material, this._colorLabel(sp),
       `${this._fmtNum(sp.remaining_g, 0)} g`, sp.location || "", slot ? this._t("in_slot", { slot: /(AMS|Ext).*$/i.exec(slot.label)?.[0] || slot.label }) : ""];
     return parts.filter(Boolean).join(" · ");
   }
