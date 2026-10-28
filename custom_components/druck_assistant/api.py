@@ -15,9 +15,12 @@ from .const import (
     WS_DATA,
     WS_IMPORT_AMS,
     WS_SPOOL_ARCHIVE,
+    WS_RECORD_REBOOK,
     WS_SPOOL_ASSIGN,
     WS_SPOOL_DELETE,
+    WS_SPOOL_IMPORT,
     WS_SPOOL_SAVE,
+    WS_SPOOL_WEIGH,
 )
 from .catalog import load_catalog
 from .spools import SpoolError
@@ -33,6 +36,9 @@ def async_register(hass: HomeAssistant) -> None:
         ws_import_ams,
         ws_catalog,
         ws_spool_archive,
+        ws_spool_weigh,
+        ws_spool_import,
+        ws_record_rebook,
     ):
         websocket_api.async_register_command(hass, command)
 
@@ -53,6 +59,11 @@ def ws_get_data(
         {
             "printers": printers,
             "spools": [s.as_dict() for s in manager.store.spools.values()],
+            "min_stock": {
+                material: minimum
+                for entry in hass.config_entries.async_loaded_entries(DOMAIN)
+                for material, minimum in entry.runtime_data.min_stock.items()
+            },
         },
     )
 
@@ -169,6 +180,80 @@ def ws_spool_archive(
         return
     manager.changed()
     connection.send_result(msg["id"])
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): WS_SPOOL_WEIGH,
+        vol.Required("spool_id"): str,
+        vol.Required("gross_g"): vol.Any(int, float, str),
+        vol.Optional("tare_g"): vol.Any(int, float, str, None),
+    }
+)
+@websocket_api.require_admin
+@callback
+def ws_spool_weigh(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Set the remaining filament of a spool from its weight on a scale."""
+    manager = hass.data[DOMAIN]["filament"]
+    try:
+        spool = manager.store.weigh(msg["spool_id"], msg["gross_g"], msg.get("tare_g"))
+    except SpoolError as err:
+        connection.send_error(msg["id"], "invalid_spool", str(err))
+        return
+    manager.changed()
+    connection.send_result(msg["id"], {"spool": spool.as_dict()})
+
+
+@websocket_api.websocket_command(
+    {vol.Required("type"): WS_SPOOL_IMPORT, vol.Required("spools"): [dict]}
+)
+@websocket_api.require_admin
+@callback
+def ws_spool_import(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Create several spools at once (the rows of an imported list)."""
+    manager = hass.data[DOMAIN]["filament"]
+    created, errors = [], []
+    for index, row in enumerate(msg["spools"][:500], start=1):
+        try:
+            created.append(manager.store.save_spool({k: v for k, v in row.items() if k != "id"}))
+        except SpoolError as err:
+            errors.append({"row": index, "error": str(err)})
+    if created:
+        manager.changed()
+    connection.send_result(msg["id"], {"created": len(created), "errors": errors})
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): WS_RECORD_REBOOK,
+        vol.Required("started"): str,
+        vol.Required("spool_id"): vol.Any(str, None),
+    }
+)
+@websocket_api.require_admin
+@callback
+def ws_record_rebook(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Charge a recorded print to another spool (its filament moves from the old spool)."""
+    for entry in hass.config_entries.async_loaded_entries(DOMAIN):
+        tracker = entry.runtime_data
+        if tracker.history.find(msg["started"]) is None:
+            continue
+        try:
+            record = tracker.rebook(msg["started"], msg["spool_id"])
+        except KeyError:
+            connection.send_error(msg["id"], "unknown_spool", "unknown spool")
+        except ValueError as err:
+            connection.send_error(msg["id"], "not_possible", str(err))
+        else:
+            connection.send_result(msg["id"], {"record": record})
+        return
+    connection.send_error(msg["id"], "unknown_record", "unknown print")
 
 
 @websocket_api.websocket_command({vol.Required("type"): WS_CATALOG})

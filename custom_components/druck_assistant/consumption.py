@@ -150,6 +150,47 @@ def split_usage(
     return usages
 
 
+def shortages(
+    needs: dict[str, float],
+    slots: dict[str, SlotInfo],
+) -> list[dict[str, Any]]:
+    """Slots whose spool holds less than the print needs from it.
+
+    needs is the grams per slot (planned, or the whole print for the active slot),
+    slots[...].capacity_g the filament left on the spool when the print started.
+    refill names a slot with the same material that could take over (the AMS
+    continues with it) when it holds enough for the missing part.
+    """
+    found = []
+    for key, grams in needs.items():
+        info = slots.get(key)
+        if info is None or info.capacity_g is None or grams <= info.capacity_g:
+            continue
+        missing = round(grams - info.capacity_g, 1)
+        refill = next(
+            (
+                other.key
+                for other in slots.values()
+                if other.key != key
+                and other.material
+                and other.material.lower() == info.material.lower()
+                and other.capacity_g is not None
+                and other.capacity_g >= missing
+            ),
+            None,
+        )
+        found.append(
+            {
+                "slot": key,
+                "needed_g": round(grams, 1),
+                "available_g": round(info.capacity_g, 1),
+                "missing_g": missing,
+                "refill_slot": refill,
+            }
+        )
+    return found
+
+
 @dataclass
 class UsageTracker:
     """Collects the slot changes of a running print."""

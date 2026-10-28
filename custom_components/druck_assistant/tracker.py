@@ -19,6 +19,7 @@ from .const import (
     CONF_AUTO_IMPORT,
     CONF_ENERGY_ENTITY,
     CONF_FILAMENT_PRICES,
+    CONF_MIN_STOCK,
     CONF_NOTIFY_FILAMENT_LOW,
     CONF_POWER_ENTITY,
     CONF_PRICE_ENTITY,
@@ -35,11 +36,13 @@ from .const import (
     EVENT_PRINT_STARTED,
     EVENT_SPOOL_EMPTY,
     EVENT_SPOOL_IMPORTED,
+    EVENT_SPOOL_INSUFFICIENT,
+    EVENT_STOCK_LOW,
     STATUS_FAILED,
     STATUS_FINISH,
     STORAGE_VERSION,
 )
-from .consumption import Segment, SlotInfo, measured_grams, split_usage
+from .consumption import Segment, SlotInfo, measured_grams, shortages, split_usage
 from .history import PrintHistory, parse_prices, price_for, to_minutes
 from .spools import valid_rfid
 
@@ -137,6 +140,7 @@ class PrintTracker:
             or (session.color if session else None)
             or (tray.attributes.get("color") if tray else None),
             "price_per_kg": price,
+            "shortages": self.shortages_now(),
             "filament_cost": filament_cost,
             "energy_kwh": round(energy, 3) if energy is not None else None,
             "energy_cost": energy_cost,
@@ -410,6 +414,99 @@ class PrintTracker:
             # A slot changed (its "active" flag follows the tray change a moment later).
             self._note_slot()
 
+    def shortages_now(self) -> list[dict[str, Any]]:
+        """Spools of the running print that hold less than the print needs from them."""
+        session = self.history.session
+        if session is None or not session.start_slots:
+            return []
+        needs = session.plan or self._plan_by_slot()
+        total = self._float("print_weight")
+        if not needs and session.slot_key and total:
+            needs = {session.slot_key: total}
+        slots = {
+            key: SlotInfo(key, start["material"], start["capacity_g"])
+            for key, start in session.start_slots.items()
+        }
+        found = shortages(needs, slots)
+        store = self.filament.store
+        for item in found:
+            spool = store.spools.get(session.start_slots[item["slot"]].get("spool_id") or "")
+            item["spool"] = spool.name if spool else None
+            item["spool_id"] = spool.id if spool else None
+        return found
+
+    def _warn_shortage(self) -> None:
+        """Announce once per print that a spool will not last."""
+        session = self.history.session
+        if session is None or session.warned:
+            return
+        found = self.shortages_now()
+        if not found:
+            return
+        session.warned = True
+        for item in found:
+            self.hass.bus.async_fire(
+                EVENT_SPOOL_INSUFFICIENT,
+                {"serial": self.serial, "print": session.name, **item},
+            )
+
+    @property
+    def min_stock(self) -> dict[str, float]:
+        try:
+            return parse_prices(self._conf(CONF_MIN_STOCK))
+        except ValueError:
+            return {}
+
+    def _check_stock(self) -> None:
+        """Fire an event once per material when its total stock falls below the minimum."""
+        totals = self.filament.store.stock_by_material()
+        for material, minimum in self.min_stock.items():
+            key = f"stock:{material}"
+            have = totals.get(material, 0.0)
+            if have >= minimum:
+                self._low_notified.discard(key)
+            elif key not in self._low_notified:
+                self._low_notified.add(key)
+                self.hass.bus.async_fire(
+                    EVENT_STOCK_LOW,
+                    {
+                        "serial": self.serial,
+                        "material": material,
+                        "stock_g": have,
+                        "minimum_g": minimum,
+                    },
+                )
+
+    def rebook(self, started: str, spool_id: str | None) -> dict[str, Any]:
+        """Charge a recorded print to another spool and move the stock accordingly."""
+        store = self.filament.store
+        spool = store.spools.get(spool_id) if spool_id else None
+        if spool_id and spool is None:
+            raise KeyError(spool_id)
+        price = (
+            spool.price_per_kg
+            if spool is not None and spool.price_per_kg is not None
+            else self.price_for_material(spool.material if spool else None)
+        )
+        previous, grams = self.history.rebook(
+            started,
+            spool.id if spool else None,
+            spool.name if spool else None,
+            price,
+            spool.material if spool else None,
+            spool.color if spool else None,
+        )
+        if previous != (spool.id if spool else None):
+            store.restore(previous, grams)
+            if spool is not None:
+                store.consume(spool.id, grams)
+                self._check_spool(spool)
+            self._check_stock()
+        self._store.async_delay_save(lambda: {"records": self.history.records}, 1)
+        self.filament.changed()
+        async_dispatcher_send(self.hass, self.signal)
+        return self.history.find(started) or {}
+
     def _on_progress(self) -> None:
         """Remember the progress (the highest one: a stopped print resets it) and the slot plan."""
         session = self.history.session
@@ -419,6 +516,8 @@ class PrintTracker:
         session.progress = max(session.progress or 0.0, progress)
         if not session.plan:
             session.plan = self._plan_by_slot()
+            if session.plan:
+                self._warn_shortage()
 
     def _note_slot(self) -> None:
         """Record which slot is feeding the print, to split the filament over several spools."""
@@ -548,6 +647,7 @@ class PrintTracker:
                 session.progress = self._float("print_progress")
                 session.plan = self._plan_by_slot()
                 session.usage.note(session.slot_key, 0.0)
+                self._warn_shortage()
                 session.energy_start_kwh = self._external_float(CONF_ENERGY_ENTITY)
                 session.add_power(now, self._external_float(CONF_POWER_ENTITY))
             self.hass.bus.async_fire(
@@ -601,6 +701,7 @@ class PrintTracker:
                     if used is not None:
                         self._check_spool(used)
                 if charged:
+                    self._check_stock()
                     self.filament.changed()
                 else:
                     self._check_filament()
