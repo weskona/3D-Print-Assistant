@@ -229,9 +229,19 @@ class PrintTracker:
                         valid_rfid(attrs.get("tray_uuid")) or valid_rfid(attrs.get("tag_uid"))
                     ),
                     "spool_id": spool.id if spool else None,
+                    "replacement": self._replacement(spool),
                 }
             )
         return sorted(slots, key=lambda s: s["key"])
+
+    def _replacement(self, spool) -> dict[str, Any] | None:
+        """The stock spool to insert when this one runs out (only for a low spool)."""
+        if spool is None or spool.remaining_percent > self.low_threshold:
+            return None
+        other = self.filament.store.replacement_for(spool)
+        if other is None:
+            return None
+        return {"id": other.id, "name": other.name, "remaining_g": other.remaining_g}
 
     def import_from_ams(self, *, include_untagged: bool) -> dict[str, list[dict[str, Any]]]:
         """Create or link spools for the current AMS contents."""
@@ -738,6 +748,7 @@ class PrintTracker:
                     "remaining_g": spool.remaining_g,
                     "type": spool.material,
                     "color": spool.color,
+                    "replacement": (self._replacement(spool) or {}).get("name"),
                 },
             )
 

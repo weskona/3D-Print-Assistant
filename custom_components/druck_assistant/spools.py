@@ -435,6 +435,33 @@ class SpoolStore:
         spool.remaining_g = round(min(max(gross - spool.tare, 0.0), spool.initial_weight_g), 1)
         return spool
 
+    def replacement_for(self, spool: Spool) -> Spool | None:
+        """The stock spool that should take over when this one is used up.
+
+        Same material, not in a slot, not another variant of the product line, and
+        a nearly identical color; the closest color wins, then the fullest spool.
+        """
+        assigned = set(self.assignments.values())
+        best: tuple[float, float] | None = None
+        found: Spool | None = None
+        for other in self.spools.values():
+            if (
+                other.id == spool.id
+                or other.archived
+                or other.id in assigned
+                or other.remaining_g <= 0
+                or other.material.strip().lower() != spool.material.strip().lower()
+                or _product_line(other.name, spool.name) == "other"
+            ):
+                continue
+            distance = color_distance(other.color, spool.color)
+            if distance is None or distance > MAX_SAME_PRODUCT_DISTANCE:
+                continue
+            rank = (distance, -other.remaining_g)
+            if best is None or rank < best:
+                best, found = rank, other
+        return found
+
     def stock_by_material(self) -> dict[str, float]:
         """Filament left (grams) per material over all spools that are not archived."""
         totals: dict[str, float] = {}

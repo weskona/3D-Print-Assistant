@@ -119,3 +119,17 @@ def test_shortage_warning_names_a_refill_slot():
     assert shortages({"a": 100}, slots)[0]["refill_slot"] is None
     # unknown capacity never warns
     assert shortages({"x": 100}, {"x": SlotInfo("x", "PLA")}) == []
+
+
+def test_replacement_is_the_closest_color_then_the_fullest_stock_spool():
+    store = SpoolStore()
+    low = store.save_spool({"name": "Bambu PETG Basic", "material": "PETG", "color": "#000000", "remaining_g": 20})
+    store.save_spool({"name": "Bambu PETG HF", "material": "PETG", "color": "#000000"})  # other variant
+    store.save_spool({"name": "Bambu PETG Basic #2", "material": "PETG", "color": "#ffffff"})  # other color
+    half = store.save_spool({"name": "Bambu PETG Basic #3", "material": "PETG", "color": "#000000", "remaining_g": 400})
+    full = store.save_spool({"name": "Bambu PETG Basic #4", "material": "PETG", "color": "#010101"})
+    assert store.replacement_for(low).id == half.id  # identical color wins
+    store.assign("p:t1", half.id)
+    assert store.replacement_for(low).id == full.id
+    store.archive(full.id)
+    assert store.replacement_for(low) is None
