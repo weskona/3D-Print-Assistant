@@ -164,6 +164,8 @@ class PrintTracker:
             "current_print": self.current_print(),
             # The panel reads this entity's state live from Home Assistant.
             "stage_entity": self.entity_id("stage"),
+            "camera_entity": self.entity_id("camera", "camera"),
+            "cover_entity": self.entity_id("cover_image", "image"),
             "session": None
             if session is None
             else {

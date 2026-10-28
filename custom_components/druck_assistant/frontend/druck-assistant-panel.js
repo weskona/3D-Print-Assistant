@@ -83,6 +83,9 @@ const TRANSLATIONS = {
     admin_only: "Only administrators can change the filament inventory.",
     price: "Price",
     printed_avg: "Avg. printed",
+    camera: "Camera",
+    camera_live: "Live",
+    camera_unavailable: "The camera is not available.",
     printed_avg_hint: "Average filament cost per kg of the recorded prints",
     suggest_hint: "Pick a name you already have to fill in the other fields.",
     catalog: "Filament catalog",
@@ -182,6 +185,9 @@ const TRANSLATIONS = {
     admin_only: "Nur Administratoren können den Filamentbestand ändern.",
     price: "Preis",
     printed_avg: "Ø gedruckt",
+    camera: "Kamera",
+    camera_live: "Live",
+    camera_unavailable: "Die Kamera ist nicht verfügbar.",
     printed_avg_hint: "Durchschnittliche Filamentkosten pro kg der aufgezeichneten Drucke",
     suggest_hint: "Wähle einen vorhandenen Namen, um die übrigen Felder auszufüllen.",
     catalog: "Filament-Katalog",
@@ -260,6 +266,7 @@ class DruckAssistantPanel extends HTMLElement {
   }
 
   disconnectedCallback() {
+    this._cameraStop();
     this._unsub.forEach((u) => u());
     this._unsub = [];
     clearTimeout(this._timer);
@@ -587,6 +594,61 @@ class DruckAssistantPanel extends HTMLElement {
         : "");
   }
 
+  /**
+   * The live camera view: the MJPEG stream of the printer's camera entity. The card is built once
+   * and re-attached on every render, so the stream is not restarted by the periodic reload; it
+   * runs only while the Overview tab is shown.
+   */
+  _renderCamera(printer) {
+    const entity = printer?.camera_entity;
+    const state = entity ? this._hass?.states?.[entity] : null;
+    if (!state) return null;
+    if (!this._cam || this._cam.entity !== entity) {
+      this._cameraStop();
+      const img = this._el("img", { class: "camera", alt: this._t("camera") });
+      const note = this._el("div", { class: "sub", hidden: true }, this._t("camera_unavailable"));
+      img.addEventListener("error", () => {
+        img.hidden = true;
+        note.hidden = false;
+        // The stream ends when the camera drops out or its token changed: try again in a while.
+        clearTimeout(this._cam?.retry);
+        if (this._cam) this._cam.retry = setTimeout(() => this._cameraStart(), 10000);
+      });
+      img.addEventListener("load", () => { img.hidden = false; note.hidden = true; });
+      const card = this._el("div", { class: "card" },
+        this._el("div", { class: "hd" }, this._el("h2", {}, this._t("camera")),
+          this._el("span", { class: "chip running" }, this._t("camera_live"))),
+        img, note);
+      this._cam = { entity, card, img, note, retry: null, running: false };
+    }
+    return this._cam.card;
+  }
+
+  _cameraSync() {
+    const cam = this._cam;
+    if (!cam) return;
+    const shown = this._tab === "overview" && cam.card.isConnected && this.isConnected;
+    if (shown && !cam.running) this._cameraStart();
+    else if (!shown && cam.running) this._cameraStop();
+  }
+
+  _cameraStart() {
+    const cam = this._cam;
+    const token = this._hass?.states?.[cam?.entity]?.attributes?.access_token;
+    if (!cam || !token) return;
+    clearTimeout(cam.retry);
+    cam.running = true;
+    cam.img.src = `/api/camera_proxy_stream/${cam.entity}?token=${token}&t=${Date.now()}`;
+  }
+
+  _cameraStop() {
+    const cam = this._cam;
+    if (!cam) return;
+    clearTimeout(cam.retry);
+    cam.running = false;
+    cam.img.removeAttribute("src");
+  }
+
   /** Average filament cost per kg of the recorded prints on the given spool ids (null without prints). */
   _printedPrice(printer, ids) {
     let cost = 0;
@@ -820,6 +882,9 @@ class DruckAssistantPanel extends HTMLElement {
       card.append(this._el("div", { class: "bignum" }, this._el("b", {}, this._fmtNum(pct, 0)), this._el("small", {}, "%")));
     }
     card.append(this._el("div", { class: "print-title" }, c.name || this._t("unknown")));
+    // The cover image (thumbnail) of the print comes from the printer's image entity.
+    const cover = printer.cover_entity ? this._hass?.states?.[printer.cover_entity]?.attributes?.entity_picture : null;
+    if (cover) card.append(this._el("img", { class: "cover", src: cover, alt: c.name || "", onerror: (e) => { e.target.hidden = true; } }));
     if (pct !== null) {
       card.append(this._el("div", { class: "progress" },
         this._el("div", { class: "bar wide" }, this._el("div", { class: "fill", style: `width:${pct}%` }))));
@@ -853,6 +918,8 @@ class DruckAssistantPanel extends HTMLElement {
 
   _render() {
     const root = this.shadowRoot;
+    // Start or stop the camera stream once this render has put the Overview (or another tab) in place.
+    queueMicrotask(() => this._cameraSync());
     root.replaceChildren(this._el("style", {}, `
       :host {
         --bg: #0b0d12; --panel: #14171e; --line: rgba(255,255,255,.065);
@@ -952,6 +1019,9 @@ class DruckAssistantPanel extends HTMLElement {
       .dialog.form { max-width: 480px; }
       .dialog .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
       .dialog .actions button { margin: 0; }
+      .camera { display: block; width: 100%; border-radius: 18px; background: #000; aspect-ratio: 16 / 9; object-fit: contain; }
+      .cover { display: block; max-width: 100%; max-height: 220px; margin: 4px auto 12px; border-radius: 18px; object-fit: contain; }
+      .cover[hidden], .camera[hidden], .card .sub[hidden] { display: none; }
       .history { display: flex; flex-direction: column; gap: 8px; }
       .hrow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 11px 14px; border-radius: 18px; background: var(--tile); border: 1px solid var(--tile-line); }
       .hrow .when { display: flex; flex-direction: column; align-items: center; min-width: 52px; font-size: 12px; color: var(--muted); line-height: 1.25; }
@@ -1041,7 +1111,7 @@ class DruckAssistantPanel extends HTMLElement {
       hist.append(list);
     }
     main.append(this._el("div", { class: "grid" },
-      this._el("div", { class: "col" }, this._renderCurrentPrint(printer, cur)),
+      this._el("div", { class: "col" }, this._renderCurrentPrint(printer, cur), this._renderCamera(printer) || ""),
       this._el("div", { class: "col" }, totals, hist)));
   }
 }

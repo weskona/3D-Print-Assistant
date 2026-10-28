@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The archived spools list shows the spool color as a dot in front of the name, like the filament list.
 - Prices per kg are shown in more places: the archived spools list has a Price column, and each AMS slot shows the price of its spool.
+- The Overview tab shows the live camera view of the printer (ha-bambulab camera entity, MJPEG stream; it runs only while the tab is open) below the current print, and the cover image of the print while it is running.
 - New "Avg. printed" column: the average filament cost per kg of the recorded prints of a type or spool (filament list, archived spools) and of the spool in an AMS slot.
 
 ## [0.7.0-beta.5] - 2026-10-28

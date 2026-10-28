@@ -17,7 +17,7 @@ Home Assistant integration for Bambu Lab printers. It builds on
 - Filament price per type (e.g. `PLA=20`) with a default price per kg
 - Electricity cost via an energy meter (kWh) or a power sensor (W, integrated over the print duration); fixed price or price from an entity
 - Filament management: spool inventory with remaining weight, price and color, assigned to AMS/external spool slots; used filament is deducted after each print and low stock fires an event
-- Own "3D Print Assistant" sidebar panel with totals, the print in progress (live stage, progress, times, layer, weight, temperatures, cost estimate), loaded filament and print history (updates live on print start and end)
+- Own "3D Print Assistant" sidebar panel with totals, the print in progress (live stage, progress, times, layer, weight, temperatures, cost estimate, cover image), the live camera view of the printer, loaded filament and print history (updates live on print start and end)
 - Events for automations: `druck_assistant_print_started`, `druck_assistant_print_finished`,
   `druck_assistant_print_failed`, `druck_assistant_filament_low`, `druck_assistant_spool_imported`, `druck_assistant_spool_empty`
 
