@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0-beta.1] - 2026-10-28
+
+### Changed
+
+- The filament of a print is split over the spools it really used. The add-on follows the active slot during the print and takes the grams per slot from the slicer when ha-bambulab reports them. When a spool runs empty and the AMS continues with another spool, the first spool is charged only what was left on it and the rest goes to the other spool (or, without enough data, the remaining percent of the AMS per slot decides). Every spool is charged with its own price, and the print history lists the spools of a multi spool print.
+- A print that did not finish now counts only for the progress it reached; before, the full weight was deducted.
+- History records have a new `usages` list (spools of a multi spool print) and `planned_g` (the weight of the whole print as sliced).
+
 ## [0.7.0-beta.6] - 2026-10-28
 
 ### Changed

@@ -10,7 +10,7 @@ PKG = Path(__file__).parent.parent / "custom_components" / "druck_assistant"
 pkg = types.ModuleType("druck_assistant")
 pkg.__path__ = [str(PKG)]
 sys.modules["druck_assistant"] = pkg
-for name in ("const", "history"):
+for name in ("const", "consumption", "history"):
     spec = importlib.util.spec_from_file_location(f"druck_assistant.{name}", PKG / f"{name}.py")
     mod = importlib.util.module_from_spec(spec)
     sys.modules[f"druck_assistant.{name}"] = mod

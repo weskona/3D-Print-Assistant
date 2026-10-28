@@ -24,8 +24,16 @@ Home Assistant integration for Bambu Lab printers. It builds on
 ## Filament management
 
 Open the "Filament" tab of the panel (administrators can edit) and add your spools, then assign
-each spool to a slot of the printer in the "AMS" tab. The slot with the active spool at print start is used:
-its spool's price replaces the type price, and the used weight is deducted when the print ends.
+each spool to a slot of the printer in the "AMS" tab. The spool's price replaces the type price, and the
+used weight is deducted when the print ends.
+
+**Consumption:** the weight is split over all spools a print used. The add-on follows the active slot during the
+print (multi color) and uses the grams per slot of the slicer when ha-bambulab reports them (attributes of the print
+weight sensor). When a spool runs empty and the AMS continues with another spool of the same filament, the first
+spool is charged only what was left on it and the rest goes to the refill spool; without other data the remaining
+percent the AMS reports per slot decides. A print that did not finish counts only for the progress it reached.
+Each spool is charged with its own price; the print history lists the spools of such a print.
+
 Click "Import from AMS" to create spools from the loaded AMS slots. New Bambu spools with an RFID
 tag are also added automatically (option "Automatically add new Bambu spools"); spools without a
 tag, such as third-party filament or the external spool, are only imported with the button.

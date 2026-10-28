@@ -36,8 +36,10 @@ from .const import (
     EVENT_SPOOL_EMPTY,
     EVENT_SPOOL_IMPORTED,
     STATUS_FAILED,
+    STATUS_FINISH,
     STORAGE_VERSION,
 )
+from .consumption import Segment, SlotInfo, measured_grams, split_usage
 from .history import PrintHistory, parse_prices, price_for, to_minutes
 from .spools import valid_rfid
 
@@ -342,7 +344,12 @@ class PrintTracker:
             self.history = PrintHistory(data.get("records"))
         watched = [
             eid
-            for eid in (self.entity_id("print_status"), self.entity_id("active_tray"))
+            for eid in (
+                self.entity_id("print_status"),
+                self.entity_id("active_tray"),
+                self.entity_id("print_progress"),
+                *self.slot_entities().values(),
+            )
             if eid
         ]
         self.entry.async_on_unload(
@@ -390,11 +397,127 @@ class PrintTracker:
         old = event.data["old_state"]
         if new is None:
             return
-        if event.data["entity_id"] == self.entity_id("print_status"):
+        entity_id = event.data["entity_id"]
+        if entity_id == self.entity_id("print_status"):
             self._on_status(old.state if old else None, new.state)
-        else:
+        elif entity_id == self.entity_id("print_progress"):
+            self._on_progress()
+        elif entity_id == self.entity_id("active_tray"):
             self._on_tray(new.attributes)
+            self._note_slot()
             async_dispatcher_send(self.hass, self.signal)
+        else:
+            # A slot changed (its "active" flag follows the tray change a moment later).
+            self._note_slot()
+
+    def _on_progress(self) -> None:
+        """Remember the progress (the highest one: a stopped print resets it) and the slot plan."""
+        session = self.history.session
+        progress = self._float("print_progress")
+        if session is None or progress is None:
+            return
+        session.progress = max(session.progress or 0.0, progress)
+        if not session.plan:
+            session.plan = self._plan_by_slot()
+
+    def _note_slot(self) -> None:
+        """Record which slot is feeding the print, to split the filament over several spools."""
+        session = self.history.session
+        if session is not None:
+            session.usage.note(self.active_slot_key(), session.progress)
+
+    def _slot_snapshot(self) -> dict[str, dict[str, Any]]:
+        """Per slot: the assigned spool and the remaining percent the AMS reports."""
+        store = self.filament.store
+        snapshot: dict[str, dict[str, Any]] = {}
+        for key, entity_id in self.slot_entities().items():
+            state = self.hass.states.get(entity_id)
+            if state is None or "active" not in state.attributes:
+                continue
+            attrs = state.attributes
+            spool = store.spool_for_slot(key)
+            snapshot[key] = {
+                "spool_id": spool.id if spool else None,
+                "remain": attrs.get("remain") if attrs.get("remain_enabled", True) else None,
+                "initial_g": spool.initial_weight_g if spool else None,
+                "capacity_g": spool.remaining_g if spool else None,
+                "material": (spool.material if spool else attrs.get("type")) or "",
+            }
+        return snapshot
+
+    def _plan_by_slot(self) -> dict[str, float]:
+        """Grams per slot the slicer planned, from the attributes of the print weight sensor."""
+        state = self._state("print_weight")
+        slots = self.slot_entities()
+        plan: dict[str, float] = {}
+        for name, grams in (state.attributes if state else {}).items():
+            if isinstance(grams, bool) or not isinstance(grams, (int, float)):
+                continue
+            match = re.fullmatch(r"AMS (\d+) Tray (\d+)", str(name))
+            if match:
+                suffix = f"ams_{match[1]}_slot_{match[2]}"
+                key = next((k for k, e in slots.items() if e.endswith(suffix)), None)
+            elif str(name).startswith("External Spool"):
+                key = next((k for k in slots if "ExternalSpool" in k), None)
+            else:
+                key = None
+            if key:
+                plan[key] = float(grams)
+        return plan
+
+    def _usages(
+        self, session, outcome: str, total_g: float | None
+    ) -> list[dict[str, Any]]:
+        """Filament of the print per spool (see consumption.py); empty: charge the start spool."""
+        if session is None or not total_g:
+            return []
+        end = self._slot_snapshot()
+        slots = {
+            key: SlotInfo(
+                key,
+                start["material"],
+                start["capacity_g"],
+                measured_grams(
+                    start["remain"], end.get(key, {}).get("remain"), start["initial_g"]
+                ),
+            )
+            for key, start in session.start_slots.items()
+        }
+        segments = session.usage.segments or (
+            [Segment(session.slot_key, 0.0)] if session.slot_key else []
+        )
+        plan = session.plan or self._plan_by_slot()
+        store = self.filament.store
+        usages = []
+        for part in split_usage(
+            total_g,
+            finished=outcome == STATUS_FINISH,
+            progress=session.progress,
+            segments=segments,
+            slots=slots,
+            plan=plan,
+        ):
+            start = session.start_slots.get(part.slot, {})
+            spool = store.spools.get(start.get("spool_id")) if start.get("spool_id") else None
+            material = (spool.material if spool else start.get("material")) or None
+            price = (
+                spool.price_per_kg
+                if spool is not None and spool.price_per_kg is not None
+                else self.price_for_material(material)
+            )
+            usages.append(
+                {
+                    "slot": part.slot,
+                    "spool_id": spool.id if spool else None,
+                    "spool_name": spool.name if spool else None,
+                    "weight_g": part.grams,
+                    "price_per_kg": price,
+                    "material": material,
+                    "color": spool.color if spool else None,
+                }
+            )
+        usages.sort(key=lambda u: -u["weight_g"])
+        return usages
 
     def _on_tray(self, attrs: dict[str, Any]) -> None:
         session = self.history.session
@@ -421,6 +544,10 @@ class PrintTracker:
                     session.spool_name = spool.name
                     session.material = spool.material
                     session.color = spool.color or session.color
+                session.start_slots = self._slot_snapshot()
+                session.progress = self._float("print_progress")
+                session.plan = self._plan_by_slot()
+                session.usage.note(session.slot_key, 0.0)
                 session.energy_start_kwh = self._external_float(CONF_ENERGY_ENTITY)
                 session.add_power(now, self._external_float(CONF_POWER_ENTITY))
             self.hass.bus.async_fire(
@@ -439,16 +566,19 @@ class PrintTracker:
                 if spool is not None and spool.price_per_kg is not None
                 else self.price_for_material(session.material if session else None)
             )
-            used_g = self._float("print_weight")
+            planned_g = self._float("print_weight")
+            usages = self._usages(session, outcome, planned_g)
             record = self.history.finish(
                 outcome,
                 now,
-                self._float("print_weight"),
+                planned_g,
                 dict(weight_state.attributes) if weight_state else None,
                 price,
                 name,
                 self._external_float(CONF_ENERGY_ENTITY),
                 self.price_per_kwh,
+                usages,
+                planned_g,
             )
             if record is not None:
                 self.hass.bus.async_fire(
@@ -460,9 +590,17 @@ class PrintTracker:
                 self._store.async_delay_save(
                     lambda: {"records": self.history.records}, 1
                 )
-                if spool is not None:
-                    self.filament.store.consume(spool.id, used_g)
-                    self._check_spool(spool)
+                # Every spool the print used loses its share (the start spool, all of it, without a split).
+                charged = (
+                    [(u["spool_id"], u["weight_g"]) for u in usages if u["spool_id"]]
+                    if usages
+                    else ([(spool.id, planned_g)] if spool is not None else [])
+                )
+                for spool_id, grams in charged:
+                    used = self.filament.store.consume(spool_id, grams)
+                    if used is not None:
+                        self._check_spool(used)
+                if charged:
                     self.filament.changed()
                 else:
                     self._check_filament()

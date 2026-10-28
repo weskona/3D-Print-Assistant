@@ -654,9 +654,13 @@ class DruckAssistantPanel extends HTMLElement {
     let cost = 0;
     let grams = 0;
     for (const r of printer?.history || []) {
-      if (!ids.has(r.spool_id) || !(r.weight_g > 0)) continue;
-      cost += r.filament_cost ?? r.cost - (r.energy_cost || 0);
-      grams += r.weight_g;
+      // A print on several spools lists each one; otherwise the record belongs to its spool.
+      const parts = r.usages?.length ? r.usages : [{ spool_id: r.spool_id, weight_g: r.weight_g, cost: r.filament_cost ?? r.cost - (r.energy_cost || 0) }];
+      for (const u of parts) {
+        if (!ids.has(u.spool_id) || !(u.weight_g > 0)) continue;
+        cost += u.cost;
+        grams += u.weight_g;
+      }
     }
     return grams ? (cost / grams) * 1000 : null;
   }
@@ -1020,6 +1024,7 @@ class DruckAssistantPanel extends HTMLElement {
       .dialog .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
       .dialog .actions button { margin: 0; }
       .camera { display: block; width: 100%; border-radius: 18px; background: #000; aspect-ratio: 16 / 9; object-fit: contain; }
+      .hrow .spools { display: block; }
       .cover { display: block; max-width: 100%; max-height: 220px; margin: 4px auto 12px; border-radius: 18px; object-fit: contain; }
       .cover[hidden], .camera[hidden], .card .sub[hidden] { display: none; }
       .history { display: flex; flex-direction: column; gap: 8px; }
@@ -1103,6 +1108,9 @@ class DruckAssistantPanel extends HTMLElement {
             this._el("b", {}, r.name),
             this._el("span", { class: "sub" },
               [this._fmtDuration(r.duration_min), r.material || null, `${this._fmtNum(r.weight_g)} g`, `${this._fmtNum(r.energy_kwh || 0, 2)} kWh`].filter(Boolean).join(" · ")),
+            r.usages?.length
+              ? this._el("span", { class: "sub spools" }, r.usages.map((u) => `${u.spool_name || u.material || "?"} ${this._fmtNum(u.weight_g)} g`).join(" + "))
+              : "",
             ok ? "" : this._el("span", { class: "badge", style: "color:var(--red);margin-left:8px" }, this._t("failed"))),
           this._el("div", { class: "cost", title: this._t("cost_split", { filament: this._fmtMoney(filamentCost, cur), energy: this._fmtMoney(r.energy_cost || 0, cur) }) },
             this._el("b", {}, this._fmtMoney(r.cost, cur)),
