@@ -19,7 +19,8 @@ Home Assistant integration for Bambu Lab printers. It builds on
 - Filament management: spool inventory with remaining weight, price and color, assigned to AMS/external spool slots; used filament is deducted after each print and low stock fires an event
 - Own "3D Print Assistant" sidebar panel with totals, the print in progress (live stage, progress, times, layer, weight, temperatures, cost estimate, cover image), the live camera view of the printer, loaded filament and print history (updates live on print start and end)
 - Events for automations: `druck_assistant_print_started`, `druck_assistant_print_finished`,
-  `druck_assistant_print_failed`, `druck_assistant_filament_low`, `druck_assistant_spool_imported`, `druck_assistant_spool_empty`
+  `druck_assistant_print_failed`, `druck_assistant_filament_low` (with the suggested `replacement` spool), `druck_assistant_spool_imported`, `druck_assistant_spool_empty`,
+  `druck_assistant_spool_insufficient` (a spool will not last for the running print), `druck_assistant_stock_low` (a type fell below its minimum stock)
 
 ## Filament management
 
@@ -66,7 +67,24 @@ A spool whose remaining stock reaches 0 g after a print is moved to the archive 
 (option "Automatically archive empty spools") and fires `druck_assistant_spool_empty`. Restore
 spools from the collapsible "Archived spools" list. Archived spools
 are not imported or assigned again automatically, even if they are still loaded in the AMS.
-Prints with several spools or materials are booked to the spool active at the start.
+**Weighing and calibration:** the scale button of a spool takes the weight on the scale and turns it into the filament
+left (it subtracts the empty spool: 250 g for Bambu Lab, 200 g otherwise, or the value you enter). The real empty weight
+is kept per spool. A spool's form has more details: purchase date, shop, order number, batch, location and last drying.
+A label with name, type, color, weight and place can be printed from the label button of a row.
+
+**Before the print:** when a spool holds less than the print needs from it, the Overview tab shows a warning and
+`druck_assistant_spool_insufficient` fires once. It names a slot with the same filament that can take over, if there is one.
+For a spool that is almost empty the AMS tab (and the low-filament event) suggests a replacement from your stock.
+
+**Stock and shopping list:** set a minimum stock per type in the integration options (one per line, e.g. `PLA=2000`).
+The Filament tab then shows the stock per type, what is missing, the estimated cost and how many days the stock lasts
+at your consumption of the last 30 days, with a button that copies the shopping list. `druck_assistant_stock_low` fires
+once when a type falls below its minimum.
+
+**Corrections, statistics and lists:** the arrows button of a print in the history charges it to another spool and moves the
+filament. The "Statistics" tab shows cost, filament, failure rate and wasted money per material, the cost per month, the most
+expensive prints and the price per kg of your purchases. Spools and the history can be exported as CSV, and spools can be imported from a CSV file.
+A spool is shared by all printers.
 
 ## Installation
 

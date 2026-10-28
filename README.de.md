@@ -18,7 +18,7 @@ Home-Assistant-Integration für Bambu-Lab-Drucker. Sie setzt auf
 - Filamentverwaltung: Spulenbestand mit Restgewicht, Preis und Farbe, zugeordnet zu AMS-/Externe-Spule-Slots; nach jedem Druck wird das verbrauchte Filament abgezogen, bei niedrigem Bestand gibt es ein Ereignis
 - Eigenes Panel „3D Print Assistant“ in der Seitenleiste mit Kennzahlen, laufendem Druck (Arbeitsschritt live, Fortschritt, Zeiten, Schicht, Gewicht, Temperaturen, Kostenschätzung, Titelbild), der Live-Kameraansicht des Druckers, geladenem Filament und Druckhistorie (aktualisiert sich live bei Druckstart und -ende)
 - Ereignisse für Automationen: `druck_assistant_print_started`, `druck_assistant_print_finished`,
-  `druck_assistant_print_failed`, `druck_assistant_filament_low`
+  `druck_assistant_print_failed`, `druck_assistant_filament_low` (mit der vorgeschlagenen Ersatzspule `replacement`), `druck_assistant_spool_insufficient` (eine Spule reicht für den laufenden Druck nicht), `druck_assistant_stock_low` (eine Sorte liegt unter ihrem Mindestbestand)
 
 ## Filamentverwaltung
 
@@ -68,6 +68,26 @@ Erreicht der Restbestand einer Spule nach einem Druck 0 g, kommt sie automatisch
 stellst du in der einklappbaren Liste „Archivierte Spulen“ wieder her.
 Archivierte Spulen werden nicht automatisch wieder importiert oder zugeordnet, auch wenn sie noch im AMS stecken.
 Bei Drucken mit mehreren Spulen wird alles der beim Start aktiven Spule zugerechnet.
+
+**Wiegen und Kalibrieren:** Der Waagen-Knopf einer Spule rechnet das Gewicht auf der Waage in das Restfilament um (abzüglich der
+leeren Spule: 250 g bei Bambu Lab, sonst 200 g, oder dein eigener Wert). Das echte Leergewicht wird pro Spule gespeichert. Im
+Formular einer Spule gibt es weitere Angaben: Kaufdatum, Händler, Bestellnummer, Charge, Lagerort und zuletzt getrocknet. Über den
+Etikett-Knopf einer Zeile lässt sich ein Etikett mit Name, Sorte, Farbe, Gewicht und Ort drucken.
+
+**Vor dem Druck:** Reicht eine Spule für das, was der Druck von ihr braucht, nicht aus, zeigt der Tab „Übersicht“ eine Warnung
+und `druck_assistant_spool_insufficient` wird einmal ausgelöst. Wenn ein anderer Slot mit demselben Filament übernehmen kann,
+wird er genannt. Bei einer fast leeren Spule schlägt der Tab „AMS“ (und das Ereignis für niedrigen Bestand) eine Ersatzspule aus
+deinem Vorrat vor.
+
+**Bestand und Einkaufsliste:** In den Optionen der Integration legst du pro Sorte einen Mindestbestand fest (eine Zeile pro Sorte,
+z. B. `PLA=2000`). Der Tab „Filament“ zeigt dann den Bestand pro Sorte, was fehlt, die geschätzten Kosten und wie viele Tage der
+Bestand bei deinem Verbrauch der letzten 30 Tage reicht, mit einem Knopf, der die Einkaufsliste kopiert. Sinkt eine Sorte unter ihr
+Minimum, wird `druck_assistant_stock_low` einmal ausgelöst.
+
+**Korrekturen, Auswertung und Listen:** Mit dem Pfeil-Knopf eines Drucks in der Historie bucht man ihn auf eine andere Spule um, das
+Filament wandert mit. Der Tab „Auswertung“ zeigt Kosten, Filament, Fehlerquote und verschwendetes Geld pro Material, die Kosten pro
+Monat, die teuersten Drucke und den Preis pro kg deiner Einkäufe. Spulen und Historie lassen sich als CSV exportieren, Spulen auch
+aus einer CSV-Datei importieren. Der Spulenbestand wird von allen Druckern gemeinsam genutzt.
 
 ## Installation
 

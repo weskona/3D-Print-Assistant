@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0-beta.1] - 2026-10-28
+
+### Added
+
+- Weighing: a scale button on every spool turns the weight on the scale into the filament left (minus the empty spool: 250 g for Bambu Lab, 200 g otherwise, or an own value kept per spool).
+- More spool details: purchase date, shop, order number, batch, location and last drying. A label with the spool's data can be printed.
+- Warning before it runs out: when a spool holds less than the running print needs from it, the Overview tab shows a warning and the event `druck_assistant_spool_insufficient` fires once; a slot that can take over is named.
+- Replacement from the stock: the AMS tab and the `druck_assistant_filament_low` event (`replacement`) name the stock spool to insert for an almost empty spool.
+- Minimum stock per type (new option) with a stock and shopping list in the Filament tab (missing grams, estimated cost, days the stock lasts, copy button) and the event `druck_assistant_stock_low`.
+- Rebooking: a print in the history can be charged to another spool; the filament moves between the spools.
+- New "Statistics" tab: per material the cost, filament, failure rate and wasted money, the cost per month, the most expensive prints and the price per kg of the purchases.
+- CSV export of the spools and the history, and CSV import of spools.
+
 ## [0.8.0-beta.1] - 2026-10-28
 
 ### Changed
