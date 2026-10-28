@@ -160,6 +160,7 @@ const TRANSLATIONS = {
     filter_reset: "Reset filter",
     no_match: "No spools match the filter.",
     stock_badge: "In stock",
+    almost_empty_badge: "Almost empty",
     rfid_tag: "RFID tag (clear to unlink)",
     correct_hint: "Wrong spool? Pick the right one: the tag moves to it, and the automatic match stays corrected. Choosing \"none\" stops automatic assignment for the spool currently in this slot.",
     quantity: "Quantity (e.g. 4 for a 4-pack)",
@@ -315,6 +316,7 @@ const TRANSLATIONS = {
     filter_reset: "Filter zurücksetzen",
     no_match: "Keine Spulen entsprechen dem Filter.",
     stock_badge: "Vorrat",
+    almost_empty_badge: "Fast leer",
     rfid_tag: "RFID-Tag (leeren zum Lösen)",
     correct_hint: "Falsche Spule? Wähle die richtige: Der Tag wandert zu ihr, die automatische Zuordnung bleibt korrigiert. „keine“ stoppt die automatische Zuordnung für die Spule, die gerade in diesem Slot steckt.",
     quantity: "Anzahl (z. B. 4 für ein 4er-Pack)",
@@ -668,7 +670,7 @@ class DruckAssistantPanel extends HTMLElement {
     const f = this._filter;
     if (f.material && sp.material !== f.material) return false;
     if (f.brand && (sp.brand || "") !== f.brand) return false;
-    if (f.status === "stock" && slotOf[sp.id]) return false;
+    if (f.status === "stock" && (slotOf[sp.id] || !this._isFull(sp))) return false;
     if (f.status === "slot" && !slotOf[sp.id]) return false;
     if (f.status === "low" && sp.remaining_percent > LOW_PERCENT) return false;
     const text = f.text.trim().toLowerCase();
@@ -872,7 +874,7 @@ class DruckAssistantPanel extends HTMLElement {
             : { title: g.color || "" },
           multi ? this._el("span", { class: "chevron" }, expanded ? "▾" : "▸") : "", dot, g.name,
             multi ? this._el("span", { class: "badge" }, `× ${g.spools.length}`) : "",
-            !multi && !slotOf[g.spools[0].id] ? this._el("span", { class: "badge stock" }, this._t("stock_badge")) : ""),
+            ...(multi ? [] : this._spoolBadges(g.spools[0], slotOf))),
           this._el("td", {}, g.material),
           this._el("td", {}, g.brand || "–"),
           this._el("td", {}, bar, `${this._fmtNum(g.remaining, 0)} / ${this._fmtNum(g.initial, 0)} g (${this._fmtNum(g.percent, 0)} %)`),
@@ -884,10 +886,8 @@ class DruckAssistantPanel extends HTMLElement {
             const spct = Math.max(0, Math.min(100, sp.remaining_percent));
             table.append(this._el("tr", { class: "sub-row" },
               this._el("td", { class: "indent" }, sp.name,
-                sp.rfid ? this._el("span", { class: "badge", title: sp.rfid }, "RFID") : "",
-                slotOf[sp.id]
-                  ? this._el("span", { class: "sub" }, ` · ${slotOf[sp.id]}`)
-                  : this._el("span", { class: "badge stock" }, this._t("stock_badge"))),
+                ...this._spoolBadges(sp, slotOf),
+                slotOf[sp.id] ? this._el("span", { class: "sub" }, ` · ${slotOf[sp.id]}`) : ""),
               this._el("td", {}, ""),
               this._el("td", {}, ""),
               this._el("td", {},
@@ -936,6 +936,18 @@ class DruckAssistantPanel extends HTMLElement {
     // Forms are popups over the list.
     if (this._editing !== null) main.append(this._renderForm(this._editing));
     if (this._dialog) main.append(this._renderDialog(printer));
+  }
+
+  /** A spool nobody has used yet: it still holds its full content. */
+  _isFull(sp) { return sp.remaining_g >= sp.initial_weight_g; }
+
+  /** Badges of a spool row: RFID tag, "In stock" for a full spool outside the AMS, "Almost empty" below the low threshold. */
+  _spoolBadges(sp, slotOf) {
+    const out = [];
+    if (sp.rfid) out.push(this._el("span", { class: "badge", title: sp.rfid }, "RFID"));
+    if (sp.remaining_percent <= LOW_PERCENT) out.push(this._el("span", { class: "badge low" }, this._t("almost_empty_badge")));
+    else if (!slotOf[sp.id] && this._isFull(sp)) out.push(this._el("span", { class: "badge stock" }, this._t("stock_badge")));
+    return out;
   }
 
   /** Warning block for a running print whose spool will run out. */
@@ -1465,6 +1477,7 @@ class DruckAssistantPanel extends HTMLElement {
       .dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; vertical-align: middle; margin-right: 8px; border: 1px solid rgba(255,255,255,.25); }
       .ok { color: var(--green); } .fail { color: var(--red); }
       .badge { margin-left: 8px; padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; background: rgba(255,255,255,.07); color: var(--muted); border: 1px solid var(--line); }
+      .badge.low { color: #f87171; background: rgba(248,113,113,.1); border-color: rgba(248,113,113,.3); }
       .badge.stock { color: var(--cyan); background: rgba(56,189,248,.1); border-color: rgba(56,189,248,.3); }
       button { font: inherit; font-size: 14px; font-weight: 600; height: 38px; padding: 0 14px; margin-right: 8px; border-radius: 13px; border: 1px solid var(--line); background: rgba(255,255,255,.04); color: var(--muted); cursor: pointer; }
       button:hover { color: var(--text); background: rgba(255,255,255,.08); }
