@@ -411,3 +411,20 @@ def test_filament_catalog_is_consistent():
             assert all(_re.fullmatch(r"#[0-9A-F]{6}", h) for h in c.get("hexes", []))
     anycubic = {p["name"] for p in products if p["brand"] == "Anycubic"}
     assert "Anycubic PLA Basic" in anycubic and len(anycubic) == 10
+
+
+def test_stock_matching_skips_another_variant_of_the_same_product_line():
+    m = _spools_module()
+    store = m.SpoolStore()
+    matte = store.save_spool({"name": "Bambu PLA Matte", "material": "PLA", "color": "#950051"})
+    tray = {**TRAY, "color": "#C12E1FFF", "tray_uuid": "D" * 32}  # Bambu PLA Basic, red
+    assert store.find_stock(tray) is None
+    action, created = store.import_slot("p:t1", tray, include_untagged=False)
+    assert action == "created" and created.id != matte.id and matte.rfid == ""
+
+    # the same variant (also a numbered pack member) and unrelated names still match
+    basic = store.save_spool({"name": "Bambu PLA Basic #2", "material": "PLA", "color": "#C12E1F"})
+    assert store.find_stock({**tray, "tray_uuid": "E" * 32}).id == basic.id
+    store.archive(basic.id)
+    store.save_spool({"name": "Red PLA", "material": "PLA", "color": "#C12E1F"})
+    assert store.find_stock({**tray, "tray_uuid": "E" * 32}) is not None

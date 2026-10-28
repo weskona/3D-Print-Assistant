@@ -103,6 +103,23 @@ def spool_data_from_tray(attrs: dict[str, Any], rfid: str) -> dict[str, Any]:
     }
 
 
+def _other_product(stock_name: str, tray_name: str) -> bool:
+    """True when both names are "<brand> <material> <variant>" of different variants.
+
+    "Bambu PLA Matte" and "Bambu PLA Basic" share brand and material, so a close
+    color must not make one of them stand in for the other. Names that do not
+    follow this shape (like "Black PETG") never exclude a spool.
+    """
+    stock = re.sub(r"\s+#\d+$", "", stock_name.strip()).lower().split()
+    tray = re.sub(r"\s+#\d+$", "", tray_name.strip()).lower().split()
+    return (
+        len(stock) >= 3
+        and len(tray) >= 3
+        and stock[:2] == tray[:2]
+        and stock[2:] != tray[2:]
+    )
+
+
 class SpoolStore:
     """Spool inventory and slot assignments (slot key -> spool id)."""
 
@@ -186,11 +203,13 @@ class SpoolStore:
     def find_stock(self, attrs: dict[str, Any]) -> Spool | None:
         """Best matching spool that is in stock: not in a slot, untagged, same material.
 
-        The color must be close to the tray color (or unknown on the stock spool);
-        among matches the closest color wins, then the fullest spool.
+        The color must be close to the tray color (or unknown on the stock spool),
+        and a spool of another variant of the same product line (PLA Matte for
+        PLA Basic) never counts; among matches the closest color wins, then the fullest spool.
         """
         material = str(attrs.get("type") or "").strip().lower()
         color = str(attrs.get("color") or "")
+        tray_name = str(attrs.get("name") or "")
         assigned = set(self.assignments.values())
         best: tuple[float, float] | None = None
         found: Spool | None = None
@@ -200,6 +219,7 @@ class SpoolStore:
                 or spool.rfid
                 or spool.id in assigned
                 or spool.material.strip().lower() != material
+                or _other_product(spool.name, tray_name)
             ):
                 continue
             distance = color_distance(spool.color, color)
