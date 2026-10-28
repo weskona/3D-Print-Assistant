@@ -39,7 +39,7 @@ Material, Hersteller und Farbe auszufüllen; jedes Feld lässt sich danach ände
 deren Farbwerte können ungenau sein).
 
 **Spulen bearbeiten:** Die Liste zeigt eine Zeile pro Sorte und Farbe (z. B. „Bambu PETG Basic“ in Schwarz und in Grau sind
-zwei Zeilen) mit dem Gesamtbestand aller Spulen und dem Durchschnittspreis pro kg. Klicke auf den Namen einer Sorte mit
+zwei Zeilen) mit dem Gesamtbestand aller Spulen, dem Durchschnittspreis pro kg und den durchschnittlichen Kosten pro kg der aufgezeichneten Drucke („Ø gedruckt“, auch bei archivierten Spulen und bei der Spule in einem AMS-Slot). Klicke auf den Namen einer Sorte mit
 mehreren Spulen, um sie einzeln aufzuklappen. Spulen bearbeitest du mit dem Button „Bearbeiten“ ihrer Zeile; das Bearbeiten-Popup
 bietet auch „Löschen“. Eine Bambu-Lab-Spule in einem Slot lässt sich bearbeiten, sobald ihr RFID-Tag erkannt wurde (der Tag füllt sie aus);
 Spulen auf Vorrat und Spulen anderer Hersteller, die keinen Tag haben, sind immer bearbeitbar. Eine Bambu-Lab-Spule ohne Tag,

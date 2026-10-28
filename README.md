@@ -40,7 +40,7 @@ catalog to fill in name, material, brand and color; every field can still be cha
 its hex values can be approximate).
 
 **Editing spools:** the list shows one row per type and color (e.g. "Bambu PETG Basic" in black and in gray are two
-rows) with the total stock of all its spools and the average price per kg. Click the name of a type with several spools to
+rows) with the total stock of all its spools, the average price per kg and the average cost per kg of the recorded prints ("Avg. printed", also shown for archived spools and for the spool in an AMS slot). Click the name of a type with several spools to
 expand and list them one by one. Spools are edited with the "Edit" button of their row; the edit popup also has Delete. A Bambu Lab spool in a slot can be edited once its RFID tag has been detected (the tag fills it in); spools in stock
 and spools of other brands, which have no tag, can always be edited. A Bambu Lab spool without a tag that sits in a slot
 can only be deleted from its row until the AMS detects it (spools are archived automatically when they run empty).

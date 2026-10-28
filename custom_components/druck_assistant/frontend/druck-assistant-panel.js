@@ -82,6 +82,8 @@ const TRANSLATIONS = {
     none: "none",
     admin_only: "Only administrators can change the filament inventory.",
     price: "Price",
+    printed_avg: "Avg. printed",
+    printed_avg_hint: "Average filament cost per kg of the recorded prints",
     suggest_hint: "Pick a name you already have to fill in the other fields.",
     catalog: "Filament catalog",
     catalog_brand: "Manufacturer",
@@ -179,6 +181,8 @@ const TRANSLATIONS = {
     none: "keine",
     admin_only: "Nur Administratoren können den Filamentbestand ändern.",
     price: "Preis",
+    printed_avg: "Ø gedruckt",
+    printed_avg_hint: "Durchschnittliche Filamentkosten pro kg der aufgezeichneten Drucke",
     suggest_hint: "Wähle einen vorhandenen Namen, um die übrigen Felder auszufüllen.",
     catalog: "Filament-Katalog",
     catalog_brand: "Hersteller",
@@ -583,6 +587,22 @@ class DruckAssistantPanel extends HTMLElement {
         : "");
   }
 
+  /** Average filament cost per kg of the recorded prints on the given spool ids (null without prints). */
+  _printedPrice(printer, ids) {
+    let cost = 0;
+    let grams = 0;
+    for (const r of printer?.history || []) {
+      if (!ids.has(r.spool_id) || !(r.weight_g > 0)) continue;
+      cost += r.filament_cost ?? r.cost - (r.energy_cost || 0);
+      grams += r.weight_g;
+    }
+    return grams ? (cost / grams) * 1000 : null;
+  }
+
+  _perKg(value, cur) {
+    return value != null ? `${this._fmtMoney(value, cur)}/kg` : "–";
+  }
+
   /** Spools of the same type (name without " #n", material and color) form one inventory row. */
   _groups(spools) {
     const groups = new Map();
@@ -639,8 +659,8 @@ class DruckAssistantPanel extends HTMLElement {
       card.append(this._el("div", { class: "empty" }, this._t("no_match")));
     } else {
       const table = this._el("table", {});
-      const heads = ["name", "material", "brand", "stock", "price"].map((k) => this._t(k));
-      table.append(this._el("tr", {}, ...heads.map((h) => this._el("th", {}, h)), this._el("th", {}, "")));
+      const heads = ["name", "material", "brand", "stock", "price", "printed_avg"].map((k) => this._t(k));
+      table.append(this._el("tr", {}, ...heads.map((h, i) => this._el("th", i === 5 ? { title: this._t("printed_avg_hint") } : {}, h)), this._el("th", {}, "")));
       for (const g of groups) {
         const dot = this._el("span", { class: "dot", style: `background:${/^#[0-9a-f]{6,8}$/i.test(g.color) ? g.color : "transparent"}` });
         const pct = Math.max(0, Math.min(100, g.percent));
@@ -665,7 +685,8 @@ class DruckAssistantPanel extends HTMLElement {
           this._el("td", {}, g.material),
           this._el("td", {}, g.brand || "–"),
           this._el("td", {}, bar, `${this._fmtNum(g.remaining, 0)} / ${this._fmtNum(g.initial, 0)} g (${this._fmtNum(g.percent, 0)} %)`),
-          this._el("td", {}, g.avgPrice != null ? `${this._fmtMoney(g.avgPrice, cur)}/kg` : "–"),
+          this._el("td", {}, this._perKg(g.avgPrice, cur)),
+          this._el("td", {}, this._perKg(this._printedPrice(printer, new Set(g.spools.map((sp) => sp.id))), cur)),
           actions));
         if (expanded) {
           for (const sp of g.spools) {
@@ -681,7 +702,8 @@ class DruckAssistantPanel extends HTMLElement {
               this._el("td", {},
                 this._el("div", { class: "bar" }, this._el("div", { class: "fill" + (spct <= 15 ? " low" : ""), style: `width:${spct}%` })),
                 `${this._fmtNum(sp.remaining_g, 0)} / ${this._fmtNum(sp.initial_weight_g, 0)} g (${this._fmtNum(sp.remaining_percent, 0)} %)`),
-              this._el("td", {}, sp.price_per_kg != null ? `${this._fmtMoney(sp.price_per_kg, cur)}/kg` : "–"),
+              this._el("td", {}, this._perKg(sp.price_per_kg, cur)),
+              this._el("td", {}, this._perKg(this._printedPrice(printer, new Set([sp.id])), cur)),
               this._el("td", {}, ...this._rowActions(sp, admin, slotOf))));
           }
         }
@@ -698,7 +720,7 @@ class DruckAssistantPanel extends HTMLElement {
       details.append(this._el("div", { class: "empty" }, this._t("no_archived")));
     } else {
       const table = this._el("table", {});
-      table.append(this._el("tr", {}, ...["name", "material", "brand", "stock"].map((k) => this._el("th", {}, this._t(k))), this._el("th", {}, "")));
+      table.append(this._el("tr", {}, ...["name", "material", "brand", "stock", "price", "printed_avg"].map((k) => this._el("th", k === "printed_avg" ? { title: this._t("printed_avg_hint") } : {}, this._t(k))), this._el("th", {}, "")));
       for (const sp of archivedSpools) {
         const actions = this._el("td", {});
         if (admin) {
@@ -712,6 +734,8 @@ class DruckAssistantPanel extends HTMLElement {
           this._el("td", {}, sp.material),
           this._el("td", {}, sp.brand || "–"),
           this._el("td", {}, `${this._fmtNum(sp.remaining_g, 0)} / ${this._fmtNum(sp.initial_weight_g, 0)} g`),
+          this._el("td", {}, this._perKg(sp.price_per_kg, cur)),
+          this._el("td", {}, this._perKg(this._printedPrice(printer, new Set([sp.id])), cur)),
           actions));
       }
       details.append(table);
@@ -729,6 +753,7 @@ class DruckAssistantPanel extends HTMLElement {
     const activeSpools = this._spools.filter((sp) => !sp.archived);
     const slotsCard = this._el("div", { class: "card" }, this._el("h2", {}, this._t("slots")));
     const slots = printer?.slots || [];
+    const cur = printer?.currency || "EUR";
     if (!slots.length) {
       slotsCard.append(this._el("div", { class: "empty" }, this._t("no_slots")));
     } else {
@@ -744,10 +769,14 @@ class DruckAssistantPanel extends HTMLElement {
         if (!admin) sel.disabled = true;
         const dot = this._el("span", { class: "dot", style: `background:${/^#[0-9a-f]{6,8}$/i.test(sl.color || "") ? sl.color : "transparent"}` });
         const remain = sl.remain != null ? Math.max(0, Math.min(100, sl.remain)) : null;
+        const spool = activeSpools.find((sp) => sp.id === sl.spool_id);
         grid.append(this._el("div", { class: "slot" + (sl.active ? " active" : "") },
           this._el("div", { class: "top" }, dot, sl.label, sl.tagged ? this._el("span", { class: "badge" }, "RFID") : "",
             this._el("span", { class: "sub" }, `${sl.type || "–"}${remain !== null ? ` · ${remain} %` : ""}`)),
           remain !== null ? this._el("div", { class: "bar", style: "width:100%" }, this._el("div", { class: "fill" + (remain <= 15 ? " low" : ""), style: `width:${remain}%` })) : "",
+          spool
+            ? this._el("div", { class: "sub" }, `${this._t("price")}: ${this._perKg(spool.price_per_kg, cur)} · ${this._t("printed_avg")}: ${this._perKg(this._printedPrice(printer, new Set([spool.id])), cur)}`)
+            : "",
           this._el("label", { class: "field", style: "margin:0" }, this._el("span", {}, this._t("assign_spool")), sel)));
       }
       slotsCard.append(grid);
