@@ -54,6 +54,25 @@ def _number(value: Any, field: str, *, optional: bool = False) -> float | None:
     return number
 
 
+# Weight of an empty spool, used to turn a weighed spool into the filament left on it.
+DEFAULT_TARE_G = 200.0
+BRAND_TARE_G = {"bambu": 250.0}
+DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+
+def default_tare(brand: str) -> float:
+    """Typical empty spool weight of a brand (the user can set the real one per spool)."""
+    key = (brand or "").lower()
+    return next((g for name, g in BRAND_TARE_G.items() if name in key), DEFAULT_TARE_G)
+
+
+def _date(value: Any, field: str) -> str:
+    text = str(value or "").strip()
+    if text and not DATE.match(text):
+        raise SpoolError(f"{field} must be a date like 2026-10-28")
+    return text
+
+
 @dataclass
 class Spool:
     """A filament spool."""
@@ -69,6 +88,18 @@ class Spool:
     notes: str = ""
     rfid: str = ""
     archived: bool = False
+    # Optional purchase and storage data.
+    tare_g: float | None = None
+    purchased: str = ""
+    shop: str = ""
+    order_no: str = ""
+    batch: str = ""
+    location: str = ""
+    last_dried: str = ""
+
+    @property
+    def tare(self) -> float:
+        return self.tare_g if self.tare_g is not None else default_tare(self.brand)
 
     @property
     def remaining_percent(self) -> float:
@@ -79,6 +110,7 @@ class Spool:
     def as_dict(self) -> dict[str, Any]:
         data = asdict(self)
         data["remaining_percent"] = self.remaining_percent
+        data["tare_effective_g"] = self.tare
         return data
 
 
@@ -181,6 +213,16 @@ class SpoolStore:
             rfid=valid_rfid(data["rfid"]) if "rfid" in data
             else (existing.rfid if existing else ""),
             archived=existing.archived if existing else False,
+            tare_g=_number(data["tare_g"], "tare_g", optional=True) if "tare_g" in data
+            else (existing.tare_g if existing else None),
+            purchased=_date(data["purchased"], "purchased") if "purchased" in data
+            else (existing.purchased if existing else ""),
+            last_dried=_date(data["last_dried"], "last_dried") if "last_dried" in data
+            else (existing.last_dried if existing else ""),
+            **{
+                key: str(data[key] or "").strip() if key in data else (getattr(existing, key) if existing else "")
+                for key in ("shop", "order_no", "batch", "location")
+            },
         )
         self.spools[spool.id] = spool
         if spool.rfid:
@@ -248,7 +290,7 @@ class SpoolStore:
         """Create or link a spool for an AMS slot from ha-bambulab tray attributes.
 
         Returns (action, spool) with action one of "created", "assigned",
-        "adopted", "skipped". New spools are matched against the stock first
+        "adopted", "synced", "skipped". New spools are matched against the stock first
         (see find_stock), so a pre-entered 4-pack is used up instead of duplicated. Spools with an RFID tag are matched by tag, so the
         same spool is recognized when it moves to another slot. Untagged spools
         are only imported when include_untagged is set (manual import).
@@ -268,7 +310,7 @@ class SpoolStore:
             known = self.find_by_rfid(rfid)
             if known is not None:
                 if current is not None and current.id == known.id:
-                    return "skipped", known
+                    return ("synced" if self._sync_remaining(known, attrs) else "skipped"), known
                 if known.archived:
                     # An archived spool is still in the AMS (e.g. just ran empty).
                     # Never bring it back automatically: restore it from the archive.
@@ -292,6 +334,25 @@ class SpoolStore:
         spool = self.save_spool(spool_data_from_tray(attrs, rfid))
         self.assign(slot, spool.id)
         return "created", spool
+
+    @staticmethod
+    def _sync_remaining(spool: Spool, attrs: dict[str, Any]) -> bool:
+        """Take the AMS remaining amount for a spool that still counts as full.
+
+        A new spool is first reported with an unknown remaining amount (-1), so it
+        is created as full; the real value follows a little later. Only a spool
+        that is still exactly full is corrected, never one tracked by prints.
+        """
+        remain = attrs.get("remain")
+        if (
+            not attrs.get("remain_enabled", True)
+            or not isinstance(remain, (int, float))
+            or not 0 <= remain < 100
+            or spool.remaining_g != spool.initial_weight_g
+        ):
+            return False
+        spool.remaining_g = round(spool.initial_weight_g * remain / 100, 1)
+        return True
 
     def delete_spool(self, spool_id: str) -> None:
         if self.spools.pop(spool_id, None) is None:
@@ -351,6 +412,65 @@ class SpoolStore:
             return spool
         spool.remaining_g = round(max(spool.remaining_g - grams, 0.0), 1)
         return spool
+
+    def restore(self, spool_id: str | None, grams: float | None) -> Spool | None:
+        """Give filament back to a spool (a booking was wrong), never above its full weight."""
+        spool = self.spools.get(spool_id) if spool_id else None
+        if spool is None or not grams or grams <= 0:
+            return spool
+        spool.remaining_g = round(min(spool.remaining_g + grams, spool.initial_weight_g), 1)
+        return spool
+
+    def weigh(self, spool_id: str, gross_g: Any, tare_g: Any = None) -> Spool:
+        """Set the remaining filament from the weight of the spool on a scale.
+
+        gross_g includes the empty spool; tare_g (optional) stores the real empty weight.
+        """
+        spool = self.spools.get(spool_id)
+        if spool is None:
+            raise SpoolError("unknown spool")
+        gross = _number(gross_g, "gross_g")
+        if tare_g not in (None, ""):
+            spool.tare_g = _number(tare_g, "tare_g")
+        spool.remaining_g = round(min(max(gross - spool.tare, 0.0), spool.initial_weight_g), 1)
+        return spool
+
+    def replacement_for(self, spool: Spool) -> Spool | None:
+        """The stock spool that should take over when this one is used up.
+
+        Same material, not in a slot, not another variant of the product line, and
+        a nearly identical color; the closest color wins, then the fullest spool.
+        """
+        assigned = set(self.assignments.values())
+        best: tuple[float, float] | None = None
+        found: Spool | None = None
+        for other in self.spools.values():
+            if (
+                other.id == spool.id
+                or other.archived
+                or other.id in assigned
+                or other.remaining_g <= 0
+                or other.material.strip().lower() != spool.material.strip().lower()
+                or _product_line(other.name, spool.name) == "other"
+            ):
+                continue
+            distance = color_distance(other.color, spool.color)
+            if distance is None or distance > MAX_SAME_PRODUCT_DISTANCE:
+                continue
+            rank = (distance, -other.remaining_g)
+            if best is None or rank < best:
+                best, found = rank, other
+        return found
+
+    def stock_by_material(self) -> dict[str, float]:
+        """Filament left (grams) per material over all spools that are not archived."""
+        totals: dict[str, float] = {}
+        for spool in self.spools.values():
+            if spool.archived:
+                continue
+            key = spool.material.strip().upper()
+            totals[key] = round(totals.get(key, 0.0) + spool.remaining_g, 1)
+        return totals
 
     def low_spools(self, threshold_percent: float) -> list[Spool]:
         """Assigned spools at or below the threshold."""

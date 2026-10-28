@@ -29,7 +29,8 @@
           "power_entity": "Leistungssensor des Druckers (W, optional)",
           "filament_prices": "Filamentpreise pro kg je Sorte (eine pro Zeile, z. B. PLA=20)",
           "auto_import": "Neue Bambu-Spulen (RFID) automatisch ins Inventar übernehmen",
-          "auto_archive": "Leere Spulen automatisch archivieren"
+          "auto_archive": "Leere Spulen automatisch archivieren",
+          "filament_min_stock": "Mindestbestand pro Sorte in Gramm (eine pro Zeile, z. B. PLA=2000), erscheint in der Einkaufsliste"
         }
       }
     },

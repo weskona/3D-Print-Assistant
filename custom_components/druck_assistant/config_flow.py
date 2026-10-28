@@ -22,6 +22,7 @@ from .const import (
     CONF_BAMBU_ENTRY_ID,
     CONF_ENERGY_ENTITY,
     CONF_FILAMENT_PRICES,
+    CONF_MIN_STOCK,
     CONF_NOTIFY_FILAMENT_LOW,
     CONF_POWER_ENTITY,
     CONF_PRICE_ENTITY,
@@ -109,10 +110,11 @@ class DruckAssistantOptionsFlow(OptionsFlow):
     ) -> ConfigFlowResult:
         errors: dict[str, str] = {}
         if user_input is not None:
-            try:
-                parse_prices(user_input.get(CONF_FILAMENT_PRICES))
-            except ValueError:
-                errors[CONF_FILAMENT_PRICES] = "invalid_prices"
+            for key in (CONF_FILAMENT_PRICES, CONF_MIN_STOCK):
+                try:
+                    parse_prices(user_input.get(key))
+                except ValueError:
+                    errors[key] = "invalid_prices"
         if user_input is not None and not errors:
             # Cleared optional entities are stored as None so they override the setup data.
             for key in (CONF_ENERGY_ENTITY, CONF_POWER_ENTITY, CONF_PRICE_ENTITY):
@@ -128,6 +130,10 @@ class DruckAssistantOptionsFlow(OptionsFlow):
                 vol.Optional(
                     CONF_FILAMENT_PRICES,
                     description={"suggested_value": opts.get(CONF_FILAMENT_PRICES, "")},
+                ): selector.TextSelector(selector.TextSelectorConfig(multiline=True)),
+                vol.Optional(
+                    CONF_MIN_STOCK,
+                    description={"suggested_value": opts.get(CONF_MIN_STOCK, "")},
                 ): selector.TextSelector(selector.TextSelectorConfig(multiline=True)),
                 vol.Required(
                     CONF_NOTIFY_FILAMENT_LOW,

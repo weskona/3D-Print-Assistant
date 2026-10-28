@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0-beta.1] - 2026-10-28
+
+### Added
+
+- Weighing: a scale button on every spool turns the weight on the scale into the filament left (minus the empty spool: 250 g for Bambu Lab, 200 g otherwise, or an own value kept per spool).
+- More spool details: purchase date, shop, order number, batch, location and last drying. A label with the spool's data can be printed.
+- Warning before it runs out: when a spool holds less than the running print needs from it, the Overview tab shows a warning and the event `druck_assistant_spool_insufficient` fires once; a slot that can take over is named.
+- Replacement from the stock: the AMS tab and the `druck_assistant_filament_low` event (`replacement`) name the stock spool to insert for an almost empty spool.
+- Minimum stock per type (new option) with a stock and shopping list in the Filament tab (missing grams, estimated cost, days the stock lasts, copy button) and the event `druck_assistant_stock_low`.
+- Rebooking: a print in the history can be charged to another spool; the filament moves between the spools.
+- New "Statistics" tab: per material the cost, filament, failure rate and wasted money, the cost per month, the most expensive prints and the price per kg of the purchases.
+- CSV export of the spools and the history, and CSV import of spools.
+
+## [0.8.0-beta.1] - 2026-10-28
+
+### Changed
+
+- The filament of a print is split over the spools it really used. The add-on follows the active slot during the print and takes the grams per slot from the slicer when ha-bambulab reports them. When a spool runs empty and the AMS continues with another spool, the first spool is charged only what was left on it and the rest goes to the other spool (or, without enough data, the remaining percent of the AMS per slot decides). Every spool is charged with its own price, and the print history lists the spools of a multi spool print.
+- A print that did not finish now counts only for the progress it reached; before, the full weight was deducted.
+- History records have a new `usages` list (spools of a multi spool print) and `planned_g` (the weight of the whole print as sliced).
+
+## [0.7.0-beta.6] - 2026-10-28
+
+### Changed
+
+- The archived spools list shows the spool color as a dot in front of the name, like the filament list.
+- Prices per kg are shown in more places: the archived spools list has a Price column, and each AMS slot shows the price of its spool.
+- The Overview tab shows the live camera view of the printer (ha-bambulab camera entity, MJPEG stream; it runs only while the tab is open) below the current print, and the cover image of the print while it is running.
+- New "Avg. printed" column: the average filament cost per kg of the recorded prints of a type or spool (filament list, archived spools) and of the spool in an AMS slot.
+
+## [0.7.0-beta.5] - 2026-10-28
+
+### Fixed
+
+- A new AMS spool stayed at its full weight: the AMS first reports an unknown remaining amount, so the spool was created as full, and the value reported a little later was never taken over. A spool that is still exactly full now takes the remaining amount the AMS reports; spools whose weight is tracked by prints are not touched.
+
 ## [0.7.0-beta.4] - 2026-10-28
 
 ### Fixed

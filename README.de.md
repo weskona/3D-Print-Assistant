@@ -16,15 +16,24 @@ Home-Assistant-Integration für Bambu-Lab-Drucker. Sie setzt auf
 - Filamentverbrauch und -kosten pro Druck und gesamt
 - Stromkosten pro Druck über einen Energiezähler (kWh) oder einen Leistungssensor (W, wird über die Druckdauer integriert); Strompreis fest oder aus einer Entität
 - Filamentverwaltung: Spulenbestand mit Restgewicht, Preis und Farbe, zugeordnet zu AMS-/Externe-Spule-Slots; nach jedem Druck wird das verbrauchte Filament abgezogen, bei niedrigem Bestand gibt es ein Ereignis
-- Eigenes Panel „3D Print Assistant“ in der Seitenleiste mit Kennzahlen, laufendem Druck (Arbeitsschritt live, Fortschritt, Zeiten, Schicht, Gewicht, Temperaturen, Kostenschätzung), geladenem Filament und Druckhistorie (aktualisiert sich live bei Druckstart und -ende)
+- Eigenes Panel „3D Print Assistant“ in der Seitenleiste mit Kennzahlen, laufendem Druck (Arbeitsschritt live, Fortschritt, Zeiten, Schicht, Gewicht, Temperaturen, Kostenschätzung, Titelbild), der Live-Kameraansicht des Druckers, geladenem Filament und Druckhistorie (aktualisiert sich live bei Druckstart und -ende)
 - Ereignisse für Automationen: `druck_assistant_print_started`, `druck_assistant_print_finished`,
-  `druck_assistant_print_failed`, `druck_assistant_filament_low`
+  `druck_assistant_print_failed`, `druck_assistant_filament_low` (mit der vorgeschlagenen Ersatzspule `replacement`), `druck_assistant_spool_insufficient` (eine Spule reicht für den laufenden Druck nicht), `druck_assistant_stock_low` (eine Sorte liegt unter ihrem Mindestbestand)
 
 ## Filamentverwaltung
 
 Im Tab „Filament“ des Panels (Bearbeiten nur für Administratoren) legst du Spulen an, im Tab „AMS“ ordnest du
-sie den Slots des Druckers zu. Verwendet wird der Slot, der beim Druckstart aktiv ist: Der Preis
-seiner Spule ersetzt den Sortenpreis, das verbrauchte Gewicht wird am Druckende abgezogen.
+sie den Slots des Druckers zu. Der Preis der Spule ersetzt den Sortenpreis, das verbrauchte Gewicht wird am
+Druckende abgezogen.
+
+**Verbrauch:** Das Gewicht wird auf alle Spulen verteilt, die ein Druck verwendet hat. Das Add-on verfolgt den aktiven
+Slot während des Drucks (Mehrfarbdruck) und nimmt die Gramm pro Slot aus dem Slicer, wenn ha-bambulab sie meldet
+(Attribute des Sensors für das Druckgewicht). Läuft eine Spule leer und das AMS macht mit einer anderen Spule
+desselben Filaments weiter, wird der ersten Spule nur das berechnet, was noch darauf war; der Rest geht auf die
+Ersatzspule. Ohne weitere Daten entscheidet der Rest in Prozent, den das AMS pro Slot meldet. Ein nicht beendeter
+Druck zählt nur mit dem erreichten Fortschritt. Jede Spule wird mit ihrem eigenen Preis belastet; die Druckhistorie
+listet bei solchen Drucken die Spulen auf.
+
 Mit „Aus AMS importieren“ werden aus den belegten AMS-Slots Spulen angelegt. Neue Bambu-Spulen mit
 RFID-Tag werden zusätzlich automatisch übernommen (Option „Neue Bambu-Spulen automatisch übernehmen“);
 Spulen ohne Tag, etwa Fremdfilament oder die externe Spule, werden nur über den Button importiert.
@@ -39,7 +48,7 @@ Material, Hersteller und Farbe auszufüllen; jedes Feld lässt sich danach ände
 deren Farbwerte können ungenau sein).
 
 **Spulen bearbeiten:** Die Liste zeigt eine Zeile pro Sorte und Farbe (z. B. „Bambu PETG Basic“ in Schwarz und in Grau sind
-zwei Zeilen) mit dem Gesamtbestand aller Spulen und dem Durchschnittspreis pro kg. Klicke auf den Namen einer Sorte mit
+zwei Zeilen) mit dem Gesamtbestand aller Spulen, dem Durchschnittspreis pro kg und den durchschnittlichen Kosten pro kg der aufgezeichneten Drucke („Ø gedruckt“, auch bei archivierten Spulen und bei der Spule in einem AMS-Slot). Klicke auf den Namen einer Sorte mit
 mehreren Spulen, um sie einzeln aufzuklappen. Spulen bearbeitest du mit dem Button „Bearbeiten“ ihrer Zeile; das Bearbeiten-Popup
 bietet auch „Löschen“. Eine Bambu-Lab-Spule in einem Slot lässt sich bearbeiten, sobald ihr RFID-Tag erkannt wurde (der Tag füllt sie aus);
 Spulen auf Vorrat und Spulen anderer Hersteller, die keinen Tag haben, sind immer bearbeitbar. Eine Bambu-Lab-Spule ohne Tag,
@@ -59,6 +68,26 @@ Erreicht der Restbestand einer Spule nach einem Druck 0 g, kommt sie automatisch
 stellst du in der einklappbaren Liste „Archivierte Spulen“ wieder her.
 Archivierte Spulen werden nicht automatisch wieder importiert oder zugeordnet, auch wenn sie noch im AMS stecken.
 Bei Drucken mit mehreren Spulen wird alles der beim Start aktiven Spule zugerechnet.
+
+**Wiegen und Kalibrieren:** Der Waagen-Knopf einer Spule rechnet das Gewicht auf der Waage in das Restfilament um (abzüglich der
+leeren Spule: 250 g bei Bambu Lab, sonst 200 g, oder dein eigener Wert). Das echte Leergewicht wird pro Spule gespeichert. Im
+Formular einer Spule gibt es weitere Angaben: Kaufdatum, Händler, Bestellnummer, Charge, Lagerort und zuletzt getrocknet. Über den
+Etikett-Knopf einer Zeile lässt sich ein Etikett mit Name, Sorte, Farbe, Gewicht und Ort drucken.
+
+**Vor dem Druck:** Reicht eine Spule für das, was der Druck von ihr braucht, nicht aus, zeigt der Tab „Übersicht“ eine Warnung
+und `druck_assistant_spool_insufficient` wird einmal ausgelöst. Wenn ein anderer Slot mit demselben Filament übernehmen kann,
+wird er genannt. Bei einer fast leeren Spule schlägt der Tab „AMS“ (und das Ereignis für niedrigen Bestand) eine Ersatzspule aus
+deinem Vorrat vor.
+
+**Bestand und Einkaufsliste:** In den Optionen der Integration legst du pro Sorte einen Mindestbestand fest (eine Zeile pro Sorte,
+z. B. `PLA=2000`). Der Tab „Filament“ zeigt dann den Bestand pro Sorte, was fehlt, die geschätzten Kosten und wie viele Tage der
+Bestand bei deinem Verbrauch der letzten 30 Tage reicht, mit einem Knopf, der die Einkaufsliste kopiert. Sinkt eine Sorte unter ihr
+Minimum, wird `druck_assistant_stock_low` einmal ausgelöst.
+
+**Korrekturen, Auswertung und Listen:** Mit dem Pfeil-Knopf eines Drucks in der Historie bucht man ihn auf eine andere Spule um, das
+Filament wandert mit. Der Tab „Auswertung“ zeigt Kosten, Filament, Fehlerquote und verschwendetes Geld pro Material, die Kosten pro
+Monat, die teuersten Drucke und den Preis pro kg deiner Einkäufe. Spulen und Historie lassen sich als CSV exportieren, Spulen auch
+aus einer CSV-Datei importieren. Der Spulenbestand wird von allen Druckern gemeinsam genutzt.
 
 ## Installation
 

@@ -4,6 +4,9 @@ const ICONS = {
   edit: "M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z",
   delete: "M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z",
   archive: "M3,3H21V7H3V3M4,8H20V21H4V8M9.5,11A0.5,0.5 0 0,0 9,11.5V13H15V11.5A0.5,0.5 0 0,0 14.5,11H9.5Z",
+  scale: "M12,3C10.73,3 9.6,3.8 9.18,5H3V7H4.95L2,14C1.53,16 3,17 5.5,17C8,17 9.56,16 9,14L6.05,7H9.17C9.5,7.85 10.15,8.5 11,8.83V20H2V22H22V20H13V8.82C13.85,8.5 14.5,7.85 14.82,7H17.95L15,14C14.53,16 16,17 18.5,17C21,17 22.56,16 22,14L19.05,7H21V5H14.82C14.4,3.8 13.27,3 12,3Z",
+  label: "M5.5,7A1.5,1.5 0 0,1 4,5.5A1.5,1.5 0 0,1 5.5,4A1.5,1.5 0 0,1 7,5.5A1.5,1.5 0 0,1 5.5,7M21.41,11.58L12.41,2.58C12.05,2.22 11.55,2 11,2H4C2.89,2 2,2.89 2,4V11C2,11.55 2.22,12.05 2.59,12.41L11.58,21.41C11.95,21.77 12.45,22 13,22C13.55,22 14.05,21.77 14.41,21.41L21.41,14.41C21.78,14.05 22,13.55 22,13C22,12.45 21.77,11.95 21.41,11.58Z",
+  swap: "M21,9L17,5V8H10V10H17V13M7,11L3,15L7,19V16H14V14H7V11Z",
   restore: "M12,3A9,9 0 0,0 3,12H0L4,16L8,12H5A7,7 0 0,1 12,5A7,7 0 0,1 19,12A7,7 0 0,1 12,19C10.5,19 9.09,18.5 7.94,17.7L6.5,19.14C8.04,20.3 9.94,21 12,21A9,9 0 0,0 21,12A9,9 0 0,0 12,3M14,12A2,2 0 0,0 12,10A2,2 0 0,0 10,12A2,2 0 0,0 12,14A2,2 0 0,0 14,12Z",
 };
 
@@ -82,6 +85,60 @@ const TRANSLATIONS = {
     none: "none",
     admin_only: "Only administrators can change the filament inventory.",
     price: "Price",
+    printed_avg: "Avg. printed",
+    weigh: "Weigh",
+    weigh_title: "Weigh spool",
+    gross_weight: "Weight on the scale incl. spool (g)",
+    tare_weight: "Empty spool (g)",
+    weigh_preview: "Filament left: {value} g",
+    print_label: "Print label",
+    more_details: "More details",
+    purchased: "Purchased",
+    shop: "Shop",
+    order_no: "Order number",
+    batch: "Batch",
+    location: "Location",
+    last_dried: "Last dried",
+    rebook: "Change spool",
+    rebook_title: "Charge the print to another spool",
+    rebook_none: "No spool",
+    rebook_hint: "The filament of the print moves from the current spool to the chosen one.",
+    rebook_multi: "This print used several spools and cannot be rebooked.",
+    stock_title: "Stock and shopping list",
+    stock_g: "Stock",
+    min_stock: "Minimum",
+    missing: "Missing",
+    est_cost: "Est. cost",
+    range_days: "Lasts about",
+    days: "{n} days",
+    copy_list: "Copy shopping list",
+    copied: "Shopping list copied to the clipboard.",
+    nothing_to_buy: "Nothing to buy: every type is above its minimum.",
+    set_min_hint: "Set the minimum stock per type in the integration options (e.g. PLA=2000).",
+    export_spools: "Export spools (CSV)",
+    export_history: "Export history (CSV)",
+    import_csv: "Import spools (CSV)",
+    import_csv_result: "Imported {created} spools, {errors} rows skipped.",
+    tab_stats: "Statistics",
+    stats_materials: "By material",
+    stats_months: "Cost per month",
+    stats_top: "Most expensive prints",
+    stats_waste: "Failed prints",
+    stats_prices: "Price per kg of the purchases",
+    failed_prints: "Failed",
+    fail_rate: "Failure rate",
+    wasted: "Wasted",
+    purchases: "Purchases",
+    last_price: "Last",
+    shortage_title: "Not enough filament",
+    shortage_line: "{spool}: the print needs {needed} g, {available} g are left.",
+    shortage_refill: "A spool of the same filament is in {slot}.",
+    shortage_no_refill: "No other slot can take over.",
+    replacement: "Replacement: {name} ({grams} g)",
+    camera: "Camera",
+    camera_live: "Live",
+    camera_unavailable: "The camera is not available.",
+    printed_avg_hint: "Average filament cost per kg of the recorded prints",
     suggest_hint: "Pick a name you already have to fill in the other fields.",
     catalog: "Filament catalog",
     catalog_brand: "Manufacturer",
@@ -179,6 +236,60 @@ const TRANSLATIONS = {
     none: "keine",
     admin_only: "Nur Administratoren können den Filamentbestand ändern.",
     price: "Preis",
+    printed_avg: "Ø gedruckt",
+    weigh: "Wiegen",
+    weigh_title: "Spule wiegen",
+    gross_weight: "Gewicht auf der Waage inkl. Spule (g)",
+    tare_weight: "Leere Spule (g)",
+    weigh_preview: "Restfilament: {value} g",
+    print_label: "Etikett drucken",
+    more_details: "Weitere Angaben",
+    purchased: "Gekauft am",
+    shop: "Händler",
+    order_no: "Bestellnummer",
+    batch: "Charge",
+    location: "Lagerort",
+    last_dried: "Zuletzt getrocknet",
+    rebook: "Spule ändern",
+    rebook_title: "Druck einer anderen Spule zuordnen",
+    rebook_none: "Keine Spule",
+    rebook_hint: "Das Filament des Drucks wandert von der bisherigen Spule auf die gewählte.",
+    rebook_multi: "Dieser Druck hat mehrere Spulen verwendet und kann nicht umgebucht werden.",
+    stock_title: "Bestand und Einkaufsliste",
+    stock_g: "Bestand",
+    min_stock: "Minimum",
+    missing: "Fehlt",
+    est_cost: "Gesch. Kosten",
+    range_days: "Reicht etwa",
+    days: "{n} Tage",
+    copy_list: "Einkaufsliste kopieren",
+    copied: "Einkaufsliste in die Zwischenablage kopiert.",
+    nothing_to_buy: "Nichts zu kaufen: jede Sorte liegt über ihrem Minimum.",
+    set_min_hint: "Den Mindestbestand pro Sorte stellst du in den Optionen der Integration ein (z. B. PLA=2000).",
+    export_spools: "Spulen exportieren (CSV)",
+    export_history: "Historie exportieren (CSV)",
+    import_csv: "Spulen importieren (CSV)",
+    import_csv_result: "{created} Spulen importiert, {errors} Zeilen übersprungen.",
+    tab_stats: "Auswertung",
+    stats_materials: "Nach Material",
+    stats_months: "Kosten pro Monat",
+    stats_top: "Teuerste Drucke",
+    stats_waste: "Fehlgeschlagene Drucke",
+    stats_prices: "Preis pro kg der Einkäufe",
+    failed_prints: "Fehlgeschlagen",
+    fail_rate: "Fehlerquote",
+    wasted: "Verschwendet",
+    purchases: "Käufe",
+    last_price: "Zuletzt",
+    shortage_title: "Filament reicht nicht",
+    shortage_line: "{spool}: der Druck braucht {needed} g, es sind noch {available} g übrig.",
+    shortage_refill: "Eine Spule mit demselben Filament steckt in {slot}.",
+    shortage_no_refill: "Kein anderer Slot kann übernehmen.",
+    replacement: "Ersatz: {name} ({grams} g)",
+    camera: "Kamera",
+    camera_live: "Live",
+    camera_unavailable: "Die Kamera ist nicht verfügbar.",
+    printed_avg_hint: "Durchschnittliche Filamentkosten pro kg der aufgezeichneten Drucke",
     suggest_hint: "Wähle einen vorhandenen Namen, um die übrigen Felder auszufüllen.",
     catalog: "Filament-Katalog",
     catalog_brand: "Hersteller",
@@ -217,6 +328,7 @@ class DruckAssistantPanel extends HTMLElement {
     this._selected = null;
     this._tab = "overview";
     this._editing = null;
+    this._dialog = null;
     this._filter = { text: "", material: "", brand: "", status: "" };
     this._refocusSearch = null;
     this._expanded = new Set();
@@ -256,6 +368,7 @@ class DruckAssistantPanel extends HTMLElement {
   }
 
   disconnectedCallback() {
+    this._cameraStop();
     this._unsub.forEach((u) => u());
     this._unsub = [];
     clearTimeout(this._timer);
@@ -294,7 +407,7 @@ class DruckAssistantPanel extends HTMLElement {
     }
     // Never re-render while a form is open or the user is typing in a field.
     const typing = ["INPUT", "SELECT", "TEXTAREA"].includes(this.shadowRoot.activeElement?.tagName);
-    if (this._editing === null && !typing) this._render();
+    if (this._editing === null && this._dialog === null && !typing) this._render();
     // Refresh faster while a print is running so progress and costs stay live.
     const printing = (this._data?.printers || []).some((p) => p.current_print);
     clearTimeout(this._timer);
@@ -343,6 +456,7 @@ class DruckAssistantPanel extends HTMLElement {
       this._notice = e && e.message ? e.message : String(e);
     }
     this._editing = null;
+    this._dialog = null;
     await this._load();
     this._render();
   }
@@ -430,6 +544,14 @@ class DruckAssistantPanel extends HTMLElement {
       this._field(this._t("initial_weight"), mk("initial_weight_g", "number", { min: "1", step: "1" })),
       this._field(this._t("remaining_weight"), mk("remaining_g", "number", { min: "0", step: "1" })),
       this._field(this._t("notes"), mk("notes")),
+      this._el("details", { class: "more" }, this._el("summary", {}, this._t("more_details")),
+        this._field(this._t("tare_weight"), mk("tare_g", "number", { min: "0", step: "1", placeholder: String(v.tare_effective_g ?? "") })),
+        this._field(this._t("purchased"), mk("purchased", "date")),
+        this._field(this._t("shop"), mk("shop")),
+        this._field(this._t("order_no"), mk("order_no")),
+        this._field(this._t("batch"), mk("batch")),
+        this._field(this._t("location"), mk("location")),
+        this._field(this._t("last_dried"), mk("last_dried", "date"))),
       spool.id ? this._field(this._t("rfid_tag"), mk("rfid")) : this._field(this._t("quantity"), qty),
       ...datalists,
       this._el("div", { class: "actions" },
@@ -526,10 +648,12 @@ class DruckAssistantPanel extends HTMLElement {
     if (!admin) return [];
     const archive = this._iconButton("archive", this._t("archive"), () => this._call({ type: "druck_assistant/spool_archive", spool_id: sp.id, archived: true }));
     const del = this._iconButton("delete", this._t("delete"), () => this._confirmDelete(sp), true);
+    const weigh = this._iconButton("scale", this._t("weigh"), () => { this._dialog = { kind: "weigh", spool: sp }; this._render(); });
+    const label = this._iconButton("label", this._t("print_label"), () => this._printLabel(sp));
     if (this._canEdit(sp, admin, slotOf)) {
-      return [this._iconButton("edit", this._t("edit"), () => { this._editing = sp; this._render(); }), archive, del];
+      return [this._iconButton("edit", this._t("edit"), () => { this._editing = sp; this._render(); }), weigh, label, archive, del];
     }
-    return [archive, del];
+    return [weigh, label, archive, del];
   }
 
   _matchesFilter(sp, slotOf) {
@@ -583,6 +707,81 @@ class DruckAssistantPanel extends HTMLElement {
         : "");
   }
 
+  /**
+   * The live camera view: the MJPEG stream of the printer's camera entity. The card is built once
+   * and re-attached on every render, so the stream is not restarted by the periodic reload; it
+   * runs only while the Overview tab is shown.
+   */
+  _renderCamera(printer) {
+    const entity = printer?.camera_entity;
+    const state = entity ? this._hass?.states?.[entity] : null;
+    if (!state) return null;
+    if (!this._cam || this._cam.entity !== entity) {
+      this._cameraStop();
+      const img = this._el("img", { class: "camera", alt: this._t("camera") });
+      const note = this._el("div", { class: "sub", hidden: true }, this._t("camera_unavailable"));
+      img.addEventListener("error", () => {
+        img.hidden = true;
+        note.hidden = false;
+        // The stream ends when the camera drops out or its token changed: try again in a while.
+        clearTimeout(this._cam?.retry);
+        if (this._cam) this._cam.retry = setTimeout(() => this._cameraStart(), 10000);
+      });
+      img.addEventListener("load", () => { img.hidden = false; note.hidden = true; });
+      const card = this._el("div", { class: "card" },
+        this._el("div", { class: "hd" }, this._el("h2", {}, this._t("camera")),
+          this._el("span", { class: "chip running" }, this._t("camera_live"))),
+        img, note);
+      this._cam = { entity, card, img, note, retry: null, running: false };
+    }
+    return this._cam.card;
+  }
+
+  _cameraSync() {
+    const cam = this._cam;
+    if (!cam) return;
+    const shown = this._tab === "overview" && cam.card.isConnected && this.isConnected;
+    if (shown && !cam.running) this._cameraStart();
+    else if (!shown && cam.running) this._cameraStop();
+  }
+
+  _cameraStart() {
+    const cam = this._cam;
+    const token = this._hass?.states?.[cam?.entity]?.attributes?.access_token;
+    if (!cam || !token) return;
+    clearTimeout(cam.retry);
+    cam.running = true;
+    cam.img.src = `/api/camera_proxy_stream/${cam.entity}?token=${token}&t=${Date.now()}`;
+  }
+
+  _cameraStop() {
+    const cam = this._cam;
+    if (!cam) return;
+    clearTimeout(cam.retry);
+    cam.running = false;
+    cam.img.removeAttribute("src");
+  }
+
+  /** Average filament cost per kg of the recorded prints on the given spool ids (null without prints). */
+  _printedPrice(printer, ids) {
+    let cost = 0;
+    let grams = 0;
+    for (const r of printer?.history || []) {
+      // A print on several spools lists each one; otherwise the record belongs to its spool.
+      const parts = r.usages?.length ? r.usages : [{ spool_id: r.spool_id, weight_g: r.weight_g, cost: r.filament_cost ?? r.cost - (r.energy_cost || 0) }];
+      for (const u of parts) {
+        if (!ids.has(u.spool_id) || !(u.weight_g > 0)) continue;
+        cost += u.cost;
+        grams += u.weight_g;
+      }
+    }
+    return grams ? (cost / grams) * 1000 : null;
+  }
+
+  _perKg(value, cur) {
+    return value != null ? `${this._fmtMoney(value, cur)}/kg` : "–";
+  }
+
   /** Spools of the same type (name without " #n", material and color) form one inventory row. */
   _groups(spools) {
     const groups = new Map();
@@ -620,10 +819,14 @@ class DruckAssistantPanel extends HTMLElement {
 
     const activeSpools = this._spools.filter((sp) => !sp.archived);
     const archivedSpools = this._spools.filter((sp) => sp.archived);
+    main.append(this._renderStock(printer, admin));
     const card = this._el("div", { class: "card" }, this._el("h2", {}, this._t("spools")));
     if (admin) {
       card.append(
         this._el("button", { class: "primary", onclick: async () => { await this._loadCatalog(); this._editing = {}; this._render(); } }, this._t("add_spool")),
+        this._el("button", { onclick: () => this._exportSpools() }, this._t("export_spools")),
+        this._el("button", { onclick: () => this._exportHistory(printer) }, this._t("export_history")),
+        this._el("button", { onclick: () => this._pickCsv() }, this._t("import_csv")),
         this._el("button", { onclick: () => this._call({ type: "druck_assistant/import_ams" }, (r) =>
           r.created + r.assigned + r.adopted
             ? this._t("import_result", r)
@@ -639,8 +842,8 @@ class DruckAssistantPanel extends HTMLElement {
       card.append(this._el("div", { class: "empty" }, this._t("no_match")));
     } else {
       const table = this._el("table", {});
-      const heads = ["name", "material", "brand", "stock", "price"].map((k) => this._t(k));
-      table.append(this._el("tr", {}, ...heads.map((h) => this._el("th", {}, h)), this._el("th", {}, "")));
+      const heads = ["name", "material", "brand", "stock", "price", "printed_avg"].map((k) => this._t(k));
+      table.append(this._el("tr", {}, ...heads.map((h, i) => this._el("th", i === 5 ? { title: this._t("printed_avg_hint") } : {}, h)), this._el("th", {}, "")));
       for (const g of groups) {
         const dot = this._el("span", { class: "dot", style: `background:${/^#[0-9a-f]{6,8}$/i.test(g.color) ? g.color : "transparent"}` });
         const pct = Math.max(0, Math.min(100, g.percent));
@@ -665,7 +868,8 @@ class DruckAssistantPanel extends HTMLElement {
           this._el("td", {}, g.material),
           this._el("td", {}, g.brand || "–"),
           this._el("td", {}, bar, `${this._fmtNum(g.remaining, 0)} / ${this._fmtNum(g.initial, 0)} g (${this._fmtNum(g.percent, 0)} %)`),
-          this._el("td", {}, g.avgPrice != null ? `${this._fmtMoney(g.avgPrice, cur)}/kg` : "–"),
+          this._el("td", {}, this._perKg(g.avgPrice, cur)),
+          this._el("td", {}, this._perKg(this._printedPrice(printer, new Set(g.spools.map((sp) => sp.id))), cur)),
           actions));
         if (expanded) {
           for (const sp of g.spools) {
@@ -681,7 +885,8 @@ class DruckAssistantPanel extends HTMLElement {
               this._el("td", {},
                 this._el("div", { class: "bar" }, this._el("div", { class: "fill" + (spct <= 15 ? " low" : ""), style: `width:${spct}%` })),
                 `${this._fmtNum(sp.remaining_g, 0)} / ${this._fmtNum(sp.initial_weight_g, 0)} g (${this._fmtNum(sp.remaining_percent, 0)} %)`),
-              this._el("td", {}, sp.price_per_kg != null ? `${this._fmtMoney(sp.price_per_kg, cur)}/kg` : "–"),
+              this._el("td", {}, this._perKg(sp.price_per_kg, cur)),
+              this._el("td", {}, this._perKg(this._printedPrice(printer, new Set([sp.id])), cur)),
               this._el("td", {}, ...this._rowActions(sp, admin, slotOf))));
           }
         }
@@ -698,7 +903,7 @@ class DruckAssistantPanel extends HTMLElement {
       details.append(this._el("div", { class: "empty" }, this._t("no_archived")));
     } else {
       const table = this._el("table", {});
-      table.append(this._el("tr", {}, ...["name", "material", "brand", "stock"].map((k) => this._el("th", {}, this._t(k))), this._el("th", {}, "")));
+      table.append(this._el("tr", {}, ...["name", "material", "brand", "stock", "price", "printed_avg"].map((k) => this._el("th", k === "printed_avg" ? { title: this._t("printed_avg_hint") } : {}, this._t(k))), this._el("th", {}, "")));
       for (const sp of archivedSpools) {
         const actions = this._el("td", {});
         if (admin) {
@@ -706,11 +911,14 @@ class DruckAssistantPanel extends HTMLElement {
             this._iconButton("restore", this._t("restore"), () => this._call({ type: "druck_assistant/spool_archive", spool_id: sp.id, archived: false })),
             this._iconButton("delete", this._t("delete"), () => this._confirmDelete(sp), true));
         }
+        const dot = this._el("span", { class: "dot", style: `background:${/^#[0-9a-f]{6,8}$/i.test(sp.color) ? sp.color : "transparent"}` });
         table.append(this._el("tr", {},
-          this._el("td", {}, sp.name, sp.rfid ? this._el("span", { class: "badge", title: sp.rfid }, "RFID") : ""),
+          this._el("td", { title: sp.color || "" }, dot, sp.name, sp.rfid ? this._el("span", { class: "badge", title: sp.rfid }, "RFID") : ""),
           this._el("td", {}, sp.material),
           this._el("td", {}, sp.brand || "–"),
           this._el("td", {}, `${this._fmtNum(sp.remaining_g, 0)} / ${this._fmtNum(sp.initial_weight_g, 0)} g`),
+          this._el("td", {}, this._perKg(sp.price_per_kg, cur)),
+          this._el("td", {}, this._perKg(this._printedPrice(printer, new Set([sp.id])), cur)),
           actions));
       }
       details.append(table);
@@ -719,6 +927,298 @@ class DruckAssistantPanel extends HTMLElement {
 
     // Forms are popups over the list.
     if (this._editing !== null) main.append(this._renderForm(this._editing));
+    if (this._dialog) main.append(this._renderDialog(printer));
+  }
+
+  /** Warning block for a running print whose spool will run out. */
+  _renderShortages(printer, shortages) {
+    const labelOf = (key) => printer.slots?.find((sl) => sl.key === key)?.label || key;
+    return this._el("div", { class: "warn", role: "alert" },
+      this._el("b", {}, this._t("shortage_title")),
+      ...shortages.map((sh) => this._el("div", {},
+        this._t("shortage_line", { spool: sh.spool || labelOf(sh.slot), needed: this._fmtNum(sh.needed_g, 0), available: this._fmtNum(sh.available_g, 0) }),
+        " ",
+        sh.refill_slot ? this._t("shortage_refill", { slot: labelOf(sh.refill_slot) }) : this._t("shortage_no_refill"))));
+  }
+
+  /** Popups for weighing a spool and for charging a print to another spool. */
+  _renderDialog(printer) {
+    const close = () => { this._dialog = null; this._render(); };
+    const d = this._dialog;
+    let form;
+    if (d.kind === "weigh") {
+      const sp = d.spool;
+      const gross = this._el("input", { type: "number", min: "0", step: "1", placeholder: "g" });
+      const tare = this._el("input", { type: "number", min: "0", step: "1", value: String(sp.tare_effective_g ?? 0) });
+      const preview = this._el("div", { class: "sub notice" }, "");
+      const update = () => {
+        const left = Math.min(Math.max((parseFloat(gross.value) || 0) - (parseFloat(tare.value) || 0), 0), sp.initial_weight_g);
+        preview.textContent = gross.value ? this._t("weigh_preview", { value: this._fmtNum(left, 0) }) : "";
+      };
+      gross.addEventListener("input", update);
+      tare.addEventListener("input", update);
+      form = this._el("div", { class: "dialog form", role: "dialog" },
+        this._el("h2", {}, this._t("weigh_title")),
+        this._el("div", { class: "sub notice" }, sp.name),
+        this._field(this._t("gross_weight"), gross),
+        this._field(this._t("tare_weight"), tare),
+        preview,
+        this._el("div", { class: "actions" },
+          this._el("button", { class: "primary", onclick: () => {
+            if (!gross.value) return;
+            this._call({ type: "druck_assistant/spool_weigh", spool_id: sp.id, gross_g: gross.value, tare_g: tare.value || null });
+          } }, this._t("save")),
+          this._el("button", { onclick: close }, this._t("cancel"))));
+      setTimeout(() => gross.focus(), 0);
+    } else {
+      const r = d.record;
+      const multi = !!r.usages?.length;
+      const sel = this._el("select", {}, this._el("option", { value: "" }, this._t("rebook_none")));
+      const sameMaterial = (sp) => !r.material || sp.material.toLowerCase() === String(r.material).toLowerCase();
+      for (const sp of this._spools.filter((x) => !x.archived).sort((a, b) => sameMaterial(b) - sameMaterial(a) || a.name.localeCompare(b.name))) {
+        const o = this._el("option", { value: sp.id }, `${sp.name} (${sp.material}, ${this._fmtNum(sp.remaining_g, 0)} g)`);
+        if (sp.id === r.spool_id) o.selected = true;
+        sel.append(o);
+      }
+      form = this._el("div", { class: "dialog form", role: "dialog" },
+        this._el("h2", {}, this._t("rebook_title")),
+        this._el("div", { class: "sub notice" }, `${r.name} · ${this._fmtNum(r.weight_g)} g`),
+        multi ? this._el("div", { class: "error" }, this._t("rebook_multi")) : this._el("div", { class: "sub notice" }, this._t("rebook_hint")),
+        this._field(this._t("spools"), sel),
+        this._el("div", { class: "actions" },
+          multi ? "" : this._el("button", { class: "primary", onclick: () =>
+            this._call({ type: "druck_assistant/record_rebook", started: r.started, spool_id: sel.value || null }) }, this._t("save")),
+          this._el("button", { onclick: close }, this._t("cancel"))));
+    }
+    return this._el("div", { class: "overlay" }, form);
+  }
+
+  /** Stock per material against the configured minimum, with a shopping list and the range. */
+  _renderStock(printer, admin) {
+    const cur = printer?.currency || "EUR";
+    const min = this._data?.min_stock || {};
+    const stock = new Map();
+    for (const sp of this._spools.filter((x) => !x.archived)) {
+      const key = sp.material.trim().toUpperCase();
+      const row = stock.get(key) || { material: key, grams: 0, value: 0, weight: 0 };
+      row.grams += sp.remaining_g;
+      if (sp.price_per_kg != null) { row.value += sp.price_per_kg * sp.initial_weight_g; row.weight += sp.initial_weight_g; }
+      stock.set(key, row);
+    }
+    for (const key of Object.keys(min)) if (!stock.has(key)) stock.set(key, { material: key, grams: 0, value: 0, weight: 0 });
+    // Grams per day over the last 30 days, from the recorded prints.
+    const since = Date.now() - 30 * 86400000;
+    const perDay = new Map();
+    for (const r of printer?.history || []) {
+      if (!r.finished || Date.parse(r.finished) < since) continue;
+      const parts = r.usages?.length ? r.usages : [{ material: r.material, weight_g: r.weight_g }];
+      for (const u of parts) {
+        const key = String(u.material || "").trim().toUpperCase();
+        if (key) perDay.set(key, (perDay.get(key) || 0) + (u.weight_g || 0) / 30);
+      }
+    }
+    const rows = [...stock.values()].sort((a, b) => a.material.localeCompare(b.material)).map((row) => {
+      const minimum = min[row.material] ?? null;
+      const missing = minimum != null ? Math.max(0, minimum - row.grams) : 0;
+      const avg = row.weight ? row.value / row.weight : null;
+      const rate = perDay.get(row.material) || 0;
+      return { ...row, minimum, missing, cost: avg != null ? (missing / 1000) * avg : null, days: rate > 0 ? row.grams / rate : null };
+    });
+    const buy = rows.filter((r) => r.missing > 0);
+    const card = this._el("details", { class: "card" }, this._el("summary", {}, this._t("stock_title")));
+    if (buy.length || this._stockOpen) card.open = true;
+    card.addEventListener("toggle", () => { this._stockOpen = card.open; });
+    if (!rows.length) {
+      card.append(this._el("div", { class: "empty" }, this._t("no_spools")));
+      return card;
+    }
+    const table = this._el("table", {});
+    table.append(this._el("tr", {}, ...["material", "stock_g", "min_stock", "missing", "est_cost", "range_days"].map((k) => this._el("th", {}, this._t(k)))));
+    for (const r of rows) {
+      table.append(this._el("tr", {},
+        this._el("td", {}, r.material),
+        this._el("td", { class: r.missing > 0 ? "under" : "" }, `${this._fmtNum(r.grams, 0)} g`),
+        this._el("td", {}, r.minimum != null ? `${this._fmtNum(r.minimum, 0)} g` : "–"),
+        this._el("td", {}, r.missing > 0 ? `${this._fmtNum(r.missing, 0)} g` : "–"),
+        this._el("td", {}, r.cost != null && r.missing > 0 ? this._fmtMoney(r.cost, cur) : "–"),
+        this._el("td", {}, r.days != null ? this._t("days", { n: this._fmtNum(r.days, 0) }) : "–")));
+    }
+    card.append(table);
+    const total = buy.reduce((sum, r) => sum + (r.cost || 0), 0);
+    card.append(this._el("div", { class: "sub notice", style: "margin-top:10px" },
+      buy.length ? `${this._t("missing")}: ${buy.map((r) => `${r.material} ${this._fmtNum(r.missing, 0)} g`).join(", ")}${total ? ` · ${this._t("est_cost")}: ${this._fmtMoney(total, cur)}` : ""}`
+        : (Object.keys(min).length ? this._t("nothing_to_buy") : this._t("set_min_hint"))));
+    if (buy.length) {
+      card.append(this._el("div", { class: "toolbar" }, this._el("button", { onclick: async () => {
+        const text = buy.map((r) => `${r.material}: ${this._fmtNum(r.missing, 0)} g${r.cost != null ? ` (~${this._fmtMoney(r.cost, cur)})` : ""}`).join("\n");
+        try { await navigator.clipboard.writeText(text); this._notice = this._t("copied"); this._noticeOk = true; } catch (e) { this._notice = text; this._noticeOk = true; }
+        this._render();
+      } }, this._t("copy_list"))));
+    }
+    return card;
+  }
+
+  /** Statistics: by material, per month, most expensive and failed prints, purchase prices. */
+  _renderStats(main, printer) {
+    if (!printer) { main.append(this._el("div", { class: "empty" }, this._t("no_printer"))); return; }
+    const cur = printer.currency || "EUR";
+    const history = printer.history || [];
+    if (!history.length) { main.append(this._el("div", { class: "card" }, this._el("div", { class: "empty" }, this._t("no_history")))); return; }
+    const filamentCost = (r) => r.filament_cost ?? r.cost - (r.energy_cost || 0);
+    const byMaterial = new Map();
+    for (const r of history) {
+      const key = String(r.material || "?").toUpperCase();
+      const row = byMaterial.get(key) || { material: key, prints: 0, grams: 0, cost: 0, failed: 0, wasted: 0 };
+      row.prints += 1;
+      row.grams += r.weight_g || 0;
+      row.cost += r.cost || 0;
+      if (r.result === "failed") { row.failed += 1; row.wasted += filamentCost(r); }
+      byMaterial.set(key, row);
+    }
+    const mat = this._el("div", { class: "card" }, this._el("h2", {}, this._t("stats_materials")));
+    const table = this._el("table", {});
+    table.append(this._el("tr", {}, ...["material", "prints", "filament", "cost", "failed_prints", "fail_rate", "wasted"].map((k) => this._el("th", {}, this._t(k)))));
+    for (const r of [...byMaterial.values()].sort((a, b) => b.cost - a.cost)) {
+      table.append(this._el("tr", {},
+        this._el("td", {}, r.material), this._el("td", {}, r.prints), this._el("td", {}, `${this._fmtNum(r.grams, 0)} g`),
+        this._el("td", {}, this._fmtMoney(r.cost, cur)), this._el("td", {}, r.failed),
+        this._el("td", {}, `${this._fmtNum((r.failed / r.prints) * 100, 0)} %`), this._el("td", {}, this._fmtMoney(r.wasted, cur))));
+    }
+    mat.append(table);
+
+    const months = new Map();
+    for (const r of history) {
+      const d = new Date(r.finished);
+      if (Number.isNaN(d.getTime())) continue;
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      months.set(key, (months.get(key) || 0) + (r.cost || 0));
+    }
+    const shown = [...months.entries()].sort().slice(-6);
+    const top = Math.max(...shown.map(([, v]) => v), 0.01);
+    const mon = this._el("div", { class: "card" }, this._el("h2", {}, this._t("stats_months")));
+    for (const [key, value] of shown) {
+      mon.append(this._el("div", { class: "mbar" }, this._el("span", {}, key),
+        this._el("span", { class: "track" }, this._el("i", { style: `width:${Math.round((value / top) * 100)}%` })),
+        this._el("span", {}, this._fmtMoney(value, cur))));
+    }
+
+    const exp = this._el("div", { class: "card" }, this._el("h2", {}, this._t("stats_top")));
+    const list = this._el("div", { class: "history" });
+    for (const r of [...history].sort((a, b) => (b.cost || 0) - (a.cost || 0)).slice(0, 5)) {
+      list.append(this._el("div", { class: "hrow" + (r.result === "failed" ? " failed" : "") },
+        this._el("div", { class: "when" }, this._el("span", {}, new Date(r.finished).toLocaleDateString(this._hass.locale?.language, { day: "2-digit", month: "short" }))),
+        this._el("div", { class: "what" }, this._el("b", {}, r.name), this._el("span", { class: "sub" }, `${this._fmtNum(r.weight_g)} g · ${r.material || ""}`)),
+        this._el("div", { class: "cost" }, this._el("b", {}, this._fmtMoney(r.cost, cur)))));
+    }
+    exp.append(list);
+
+    // Price per kg of the purchases, per material, in purchase order.
+    const prices = new Map();
+    for (const sp of this._spools) {
+      if (sp.price_per_kg == null || !sp.purchased) continue;
+      const key = sp.material.toUpperCase();
+      prices.set(key, [...(prices.get(key) || []), sp]);
+    }
+    const buys = this._el("div", { class: "card" }, this._el("h2", {}, this._t("stats_prices")));
+    if (!prices.size) buys.append(this._el("div", { class: "empty" }, "–"));
+    for (const [key, list2] of [...prices.entries()].sort()) {
+      const sorted = list2.sort((a, b) => a.purchased.localeCompare(b.purchased));
+      const values = sorted.map((sp) => sp.price_per_kg);
+      buys.append(this._el("div", { class: "sub", style: "margin:6px 0" },
+        `${key}: ${sorted.length} ${this._t("purchases")} · ${this._fmtMoney(Math.min(...values), cur)} – ${this._fmtMoney(Math.max(...values), cur)} · ${this._t("last_price")} ${this._fmtMoney(values[values.length - 1], cur)}/kg`));
+    }
+    main.append(this._el("div", { class: "grid" }, this._el("div", { class: "col" }, mat, mon), this._el("div", { class: "col" }, exp, buys)));
+  }
+
+  /** A printable label for a spool (name, type, color, weight, place and id). */
+  _printLabel(sp) {
+    const w = window.open("", "_blank", "width=480,height=360");
+    if (!w) { this._notice = "Pop-up blocked"; this._render(); return; }
+    const esc = (v) => String(v ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;" })[c]);
+    const color = /^#[0-9a-f]{6}/i.test(sp.color || "") ? sp.color.slice(0, 7) : "#808080";
+    w.document.write(`<!doctype html><meta charset="utf-8"><title>${esc(sp.name)}</title>
+      <style>body{font:16px system-ui,sans-serif;margin:0;padding:18px}.l{border:2px solid #000;border-radius:10px;padding:14px;width:380px}
+      .sw{display:inline-block;width:26px;height:26px;border-radius:50%;border:1px solid #000;vertical-align:middle;margin-right:8px;background:${esc(color)}}
+      h1{font-size:22px;margin:0 0 8px}small{color:#444}@media print{button{display:none}}</style>
+      <div class="l"><h1><span class="sw"></span>${esc(sp.name)}</h1>
+      <div>${esc(sp.material)}${sp.brand ? " · " + esc(sp.brand) : ""}</div>
+      <div>${esc(this._fmtNum(sp.initial_weight_g, 0))} g${sp.price_per_kg != null ? " · " + esc(this._fmtNum(sp.price_per_kg, 2)) + " /kg" : ""}</div>
+      ${sp.location ? `<div>${esc(sp.location)}</div>` : ""}${sp.purchased ? `<div>${esc(sp.purchased)}${sp.shop ? " · " + esc(sp.shop) : ""}</div>` : ""}
+      <small>ID ${esc(sp.id)}${sp.rfid ? " · RFID " + esc(sp.rfid.slice(0, 8)) : ""}</small></div><p><button onclick="print()">Print</button></p>`);
+    w.document.close();
+  }
+
+  _download(name, text, type = "text/csv") {
+    const url = URL.createObjectURL(new Blob(["﻿" + text], { type: `${type};charset=utf-8` }));
+    const a = document.createElement("a");
+    a.href = url; a.download = name;
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  _csv(rows) {
+    const cell = (v) => {
+      const t = v == null ? "" : String(v);
+      return /[",;\n]/.test(t) ? `"${t.replace(/"/g, "\"\"")}"` : t;
+    };
+    return rows.map((r) => r.map(cell).join(";")).join("\r\n");
+  }
+
+  _exportSpools() {
+    const cols = ["name", "material", "brand", "color", "price_per_kg", "initial_weight_g", "remaining_g", "notes", "rfid", "archived", "tare_g", "purchased", "shop", "order_no", "batch", "location", "last_dried"];
+    this._download("spools.csv", this._csv([cols, ...this._spools.map((sp) => cols.map((c) => sp[c]))]));
+  }
+
+  _exportHistory(printer) {
+    const cols = ["started", "finished", "name", "result", "duration_min", "material", "color", "weight_g", "planned_g", "spool_name", "price_per_kg", "filament_cost", "energy_kwh", "energy_cost", "cost"];
+    this._download("print-history.csv", this._csv([cols, ...(printer?.history || []).map((r) => cols.map((c) => r[c]))]));
+  }
+
+  /** Parse CSV text (comma or semicolon separated, quoted cells allowed). */
+  _parseCsv(text) {
+    text = text.replace(/^﻿/, "");
+    const first = text.split(/\r?\n/, 1)[0];
+    const sep = (first.match(/;/g) || []).length >= (first.match(/,/g) || []).length ? ";" : ",";
+    const rows = [];
+    let row = [];
+    let cell = "";
+    let quoted = false;
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      if (quoted) {
+        if (ch === "\"" && text[i + 1] === "\"") { cell += "\""; i++; } else if (ch === "\"") quoted = false; else cell += ch;
+      } else if (ch === "\"") quoted = true;
+      else if (ch === sep) { row.push(cell); cell = ""; }
+      else if (ch === "\n" || ch === "\r") {
+        if (ch === "\r" && text[i + 1] === "\n") i++;
+        row.push(cell); cell = "";
+        if (row.some((c) => c !== "")) rows.push(row);
+        row = [];
+      } else cell += ch;
+    }
+    row.push(cell);
+    if (row.some((c) => c !== "")) rows.push(row);
+    return rows;
+  }
+
+  _pickCsv() {
+    const input = document.createElement("input");
+    input.type = "file"; input.accept = ".csv,text/csv";
+    input.addEventListener("change", async () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      const rows = this._parseCsv(await file.text());
+      if (rows.length < 2) return;
+      const head = rows[0].map((h) => h.trim().toLowerCase());
+      const allowed = ["name", "material", "brand", "color", "price_per_kg", "initial_weight_g", "remaining_g", "notes", "rfid", "tare_g", "purchased", "shop", "order_no", "batch", "location", "last_dried"];
+      const spools = rows.slice(1).map((r) => {
+        const spool = {};
+        head.forEach((h, i) => { if (allowed.includes(h) && r[i] !== undefined && r[i] !== "") spool[h] = r[i].replace(",", h.endsWith("_g") || h === "price_per_kg" ? "." : ",") ; });
+        return spool;
+      });
+      this._call({ type: "druck_assistant/spool_import", spools }, (res) => this._t("import_csv_result", { created: res.created, errors: res.errors.length }));
+    });
+    input.click();
   }
 
   _renderAms(main, printer) {
@@ -728,6 +1228,7 @@ class DruckAssistantPanel extends HTMLElement {
     const activeSpools = this._spools.filter((sp) => !sp.archived);
     const slotsCard = this._el("div", { class: "card" }, this._el("h2", {}, this._t("slots")));
     const slots = printer?.slots || [];
+    const cur = printer?.currency || "EUR";
     if (!slots.length) {
       slotsCard.append(this._el("div", { class: "empty" }, this._t("no_slots")));
     } else {
@@ -743,10 +1244,17 @@ class DruckAssistantPanel extends HTMLElement {
         if (!admin) sel.disabled = true;
         const dot = this._el("span", { class: "dot", style: `background:${/^#[0-9a-f]{6,8}$/i.test(sl.color || "") ? sl.color : "transparent"}` });
         const remain = sl.remain != null ? Math.max(0, Math.min(100, sl.remain)) : null;
+        const spool = activeSpools.find((sp) => sp.id === sl.spool_id);
         grid.append(this._el("div", { class: "slot" + (sl.active ? " active" : "") },
           this._el("div", { class: "top" }, dot, sl.label, sl.tagged ? this._el("span", { class: "badge" }, "RFID") : "",
             this._el("span", { class: "sub" }, `${sl.type || "–"}${remain !== null ? ` · ${remain} %` : ""}`)),
           remain !== null ? this._el("div", { class: "bar", style: "width:100%" }, this._el("div", { class: "fill" + (remain <= 15 ? " low" : ""), style: `width:${remain}%` })) : "",
+          sl.replacement
+            ? this._el("div", { class: "sub warn-text" }, this._t("replacement", { name: sl.replacement.name, grams: this._fmtNum(sl.replacement.remaining_g, 0) }))
+            : "",
+          spool
+            ? this._el("div", { class: "sub" }, `${this._t("price")}: ${this._perKg(spool.price_per_kg, cur)} · ${this._t("printed_avg")}: ${this._perKg(this._printedPrice(printer, new Set([spool.id])), cur)}`)
+            : "",
           this._el("label", { class: "field", style: "margin:0" }, this._el("span", {}, this._t("assign_spool")), sel)));
       }
       slotsCard.append(grid);
@@ -790,11 +1298,15 @@ class DruckAssistantPanel extends HTMLElement {
       card.append(this._el("div", { class: "bignum" }, this._el("b", {}, this._fmtNum(pct, 0)), this._el("small", {}, "%")));
     }
     card.append(this._el("div", { class: "print-title" }, c.name || this._t("unknown")));
+    // The cover image (thumbnail) of the print comes from the printer's image entity.
+    const cover = printer.cover_entity ? this._hass?.states?.[printer.cover_entity]?.attributes?.entity_picture : null;
+    if (cover) card.append(this._el("img", { class: "cover", src: cover, alt: c.name || "", onerror: (e) => { e.target.hidden = true; } }));
     if (pct !== null) {
       card.append(this._el("div", { class: "progress" },
         this._el("div", { class: "bar wide" }, this._el("div", { class: "fill", style: `width:${pct}%` }))));
     }
     if (stage) card.append(stage);
+    if (c.shortages?.length) card.append(this._renderShortages(printer, c.shortages));
     const tiles = [
       [this._t("elapsed"), elapsedMin !== null ? this._fmtDuration(elapsedMin) : "–"],
       [this._t("time_remaining"), known(c.remaining_min) ? this._fmtDuration(c.remaining_min) : "–"],
@@ -823,6 +1335,8 @@ class DruckAssistantPanel extends HTMLElement {
 
   _render() {
     const root = this.shadowRoot;
+    // Start or stop the camera stream once this render has put the Overview (or another tab) in place.
+    queueMicrotask(() => this._cameraSync());
     root.replaceChildren(this._el("style", {}, `
       :host {
         --bg: #0b0d12; --panel: #14171e; --line: rgba(255,255,255,.065);
@@ -922,6 +1436,20 @@ class DruckAssistantPanel extends HTMLElement {
       .dialog.form { max-width: 480px; }
       .dialog .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
       .dialog .actions button { margin: 0; }
+      .warn { margin-top: 10px; padding: 10px 12px; border-radius: 14px; border: 1px solid rgba(251,146,60,.4); background: rgba(251,146,60,.08); font-size: 13.5px; }
+      .warn b { color: var(--orange); }
+      .warn-text { color: var(--orange); }
+      details.more { margin: 6px 0 10px; } details.more summary { cursor: pointer; color: var(--muted); font-size: 13px; margin-bottom: 8px; }
+      .toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+      .toolbar button { margin: 0; }
+      .under { color: var(--red); font-weight: 600; }
+      .mbar { display: grid; grid-template-columns: 70px minmax(0, 1fr) auto; align-items: center; gap: 10px; margin: 6px 0; font-size: 13px; }
+      .mbar .track { height: 10px; border-radius: 999px; background: rgba(255,255,255,.06); overflow: hidden; }
+      .mbar .track i { display: block; height: 100%; background: var(--cyan); border-radius: 999px; }
+      .camera { display: block; width: 100%; border-radius: 18px; background: #000; aspect-ratio: 16 / 9; object-fit: contain; }
+      .hrow .spools { display: block; }
+      .cover { display: block; max-width: 100%; max-height: 220px; margin: 4px auto 12px; border-radius: 18px; object-fit: contain; }
+      .cover[hidden], .camera[hidden], .card .sub[hidden] { display: none; }
       .history { display: flex; flex-direction: column; gap: 8px; }
       .hrow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 11px 14px; border-radius: 18px; background: var(--tile); border: 1px solid var(--tile-line); }
       .hrow .when { display: flex; flex-direction: column; align-items: center; min-width: 52px; font-size: 12px; color: var(--muted); line-height: 1.25; }
@@ -956,9 +1484,9 @@ class DruckAssistantPanel extends HTMLElement {
       header.append(sel);
     }
     const tabs = this._el("div", { class: "tabs" },
-      ...["overview", "filament", "ams"].map((k) => this._el("button", {
+      ...["overview", "filament", "ams", "stats"].map((k) => this._el("button", {
         class: this._tab === k ? "active" : "",
-        onclick: () => { this._tab = k; this._editing = null; this._render(); },
+        onclick: () => { this._tab = k; this._editing = null; this._dialog = null; this._render(); },
       }, this._t(`tab_${k}`))));
     header.insertBefore(tabs, header.querySelector(".printer-select"));
     const wrap = this._el("div", { class: "wrap" });
@@ -972,6 +1500,7 @@ class DruckAssistantPanel extends HTMLElement {
     if (!this._data) { main.append(this._el("div", { class: "empty" }, "…")); return; }
     if (this._tab === "filament") { this._renderFilament(main, printer); return; }
     if (this._tab === "ams") { this._renderAms(main, printer); return; }
+    if (this._tab === "stats") { this._renderStats(main, printer); return; }
     if (!printer) { main.append(this._el("div", { class: "empty" }, this._t("no_printer"))); return; }
 
     const t = printer.totals;
@@ -1003,16 +1532,23 @@ class DruckAssistantPanel extends HTMLElement {
             this._el("b", {}, r.name),
             this._el("span", { class: "sub" },
               [this._fmtDuration(r.duration_min), r.material || null, `${this._fmtNum(r.weight_g)} g`, `${this._fmtNum(r.energy_kwh || 0, 2)} kWh`].filter(Boolean).join(" · ")),
+            r.usages?.length
+              ? this._el("span", { class: "sub spools" }, r.usages.map((u) => `${u.spool_name || u.material || "?"} ${this._fmtNum(u.weight_g)} g`).join(" + "))
+              : "",
             ok ? "" : this._el("span", { class: "badge", style: "color:var(--red);margin-left:8px" }, this._t("failed"))),
           this._el("div", { class: "cost", title: this._t("cost_split", { filament: this._fmtMoney(filamentCost, cur), energy: this._fmtMoney(r.energy_cost || 0, cur) }) },
             this._el("b", {}, this._fmtMoney(r.cost, cur)),
-            this._el("span", { class: "sub" }, `${this._fmtMoney(filamentCost, cur)} + ${this._fmtMoney(r.energy_cost || 0, cur)}`))));
+            this._el("span", { class: "sub" }, `${this._fmtMoney(filamentCost, cur)} + ${this._fmtMoney(r.energy_cost || 0, cur)}`),
+            this._isAdmin()
+              ? this._iconButton("swap", this._t("rebook"), () => { this._dialog = { kind: "rebook", record: r }; this._render(); })
+              : "")));
       }
       hist.append(list);
     }
     main.append(this._el("div", { class: "grid" },
-      this._el("div", { class: "col" }, this._renderCurrentPrint(printer, cur)),
+      this._el("div", { class: "col" }, this._renderCurrentPrint(printer, cur), this._renderCamera(printer) || ""),
       this._el("div", { class: "col" }, totals, hist)));
+    if (this._dialog) main.append(this._renderDialog(printer));
   }
 }
 

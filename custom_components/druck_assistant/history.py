@@ -13,6 +13,7 @@ from .const import (
     STATUS_FAILED,
     STATUS_RUNNING,
 )
+from .consumption import UsageTracker
 
 
 _MINUTES_PER_UNIT = {"s": 1 / 60, "min": 1.0, "h": 60.0, "d": 1440.0}
@@ -95,6 +96,11 @@ class PrintRecord:
     material: str | None = None
     color: str | None = None
     filament: dict[str, float] = field(default_factory=dict)
+    # Filament per spool when the print used more than one (or the weight was split):
+    # [{"spool_id", "spool_name", "weight_g", "price_per_kg", "cost", "material", "color"}]
+    usages: list[dict[str, Any]] = field(default_factory=list)
+    # The weight of the whole print as sliced; weight_g is what was actually counted.
+    planned_g: float | None = None
 
     def as_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -115,6 +121,12 @@ class PrintSession:
     slot_key: str | None = None
     spool_id: str | None = None
     spool_name: str | None = None
+    # Slot changes of the print and the state of every slot at its start (see consumption.py).
+    usage: UsageTracker = field(default_factory=UsageTracker)
+    start_slots: dict[str, dict[str, Any]] = field(default_factory=dict)
+    progress: float | None = None
+    plan: dict[str, float] = field(default_factory=dict)
+    warned: bool = False
 
     def add_power(self, now: datetime, watts: float | None) -> None:
         """Integrate the previous power reading up to now and store the new one."""
@@ -193,6 +205,8 @@ class PrintHistory:
         name: str | None = None,
         energy_end_kwh: float | None = None,
         price_per_kwh: float = 0.0,
+        usages: list[dict[str, Any]] | None = None,
+        planned_g: float | None = None,
     ) -> PrintRecord | None:
         """Close the session and store the record."""
         session, self.session = self.session, None
@@ -200,6 +214,14 @@ class PrintHistory:
             return None
         weight = float(weight_g or 0)
         filament_cost = calculate_cost(weight, price_per_kg)
+        usages = [dict(u) for u in usages or []]
+        if usages:
+            # Several spools (or a part of a failed print): every spool is charged on its own.
+            for usage in usages:
+                usage["cost"] = calculate_cost(usage["weight_g"], usage["price_per_kg"])
+            weight = round(sum(u["weight_g"] for u in usages), 1)
+            filament_cost = round(sum(u["cost"] for u in usages), 2)
+            price_per_kg = round(filament_cost / weight * 1000, 2) if weight else price_per_kg
         energy = round(session.energy_kwh(now, energy_end_kwh), 3)
         energy_cost = calculate_energy_cost(energy, price_per_kwh)
         record = PrintRecord(
@@ -211,14 +233,16 @@ class PrintHistory:
             weight_g=weight,
             cost=round(filament_cost + energy_cost, 2),
             price_per_kg=price_per_kg,
-            spool_id=session.spool_id,
-            spool_name=session.spool_name,
+            spool_id=usages[0]["spool_id"] if usages else session.spool_id,
+            spool_name=usages[0]["spool_name"] if usages else session.spool_name,
             filament_cost=filament_cost,
             energy_kwh=energy,
             energy_cost=energy_cost,
             material=session.material,
             color=session.color,
             filament=dict(filament or {}),
+            usages=usages if len(usages) > 1 else [],
+            planned_g=planned_g,
         )
         self.records.append(record.as_dict())
         del self.records[:-MAX_HISTORY]
@@ -231,6 +255,44 @@ class PrintHistory:
     @property
     def successful_prints(self) -> int:
         return sum(1 for r in self.records if r["result"] != STATUS_FAILED)
+
+    def find(self, started: str) -> dict[str, Any] | None:
+        return next((r for r in self.records if r.get("started") == started), None)
+
+    def rebook(
+        self,
+        started: str,
+        spool_id: str | None,
+        spool_name: str | None,
+        price_per_kg: float,
+        material: str | None = None,
+        color: str | None = None,
+    ) -> tuple[str | None, float]:
+        """Charge a recorded print to another spool.
+
+        Returns (previous spool id, grams) so the caller can move the stock. Prints
+        that used several spools cannot be rebooked as a whole.
+        """
+        record = self.find(started)
+        if record is None:
+            raise KeyError(started)
+        if record.get("usages"):
+            raise ValueError("print used several spools")
+        previous = record.get("spool_id")
+        grams = float(record.get("weight_g") or 0)
+        filament_cost = calculate_cost(grams, price_per_kg)
+        record.update(
+            spool_id=spool_id,
+            spool_name=spool_name,
+            price_per_kg=price_per_kg,
+            filament_cost=filament_cost,
+            cost=round(filament_cost + float(record.get("energy_cost") or 0), 2),
+        )
+        if material:
+            record["material"] = material
+        if color:
+            record["color"] = color
+        return previous, grams
 
     @property
     def total_weight_g(self) -> float:

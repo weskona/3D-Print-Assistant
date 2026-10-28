@@ -19,6 +19,7 @@ from .const import (
     CONF_AUTO_IMPORT,
     CONF_ENERGY_ENTITY,
     CONF_FILAMENT_PRICES,
+    CONF_MIN_STOCK,
     CONF_NOTIFY_FILAMENT_LOW,
     CONF_POWER_ENTITY,
     CONF_PRICE_ENTITY,
@@ -35,9 +36,13 @@ from .const import (
     EVENT_PRINT_STARTED,
     EVENT_SPOOL_EMPTY,
     EVENT_SPOOL_IMPORTED,
+    EVENT_SPOOL_INSUFFICIENT,
+    EVENT_STOCK_LOW,
     STATUS_FAILED,
+    STATUS_FINISH,
     STORAGE_VERSION,
 )
+from .consumption import Segment, SlotInfo, measured_grams, shortages, split_usage
 from .history import PrintHistory, parse_prices, price_for, to_minutes
 from .spools import valid_rfid
 
@@ -135,6 +140,7 @@ class PrintTracker:
             or (session.color if session else None)
             or (tray.attributes.get("color") if tray else None),
             "price_per_kg": price,
+            "shortages": self.shortages_now(),
             "filament_cost": filament_cost,
             "energy_kwh": round(energy, 3) if energy is not None else None,
             "energy_cost": energy_cost,
@@ -164,6 +170,8 @@ class PrintTracker:
             "current_print": self.current_print(),
             # The panel reads this entity's state live from Home Assistant.
             "stage_entity": self.entity_id("stage"),
+            "camera_entity": self.entity_id("camera", "camera"),
+            "cover_entity": self.entity_id("cover_image", "image"),
             "session": None
             if session is None
             else {
@@ -221,14 +229,24 @@ class PrintTracker:
                         valid_rfid(attrs.get("tray_uuid")) or valid_rfid(attrs.get("tag_uid"))
                     ),
                     "spool_id": spool.id if spool else None,
+                    "replacement": self._replacement(spool),
                 }
             )
         return sorted(slots, key=lambda s: s["key"])
 
+    def _replacement(self, spool) -> dict[str, Any] | None:
+        """The stock spool to insert when this one runs out (only for a low spool)."""
+        if spool is None or spool.remaining_percent > self.low_threshold:
+            return None
+        other = self.filament.store.replacement_for(spool)
+        if other is None:
+            return None
+        return {"id": other.id, "name": other.name, "remaining_g": other.remaining_g}
+
     def import_from_ams(self, *, include_untagged: bool) -> dict[str, list[dict[str, Any]]]:
         """Create or link spools for the current AMS contents."""
         result: dict[str, list[dict[str, Any]]] = {
-            "created": [], "assigned": [], "adopted": [],
+            "created": [], "assigned": [], "adopted": [], "synced": [],
         }
         for key, entity_id in self.slot_entities().items():
             state = self.hass.states.get(entity_id)
@@ -340,7 +358,12 @@ class PrintTracker:
             self.history = PrintHistory(data.get("records"))
         watched = [
             eid
-            for eid in (self.entity_id("print_status"), self.entity_id("active_tray"))
+            for eid in (
+                self.entity_id("print_status"),
+                self.entity_id("active_tray"),
+                self.entity_id("print_progress"),
+                *self.slot_entities().values(),
+            )
             if eid
         ]
         self.entry.async_on_unload(
@@ -388,11 +411,222 @@ class PrintTracker:
         old = event.data["old_state"]
         if new is None:
             return
-        if event.data["entity_id"] == self.entity_id("print_status"):
+        entity_id = event.data["entity_id"]
+        if entity_id == self.entity_id("print_status"):
             self._on_status(old.state if old else None, new.state)
-        else:
+        elif entity_id == self.entity_id("print_progress"):
+            self._on_progress()
+        elif entity_id == self.entity_id("active_tray"):
             self._on_tray(new.attributes)
+            self._note_slot()
             async_dispatcher_send(self.hass, self.signal)
+        else:
+            # A slot changed (its "active" flag follows the tray change a moment later).
+            self._note_slot()
+
+    def shortages_now(self) -> list[dict[str, Any]]:
+        """Spools of the running print that hold less than the print needs from them."""
+        session = self.history.session
+        if session is None or not session.start_slots:
+            return []
+        needs = session.plan or self._plan_by_slot()
+        total = self._float("print_weight")
+        if not needs and session.slot_key and total:
+            needs = {session.slot_key: total}
+        slots = {
+            key: SlotInfo(key, start["material"], start["capacity_g"])
+            for key, start in session.start_slots.items()
+        }
+        found = shortages(needs, slots)
+        store = self.filament.store
+        for item in found:
+            spool = store.spools.get(session.start_slots[item["slot"]].get("spool_id") or "")
+            item["spool"] = spool.name if spool else None
+            item["spool_id"] = spool.id if spool else None
+        return found
+
+    def _warn_shortage(self) -> None:
+        """Announce once per print that a spool will not last."""
+        session = self.history.session
+        if session is None or session.warned:
+            return
+        found = self.shortages_now()
+        if not found:
+            return
+        session.warned = True
+        for item in found:
+            self.hass.bus.async_fire(
+                EVENT_SPOOL_INSUFFICIENT,
+                {"serial": self.serial, "print": session.name, **item},
+            )
+
+    @property
+    def min_stock(self) -> dict[str, float]:
+        try:
+            return parse_prices(self._conf(CONF_MIN_STOCK))
+        except ValueError:
+            return {}
+
+    def _check_stock(self) -> None:
+        """Fire an event once per material when its total stock falls below the minimum."""
+        totals = self.filament.store.stock_by_material()
+        for material, minimum in self.min_stock.items():
+            key = f"stock:{material}"
+            have = totals.get(material, 0.0)
+            if have >= minimum:
+                self._low_notified.discard(key)
+            elif key not in self._low_notified:
+                self._low_notified.add(key)
+                self.hass.bus.async_fire(
+                    EVENT_STOCK_LOW,
+                    {
+                        "serial": self.serial,
+                        "material": material,
+                        "stock_g": have,
+                        "minimum_g": minimum,
+                    },
+                )
+
+    def rebook(self, started: str, spool_id: str | None) -> dict[str, Any]:
+        """Charge a recorded print to another spool and move the stock accordingly."""
+        store = self.filament.store
+        spool = store.spools.get(spool_id) if spool_id else None
+        if spool_id and spool is None:
+            raise KeyError(spool_id)
+        price = (
+            spool.price_per_kg
+            if spool is not None and spool.price_per_kg is not None
+            else self.price_for_material(spool.material if spool else None)
+        )
+        previous, grams = self.history.rebook(
+            started,
+            spool.id if spool else None,
+            spool.name if spool else None,
+            price,
+            spool.material if spool else None,
+            spool.color if spool else None,
+        )
+        if previous != (spool.id if spool else None):
+            store.restore(previous, grams)
+            if spool is not None:
+                store.consume(spool.id, grams)
+                self._check_spool(spool)
+            self._check_stock()
+        self._store.async_delay_save(lambda: {"records": self.history.records}, 1)
+        self.filament.changed()
+        async_dispatcher_send(self.hass, self.signal)
+        return self.history.find(started) or {}
+
+    def _on_progress(self) -> None:
+        """Remember the progress (the highest one: a stopped print resets it) and the slot plan."""
+        session = self.history.session
+        progress = self._float("print_progress")
+        if session is None or progress is None:
+            return
+        session.progress = max(session.progress or 0.0, progress)
+        if not session.plan:
+            session.plan = self._plan_by_slot()
+            if session.plan:
+                self._warn_shortage()
+
+    def _note_slot(self) -> None:
+        """Record which slot is feeding the print, to split the filament over several spools."""
+        session = self.history.session
+        if session is not None:
+            session.usage.note(self.active_slot_key(), session.progress)
+
+    def _slot_snapshot(self) -> dict[str, dict[str, Any]]:
+        """Per slot: the assigned spool and the remaining percent the AMS reports."""
+        store = self.filament.store
+        snapshot: dict[str, dict[str, Any]] = {}
+        for key, entity_id in self.slot_entities().items():
+            state = self.hass.states.get(entity_id)
+            if state is None or "active" not in state.attributes:
+                continue
+            attrs = state.attributes
+            spool = store.spool_for_slot(key)
+            snapshot[key] = {
+                "spool_id": spool.id if spool else None,
+                "remain": attrs.get("remain") if attrs.get("remain_enabled", True) else None,
+                "initial_g": spool.initial_weight_g if spool else None,
+                "capacity_g": spool.remaining_g if spool else None,
+                "material": (spool.material if spool else attrs.get("type")) or "",
+            }
+        return snapshot
+
+    def _plan_by_slot(self) -> dict[str, float]:
+        """Grams per slot the slicer planned, from the attributes of the print weight sensor."""
+        state = self._state("print_weight")
+        slots = self.slot_entities()
+        plan: dict[str, float] = {}
+        for name, grams in (state.attributes if state else {}).items():
+            if isinstance(grams, bool) or not isinstance(grams, (int, float)):
+                continue
+            match = re.fullmatch(r"AMS (\d+) Tray (\d+)", str(name))
+            if match:
+                suffix = f"ams_{match[1]}_slot_{match[2]}"
+                key = next((k for k, e in slots.items() if e.endswith(suffix)), None)
+            elif str(name).startswith("External Spool"):
+                key = next((k for k in slots if "ExternalSpool" in k), None)
+            else:
+                key = None
+            if key:
+                plan[key] = float(grams)
+        return plan
+
+    def _usages(
+        self, session, outcome: str, total_g: float | None
+    ) -> list[dict[str, Any]]:
+        """Filament of the print per spool (see consumption.py); empty: charge the start spool."""
+        if session is None or not total_g:
+            return []
+        end = self._slot_snapshot()
+        slots = {
+            key: SlotInfo(
+                key,
+                start["material"],
+                start["capacity_g"],
+                measured_grams(
+                    start["remain"], end.get(key, {}).get("remain"), start["initial_g"]
+                ),
+            )
+            for key, start in session.start_slots.items()
+        }
+        segments = session.usage.segments or (
+            [Segment(session.slot_key, 0.0)] if session.slot_key else []
+        )
+        plan = session.plan or self._plan_by_slot()
+        store = self.filament.store
+        usages = []
+        for part in split_usage(
+            total_g,
+            finished=outcome == STATUS_FINISH,
+            progress=session.progress,
+            segments=segments,
+            slots=slots,
+            plan=plan,
+        ):
+            start = session.start_slots.get(part.slot, {})
+            spool = store.spools.get(start.get("spool_id")) if start.get("spool_id") else None
+            material = (spool.material if spool else start.get("material")) or None
+            price = (
+                spool.price_per_kg
+                if spool is not None and spool.price_per_kg is not None
+                else self.price_for_material(material)
+            )
+            usages.append(
+                {
+                    "slot": part.slot,
+                    "spool_id": spool.id if spool else None,
+                    "spool_name": spool.name if spool else None,
+                    "weight_g": part.grams,
+                    "price_per_kg": price,
+                    "material": material,
+                    "color": spool.color if spool else None,
+                }
+            )
+        usages.sort(key=lambda u: -u["weight_g"])
+        return usages
 
     def _on_tray(self, attrs: dict[str, Any]) -> None:
         session = self.history.session
@@ -419,6 +653,11 @@ class PrintTracker:
                     session.spool_name = spool.name
                     session.material = spool.material
                     session.color = spool.color or session.color
+                session.start_slots = self._slot_snapshot()
+                session.progress = self._float("print_progress")
+                session.plan = self._plan_by_slot()
+                session.usage.note(session.slot_key, 0.0)
+                self._warn_shortage()
                 session.energy_start_kwh = self._external_float(CONF_ENERGY_ENTITY)
                 session.add_power(now, self._external_float(CONF_POWER_ENTITY))
             self.hass.bus.async_fire(
@@ -437,16 +676,19 @@ class PrintTracker:
                 if spool is not None and spool.price_per_kg is not None
                 else self.price_for_material(session.material if session else None)
             )
-            used_g = self._float("print_weight")
+            planned_g = self._float("print_weight")
+            usages = self._usages(session, outcome, planned_g)
             record = self.history.finish(
                 outcome,
                 now,
-                self._float("print_weight"),
+                planned_g,
                 dict(weight_state.attributes) if weight_state else None,
                 price,
                 name,
                 self._external_float(CONF_ENERGY_ENTITY),
                 self.price_per_kwh,
+                usages,
+                planned_g,
             )
             if record is not None:
                 self.hass.bus.async_fire(
@@ -458,9 +700,18 @@ class PrintTracker:
                 self._store.async_delay_save(
                     lambda: {"records": self.history.records}, 1
                 )
-                if spool is not None:
-                    self.filament.store.consume(spool.id, used_g)
-                    self._check_spool(spool)
+                # Every spool the print used loses its share (the start spool, all of it, without a split).
+                charged = (
+                    [(u["spool_id"], u["weight_g"]) for u in usages if u["spool_id"]]
+                    if usages
+                    else ([(spool.id, planned_g)] if spool is not None else [])
+                )
+                for spool_id, grams in charged:
+                    used = self.filament.store.consume(spool_id, grams)
+                    if used is not None:
+                        self._check_spool(used)
+                if charged:
+                    self._check_stock()
                     self.filament.changed()
                 else:
                     self._check_filament()
@@ -497,6 +748,7 @@ class PrintTracker:
                     "remaining_g": spool.remaining_g,
                     "type": spool.material,
                     "color": spool.color,
+                    "replacement": (self._replacement(spool) or {}).get("name"),
                 },
             )
 

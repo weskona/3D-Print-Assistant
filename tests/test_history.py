@@ -10,7 +10,7 @@ PKG = Path(__file__).parent.parent / "custom_components" / "druck_assistant"
 pkg = types.ModuleType("druck_assistant")
 pkg.__path__ = [str(PKG)]
 sys.modules["druck_assistant"] = pkg
-for name in ("const", "history"):
+for name in ("const", "consumption", "history"):
     spec = importlib.util.spec_from_file_location(f"druck_assistant.{name}", PKG / f"{name}.py")
     mod = importlib.util.module_from_spec(spec)
     sys.modules[f"druck_assistant.{name}"] = mod
@@ -310,7 +310,7 @@ def test_manual_correction_moves_the_tag_and_survives_auto_import():
     store = m.SpoolStore()
     pack = store.add_spools({"name": "Black", "material": "PETG", "color": "#101010"}, 2)
     right = store.save_spool({"name": "Black Matte", "material": "PETG", "color": "#202020"})
-    tray = {**TRAY, "type": "PETG", "color": "#000000FF", "tray_uuid": "D" * 32}
+    tray = {**TRAY, "type": "PETG", "color": "#000000FF", "tray_uuid": "D" * 32, "remain": 100}
 
     _, wrong = store.import_slot("p:t1", tray, include_untagged=False)
     assert wrong.id == pack[0].id and wrong.rfid == "D" * 32
@@ -441,3 +441,22 @@ def test_stock_matching_needs_a_near_identical_color_within_the_same_product_lin
 
     same = {**pink, "color": "#D3B7A7FF", "tray_uuid": "9" * 32}
     assert store.find_stock(same).id == brown.id
+
+
+def test_a_new_spool_takes_the_remaining_amount_the_ams_reports_later():
+    m = _spools_module()
+    store = m.SpoolStore()
+    first = {**TRAY, "remain": -1}
+    action, spool = store.import_slot("p:t1", first, include_untagged=False)
+    assert action == "created" and spool.remaining_g == 1000
+
+    assert store.import_slot("p:t1", {**TRAY, "remain": 0}, include_untagged=False)[0] == "synced"
+    assert spool.remaining_g == 0
+    # once corrected, later readings do not overwrite what the prints track
+    spool.remaining_g = 40
+    assert store.import_slot("p:t1", {**TRAY, "remain": 80}, include_untagged=False)[0] == "skipped"
+    assert spool.remaining_g == 40
+
+    # a full reading changes nothing
+    store.import_slot("p:t2", {**first, "tray_uuid": "B" * 32}, include_untagged=False)
+    assert store.import_slot("p:t2", {**TRAY, "tray_uuid": "B" * 32, "remain": 100}, include_untagged=False)[0] == "skipped"

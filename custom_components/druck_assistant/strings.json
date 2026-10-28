@@ -29,7 +29,8 @@
           "power_entity": "Printer power sensor (W, optional)",
           "filament_prices": "Filament prices per kg by type (one per line, e.g. PLA=20)",
           "auto_import": "Automatically add new Bambu (RFID) spools to the inventory",
-          "auto_archive": "Automatically archive empty spools"
+          "auto_archive": "Automatically archive empty spools",
+          "filament_min_stock": "Minimum stock per type in grams (one per line, e.g. PLA=2000), shown in the shopping list"
         }
       }
     },
