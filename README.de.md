@@ -8,6 +8,8 @@ Home-Assistant-Integration für Bambu-Lab-Drucker. Sie setzt auf
 [ha-bambulab](https://github.com/greghesp/ha-bambulab) auf und liest dessen Entitäten
 (Druckstatus, Gewicht, aktives Filament), statt selbst mit dem Drucker zu sprechen.
 
+![Übersicht](docs/screenshots/overview.png)
+
 ## Funktionen
 
 - Druckhistorie (letzte 200 Drucke, persistent) mit Dauer, Ergebnis, Gewicht, Material und Farbe
@@ -73,6 +75,13 @@ wird er angelegt und ein GitHub Release mit `druck_assistant.zip` erstellt. Die 
 stammen aus dem passenden Abschnitt `## [<version>]` der `CHANGELOG.md`, sonst werden sie
 automatisch erzeugt. Zum Veröffentlichen also Version im Manifest erhöhen und den
 `[Unreleased]`-Abschnitt in `## [<version>] - <Datum>` umbenennen.
+
+## Design
+
+Das Panel ist immer dunkel und unabhängig vom Home-Assistant-Theme. Die Optik ist an
+[glow-dashboard](https://github.com/deepblue120/glow-dashboard) angelehnt (Farben, runde Karten, Tab-Leiste); der Code ist eigener.
+Die Schrift ist [Outfit](https://github.com/Outfitio/Outfit-Fonts) unter der SIL Open Font License
+(`custom_components/druck_assistant/frontend/fonts/OFL-Outfit.txt`). Weitere Screenshots: `docs/screenshots/`.
 
 ## Sprachen
 

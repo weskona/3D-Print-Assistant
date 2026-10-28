@@ -8,6 +8,8 @@ Home Assistant integration for Bambu Lab printers. It builds on
 [ha-bambulab](https://github.com/greghesp/ha-bambulab) and reads its entities
 (print status, weight, active filament) instead of talking to the printer itself.
 
+![Overview](docs/screenshots/overview.png)
+
 ## Features
 
 - Print history (last 200 prints, persistent) with duration, result, weight, material and color
@@ -64,6 +66,13 @@ Prints with several spools or materials are booked to the spool active at the st
 2. Copy `custom_components/druck_assistant` to `config/custom_components/` (or add this repository as a custom repository in HACS).
 3. Restart Home Assistant, add the "3D Print Assistant" integration and select the printer.
 4. Set filament prices, electricity price and the low filament threshold in the integration options.
+
+## Design
+
+The panel is always dark and independent of the Home Assistant theme. Its look is inspired by
+[glow-dashboard](https://github.com/deepblue120/glow-dashboard) (colors, rounded cards, pill tabs); the code is our own.
+The font is [Outfit](https://github.com/Outfitio/Outfit-Fonts) under the SIL Open Font License
+(`custom_components/druck_assistant/frontend/fonts/OFL-Outfit.txt`). More screenshots: `docs/screenshots/`.
 
 ## Languages
 

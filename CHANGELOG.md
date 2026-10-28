@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0-beta.1] - 2026-10-28
+
+### Changed
+
+- New design of the panel, inspired by the look of [glow-dashboard](https://github.com/deepblue120/glow-dashboard): always dark (independent of the Home Assistant theme), rounded cards with letter-spaced titles, a pill tab bar, tiles with small labels and bold values, status chips, thick gradient progress bars and blurred popups. The font is Outfit (SIL Open Font License, files and license in `frontend/fonts`).
+- Overview: two columns on wide screens (current print on the left, totals and history on the right, one column on narrow screens). The current print shows its progress as a large number with a status chip, and the print history is a list of rows (date, name with duration, material, weight and energy, total cost with the filament plus electricity split).
+- AMS: the slots are tiles with color, material, remaining percent and the spool selection.
+
 ## [0.6.0-beta.2] - 2026-10-28
 
 ### Added
@@ -208,7 +216,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Filament prices per type (e.g. `PLA=20`) in the options, sensor for the current filament including price per kg. Cost sensors in euro.
 - GitHub workflow that creates a tag and release after a push to `main`.
 
-[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.6.0-beta.2...HEAD
+[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.7.0-beta.1...HEAD
+[0.7.0-beta.1]: https://github.com/weskona/3D-Print-Assistant/compare/v0.6.0-beta.2...v0.7.0-beta.1
 [0.6.0-beta.2]: https://github.com/weskona/3D-Print-Assistant/compare/v0.6.0-beta.1...v0.6.0-beta.2
 [0.6.0-beta.1]: https://github.com/weskona/3D-Print-Assistant/compare/v0.5.0-beta.7...v0.6.0-beta.1
 [0.5.0-beta.7]: https://github.com/weskona/3D-Print-Assistant/compare/v0.5.0-beta.6...v0.5.0-beta.7
