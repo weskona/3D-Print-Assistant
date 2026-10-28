@@ -7,6 +7,8 @@ import uuid
 from dataclasses import asdict, dataclass
 from typing import Any
 
+from .catalog import color_note
+
 HEX_COLOR = re.compile(r"^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$")
 
 
@@ -114,8 +116,14 @@ class Spool:
         return data
 
 
-def spool_data_from_tray(attrs: dict[str, Any], rfid: str) -> dict[str, Any]:
-    """Spool fields derived from ha-bambulab tray attributes."""
+def spool_data_from_tray(
+    attrs: dict[str, Any], rfid: str, colors: dict[str, list[tuple[str, str]]] | None = None
+) -> dict[str, Any]:
+    """Spool fields derived from ha-bambulab tray attributes.
+
+    colors is the color index of the catalog (see catalog.color_index): the tray only
+    reports a hex value, the catalog turns it into a color name and code for the notes.
+    """
     material = str(attrs.get("type") or "").strip()
     try:
         initial = float(attrs.get("tray_weight") or 0) or 1000.0
@@ -135,6 +143,7 @@ def spool_data_from_tray(attrs: dict[str, Any], rfid: str) -> dict[str, Any]:
         "initial_weight_g": initial,
         "remaining_g": remaining,
         "rfid": rfid,
+        "notes": color_note(colors or {}, str(attrs.get("name") or ""), color) if rfid else "",
     }
 
 
@@ -170,6 +179,8 @@ class SpoolStore:
         }
         # Tags the user cleared from a slot by hand: not auto-assigned again.
         self.dismissed_rfids: set[str] = set(dismissed_rfids or [])
+        # Color index of the catalog (catalog.color_index), set by the manager: names the colors of new spools.
+        self.colors: dict[str, list[tuple[str, str]]] = {}
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -177,6 +188,18 @@ class SpoolStore:
             "assignments": dict(self.assignments),
             "dismissed_rfids": sorted(self.dismissed_rfids),
         }
+
+    def backfill_notes(self) -> int:
+        """Fill empty notes of Bambu spools with the catalog color ("Plum (11204)"); returns how many were filled."""
+        filled = 0
+        for spool in self.spools.values():
+            if spool.notes or not (spool.rfid or spool.brand == "Bambu Lab"):
+                continue
+            note = color_note(self.colors, re.sub(r"\s+#\d+$", "", spool.name), spool.color)
+            if note:
+                spool.notes = note
+                filled += 1
+        return filled
 
     def save_spool(self, data: dict[str, Any]) -> Spool:
         """Create a spool, or update the spool with data["id"]."""
@@ -331,7 +354,7 @@ class SpoolStore:
             self.assign(slot, stock.id)
             return ("adopted" if rfid else "assigned"), stock
 
-        spool = self.save_spool(spool_data_from_tray(attrs, rfid))
+        spool = self.save_spool(spool_data_from_tray(attrs, rfid, self.colors))
         self.assign(slot, spool.id)
         return "created", spool
 

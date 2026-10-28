@@ -38,6 +38,7 @@ Each spool is charged with its own price; the print history lists the spools of 
 Click "Import from AMS" to create spools from the loaded AMS slots. New Bambu spools with an RFID
 tag are also added automatically (option "Automatically add new Bambu spools"); spools without a
 tag, such as third-party filament or the external spool, are only imported with the button.
+The AMS only reports the color as a hex value; for Bambu spools the color name and code (e.g. "Plum (11204)") are looked up in the catalog and written to the spool's notes when the hex value matches exactly.
 The remaining stock of an imported spool is estimated from the AMS percentage, so correct it by hand if needed.
 **Filter:** the Spools card has a search box (name, material, brand, notes, color) and filters for material,
 brand and status (in stock, in a slot, low stock). The table and its totals show only the matching spools; the popup of a type still lists all of its spools.

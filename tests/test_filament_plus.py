@@ -10,13 +10,14 @@ PKG = Path(__file__).parent.parent / "custom_components" / "druck_assistant"
 pkg = types.ModuleType("druck_assistant")
 pkg.__path__ = [str(PKG)]
 sys.modules["druck_assistant"] = pkg
-for name in ("const", "consumption", "history", "spools"):
+for name in ("const", "catalog", "consumption", "history", "spools"):
     spec = importlib.util.spec_from_file_location(f"druck_assistant.{name}", PKG / f"{name}.py")
     mod = importlib.util.module_from_spec(spec)
     sys.modules[f"druck_assistant.{name}"] = mod
     spec.loader.exec_module(mod)
 
 from druck_assistant.consumption import SlotInfo, shortages  # noqa: E402
+from druck_assistant.catalog import color_index, load_catalog  # noqa: E402
 from druck_assistant.history import PrintHistory  # noqa: E402
 from druck_assistant.spools import SpoolError, SpoolStore, default_tare  # noqa: E402
 
@@ -133,3 +134,28 @@ def test_replacement_is_the_closest_color_then_the_fullest_stock_spool():
     assert store.replacement_for(low).id == full.id
     store.archive(full.id)
     assert store.replacement_for(low) is None
+
+
+def _tray(name="Bambu PLA Matte", color="#950051FF", uuid="A" * 32):
+    return {"name": name, "type": "PLA", "color": color, "tray_uuid": uuid, "tray_weight": "1000", "remain": 50, "remain_enabled": True}
+
+
+def test_new_bambu_spool_gets_the_catalog_color_in_its_notes():
+    store = SpoolStore()
+    store.colors = color_index(load_catalog())
+    action, spool = store.import_slot("p:t1", _tray(), include_untagged=False)
+    assert action == "created" and spool.notes == "Plum (11204)"
+    # a color that is not in the catalog leaves the notes empty
+    _, other = store.import_slot("p:t2", _tray(color="#123456FF", uuid="B" * 32), include_untagged=False)
+    assert other.notes == ""
+
+
+def test_backfill_fills_only_empty_notes_of_bambu_spools():
+    store = SpoolStore()
+    store.colors = color_index(load_catalog())
+    auto = store.save_spool({"name": "Bambu PLA Matte #2", "material": "PLA", "color": "#950051", "rfid": "C" * 32, "brand": "Bambu Lab"})
+    own = store.save_spool({"name": "Bambu PLA Matte", "material": "PLA", "color": "#950051", "brand": "Bambu Lab", "notes": "mine"})
+    third = store.save_spool({"name": "Anycubic PLA+", "material": "PLA", "color": "#950051"})
+    assert store.backfill_notes() == 1
+    assert (auto.notes, own.notes, third.notes) == ("Plum (11204)", "mine", "")
+    assert store.backfill_notes() == 0

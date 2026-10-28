@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Spools that the AMS adds automatically get the color name and code from the catalog in their notes ("Plum (11204)"), when the hex value matches exactly. Existing Bambu spools with empty notes are filled once at startup.
 - AMS tab: the spool list of a slot shows the color (the first line of the notes, e.g. "Plum (11204)", else a color name), grams left, location and the slot a spool already sits in, so spools with the same name can be told apart; spools of the slot's material come first.
 - Statistics tab: the cost per month is split into filament and electricity (two-color bar, legend and both amounts per month).
 

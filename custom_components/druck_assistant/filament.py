@@ -6,6 +6,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.helpers.storage import Store
 
+from .catalog import color_index, load_catalog
 from .const import DOMAIN, STORAGE_VERSION
 from .spools import SpoolStore
 
@@ -23,6 +24,10 @@ class FilamentManager:
         data = await self._storage.async_load()
         if data:
             self.store = SpoolStore(**data)
+        catalog = await self.hass.async_add_executor_job(load_catalog)
+        self.store.colors = color_index(catalog)
+        if self.store.backfill_notes():
+            self.changed()
 
     @callback
     def changed(self) -> None:

@@ -37,6 +37,7 @@ listet bei solchen Drucken die Spulen auf.
 Mit „Aus AMS importieren“ werden aus den belegten AMS-Slots Spulen angelegt. Neue Bambu-Spulen mit
 RFID-Tag werden zusätzlich automatisch übernommen (Option „Neue Bambu-Spulen automatisch übernehmen“);
 Spulen ohne Tag, etwa Fremdfilament oder die externe Spule, werden nur über den Button importiert.
+Das AMS meldet die Farbe nur als Hex-Wert; bei Bambu-Spulen werden Farbname und -nummer (z. B. „Plum (11204)“) im Katalog nachgeschlagen und bei exakt passendem Hex-Wert in die Notizen der Spule geschrieben.
 Der Restbestand wird aus der AMS-Prozentanzeige geschätzt und lässt sich von Hand korrigieren.
 **Filter:** Die Karte „Spulen“ hat ein Suchfeld (Name, Material, Hersteller, Notizen, Farbe) und Filter für Material,
 Hersteller und Status (Vorrat, in einem Slot, niedriger Bestand). Tabelle und Summen zeigen nur die passenden Spulen; das Popup einer Sorte listet weiterhin alle ihre Spulen.

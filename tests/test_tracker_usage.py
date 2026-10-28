@@ -36,7 +36,7 @@ def _load_tracker():
     pkg = types.ModuleType("druck_assistant")
     pkg.__path__ = [str(PKG)]
     sys.modules["druck_assistant"] = pkg
-    for name in ("const", "consumption", "history", "spools", "tracker"):
+    for name in ("const", "catalog", "consumption", "history", "spools", "tracker"):
         spec = importlib.util.spec_from_file_location(f"druck_assistant.{name}", PKG / f"{name}.py")
         mod = importlib.util.module_from_spec(spec)
         sys.modules[f"druck_assistant.{name}"] = mod
