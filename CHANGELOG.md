@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0-beta.3] - 2026-10-29
+
+### Fixed
+
+- Filament list: a spool that is the only one of its type now also shows the slot it sits in (like the spools in an expanded group).
+
 ## [0.9.0-beta.2] - 2026-10-29
 
 ### Changed
