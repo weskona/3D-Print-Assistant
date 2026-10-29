@@ -1,0 +1,12 @@
+[tool.ruff]
+target-version = "py313"
+line-length = 130
+
+[tool.ruff.lint]
+# E/F/W: basic errors (pycodestyle/pyflakes), B: bugbear, I: import sorting.
+select = ["E", "F", "W", "B", "I"]
+ignore = [
+    # E501: the code base already has many long lines (strings, catalog data);
+    # reflowing them would be pure churn.
+    "E501",
+]
