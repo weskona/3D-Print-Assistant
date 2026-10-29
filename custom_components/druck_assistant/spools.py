@@ -558,14 +558,19 @@ class SpoolStore:
         spool.used_since_anchor_g = round(max(spool.used_since_anchor_g - grams, 0.0), 1)
         return spool
 
-    def weigh(self, spool_id: str, gross_g: Any, tare_g: Any = None) -> Spool:
+    def weigh(self, spool_id: str, gross_g: Any, tare_g: Any = None, tare_preset: str | None = None) -> Spool:
         """Set the remaining filament from the weight of the spool on a scale.
 
         gross_g includes the empty spool; tare_g (optional) stores the real empty weight.
+        tare_preset picks the spool type ("" = the default of the brand) and drops an own tare.
         """
         spool = self.spools.get(spool_id)
         if spool is None:
             raise SpoolError("unknown spool")
+        if tare_preset is not None:
+            if tare_preset and tare_preset not in {p["id"] for p in self.tare_presets}:
+                raise SpoolError("unknown spool type")
+            spool.tare_preset, spool.tare_g = tare_preset, None
         gross = _number(gross_g, "gross_g")
         if tare_g not in (None, "") and _number(tare_g, "tare_g") != self.tare_of(spool)[0]:
             spool.tare_g = _number(tare_g, "tare_g")  # only a value that differs from the default belongs to this spool

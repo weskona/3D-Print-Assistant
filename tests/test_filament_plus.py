@@ -256,3 +256,19 @@ def test_settings_are_validated_and_saved():
     assert store.options == {"weigh_remind_g": 40.0, "ams_diff_points": 15.0, "catalog_auto": 0.0}
     again = SpoolStore(**store.to_dict())
     assert again.options["weigh_remind_g"] == 40.0
+
+
+def test_weighing_can_pick_the_spool_type():
+    store = SpoolStore()
+    store.set_settings({"tare_presets": [{"name": "Self-printed", "tare_g": 78}]})
+    preset = store.tare_presets[0]
+    spool = store.save_spool({"name": "Bambu PLA Basic", "material": "PLA", "brand": "Bambu Lab", "tare_g": 99})
+    store.weigh(spool.id, 478, tare_preset=preset["id"])
+    assert spool.tare_preset == preset["id"] and spool.tare_g is None and spool.remaining_g == 400
+    store.weigh(spool.id, 478 - 78 + 250, tare_preset="")  # back to the brand default
+    assert spool.tare_preset == "" and spool.remaining_g == 400
+    try:
+        store.weigh(spool.id, 400, tare_preset="nope")
+        raise AssertionError("expected an error")
+    except SpoolError:
+        pass
