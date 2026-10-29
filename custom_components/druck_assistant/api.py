@@ -21,6 +21,8 @@ from .const import (
     WS_SPOOL_IMPORT,
     WS_SPOOL_SAVE,
     WS_SPOOL_WEIGH,
+    WS_SETTINGS,
+    WS_USAGE_FACTOR,
 )
 from .catalog import load_catalog
 from .spools import SpoolError
@@ -37,6 +39,8 @@ def async_register(hass: HomeAssistant) -> None:
         ws_catalog,
         ws_spool_archive,
         ws_spool_weigh,
+        ws_usage_factor,
+        ws_settings,
         ws_spool_import,
         ws_record_rebook,
     ):
@@ -58,7 +62,9 @@ def ws_get_data(
         msg["id"],
         {
             "printers": printers,
-            "spools": [s.as_dict() for s in manager.store.spools.values()],
+            "spools": [manager.store.spool_dict(s) for s in manager.store.spools.values()],
+            "settings": _settings(manager.store),
+            "calibration": _calibration(manager.store),
             "min_stock": {
                 material: minimum
                 for entry in hass.config_entries.async_loaded_entries(DOMAIN)
@@ -92,7 +98,7 @@ def ws_spool_save(
         connection.send_error(msg["id"], "invalid_spool", str(err))
         return
     manager.changed()
-    connection.send_result(msg["id"], {"spools": [s.as_dict() for s in created]})
+    connection.send_result(msg["id"], {"spools": [manager.store.spool_dict(s) for s in created]})
 
 
 @websocket_api.websocket_command(
@@ -203,7 +209,67 @@ def ws_spool_weigh(
         connection.send_error(msg["id"], "invalid_spool", str(err))
         return
     manager.changed()
-    connection.send_result(msg["id"], {"spool": spool.as_dict()})
+    connection.send_result(
+        msg["id"],
+        {"spool": manager.store.spool_dict(spool), "sample": manager.store.last_sample, "calibration": _calibration(manager.store)},
+    )
+
+
+def _settings(store: Any) -> dict[str, Any]:
+    return {
+        "tare_defaults": dict(store.tare_defaults),
+        "tare_presets": list(store.tare_presets),
+        "options": dict(store.options),
+        "builtin_tares": {"bambu": 250.0, "other": 200.0},
+    }
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): WS_SETTINGS,
+        vol.Optional("tare_defaults"): dict,
+        vol.Optional("tare_presets"): [dict],
+        vol.Optional("options"): dict,
+    }
+)
+@websocket_api.require_admin
+@callback
+def ws_settings(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Save the settings: empty spool weight per brand, named spool types and thresholds."""
+    manager = hass.data[DOMAIN]["filament"]
+    try:
+        manager.store.set_settings(msg)
+    except SpoolError as err:
+        connection.send_error(msg["id"], "invalid_settings", str(err))
+        return
+    manager.changed()
+    connection.send_result(msg["id"], _settings(manager.store))
+
+
+def _calibration(store: Any) -> dict[str, Any]:
+    suggested = store.suggested_factor()
+    return {
+        "factor": store.usage_factor,
+        "suggested": suggested[0] if suggested else None,
+        "samples": len(store.calibration),
+    }
+
+
+@websocket_api.websocket_command(
+    {vol.Required("type"): WS_USAGE_FACTOR, vol.Required("factor"): vol.Any(int, float)}
+)
+@websocket_api.require_admin
+@callback
+def ws_usage_factor(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Apply the correction factor for the filament consumption (1.0 = slicer weight)."""
+    manager = hass.data[DOMAIN]["filament"]
+    manager.store.set_usage_factor(msg["factor"])
+    manager.changed()
+    connection.send_result(msg["id"], _calibration(manager.store))
 
 
 @websocket_api.websocket_command(

@@ -256,7 +256,7 @@ class PrintTracker:
                 key, dict(state.attributes), include_untagged=include_untagged
             )
             if action in result and spool is not None:
-                result[action].append({"slot": key, "spool": spool.as_dict()})
+                result[action].append({"slot": key, "spool": self.filament.store.spool_dict(spool)})
                 self.hass.bus.async_fire(
                     EVENT_SPOOL_IMPORTED,
                     {"serial": self.serial, "action": action, "slot": key, "spool": spool.name},

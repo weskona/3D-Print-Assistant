@@ -159,3 +159,100 @@ def test_backfill_fills_only_empty_notes_of_bambu_spools():
     assert store.backfill_notes() == 1
     assert (auto.notes, own.notes, third.notes) == ("Plum (11204)", "mine", "")
     assert store.backfill_notes() == 0
+
+
+def _used(store, spool, grams):
+    store.consume(spool.id, grams)
+
+
+def test_weighing_teaches_the_correction_factor():
+    store = SpoolStore()
+    spool = store.save_spool({"name": "Bambu PLA Basic", "material": "PLA", "brand": "Bambu Lab"})
+    assert spool.anchor_g == 1000  # a new full spool is its own anchor
+    _used(store, spool, 100)
+    assert spool.remaining_g == 900 and spool.used_since_anchor_g == 100
+    # the scale says 780 g of filament are left: the prints booked 100 g, in truth 220 g were used
+    store.weigh(spool.id, 780 + spool.tare)
+    assert store.last_sample == {"spool_id": spool.id, "slicer_g": 100, "actual_g": 220, "at": store.last_sample["at"]}
+    assert spool.anchor_g == 780 and spool.used_since_anchor_g == 0 and spool.weighed_at
+    assert store.suggested_factor() is None  # needs three samples
+
+    for _ in range(2):
+        _used(store, spool, 100)
+        store.weigh(spool.id, spool.anchor_g - 130 + spool.tare)
+    factor, n = store.suggested_factor()
+    assert n == 3 and 1.3 < factor < 1.6
+    store.set_usage_factor(factor)
+    before = spool.remaining_g
+    _used(store, spool, 100)
+    assert round(before - spool.remaining_g, 1) == round(100 * store.usage_factor, 1)
+    store.restore(spool.id, 100)
+    assert spool.remaining_g == before and spool.used_since_anchor_g == 0
+
+
+def test_a_small_use_or_a_guessed_amount_gives_no_sample_and_an_edit_resets_the_anchor():
+    store = SpoolStore()
+    spool = store.save_spool({"name": "Bambu PLA Basic", "material": "PLA", "brand": "Bambu Lab"})
+    _used(store, spool, 20)
+    store.weigh(spool.id, 900 + spool.tare)
+    assert store.last_sample is None and store.calibration == []  # under 50 g
+
+    _used(store, spool, 80)
+    spool = store.save_spool({**spool.as_dict(), "remaining_g": 500})  # typed in by hand
+    assert spool.anchor_g is None and spool.used_since_anchor_g == 0
+    store.weigh(spool.id, 480 + spool.tare)
+    assert store.last_sample is None and spool.anchor_g == 480
+
+    partial = store.save_spool({"name": "Bambu PLA Basic", "material": "PLA", "remaining_g": 400})
+    assert partial.anchor_g is None  # a partial amount typed in is not an anchor
+    flagged = store.save_spool({"name": "Bambu PETG", "material": "PETG"})
+    store._sync_remaining(flagged, {"remain": 3, "remain_enabled": True})
+    assert flagged.estimated and flagged.anchor_g is None
+
+
+def test_the_factor_is_kept_in_range_and_saved():
+    store = SpoolStore()
+    assert store.set_usage_factor(5) == 1.5 and store.set_usage_factor("x") == 1.0
+    store.set_usage_factor(1.2)
+    again = SpoolStore(**store.to_dict())
+    assert again.usage_factor == 1.2
+
+
+def test_tare_comes_from_the_spool_then_its_type_then_the_brand_then_the_default():
+    store = SpoolStore()
+    bambu = store.save_spool({"name": "Bambu PLA Basic", "material": "PLA", "brand": "Bambu Lab"})
+    other = store.save_spool({"name": "Anycubic PLA+", "material": "PLA", "brand": "Anycubic"})
+    assert store.tare_of(bambu) == (250.0, "default") and store.tare_of(other) == (200.0, "default")
+
+    store.set_settings({"tare_defaults": {"Bambu Lab": 245, "": 180}})
+    assert store.tare_of(bambu) == (245.0, "brand") and store.tare_of(other) == (180.0, "brand")
+
+    store.set_settings({"tare_presets": [{"name": "Self-printed spool", "tare_g": 78}]})
+    preset = store.tare_presets[0]
+    bambu = store.save_spool({**bambu.as_dict(), "tare_preset": preset["id"]})
+    assert store.tare_of(bambu) == (78.0, "preset")
+    assert store.spool_dict(bambu)["tare_effective_g"] == 78.0
+
+    # weighing uses the type; the unchanged tare is not pinned to the spool, a different one is
+    store.weigh(bambu.id, 478, tare_g=78)
+    assert bambu.remaining_g == 400 and bambu.tare_g is None
+    store.weigh(bambu.id, 478, tare_g=70)
+    assert bambu.tare_g == 70 and bambu.remaining_g == 408 and store.tare_of(bambu) == (70.0, "spool")
+
+    # deleting a type releases the spools that used it
+    other = store.save_spool({**other.as_dict(), "tare_preset": preset["id"]})
+    store.set_settings({"tare_presets": []})
+    assert store.spools[other.id].tare_preset == ""
+
+
+def test_settings_are_validated_and_saved():
+    store = SpoolStore()
+    try:
+        store.set_settings({"tare_presets": [{"name": " ", "tare_g": 50}]})
+        raise AssertionError("expected an error")
+    except SpoolError:
+        pass
+    store.set_settings({"options": {"weigh_remind_g": 40, "unknown": 1}})
+    assert store.options == {"weigh_remind_g": 40.0, "ams_diff_points": 15.0}
+    again = SpoolStore(**store.to_dict())
+    assert again.options["weigh_remind_g"] == 40.0
