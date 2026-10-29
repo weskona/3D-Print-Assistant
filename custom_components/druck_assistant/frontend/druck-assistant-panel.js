@@ -988,6 +988,9 @@ class DruckAssistantPanel extends HTMLElement {
             : { title: g.color || "" },
           multi ? this._el("span", { class: "chevron" }, expanded ? "▾" : "▸") : "", dot, g.name,
             multi ? this._el("span", { class: "badge" }, `× ${g.spools.length}`) : "",
+            // one of the spools of a collapsed group may be in a slot
+            ...(multi && g.spools.some((sp) => slotOf[sp.id])
+              ? [this._el("span", { class: "sub" }, ` · ${g.spools.filter((sp) => slotOf[sp.id]).map((sp) => slotOf[sp.id]).join(", ")}`)] : []),
             ...(multi ? [] : [...this._spoolBadges(g.spools[0], slotOf),
               slotOf[g.spools[0].id] ? this._el("span", { class: "sub" }, ` · ${slotOf[g.spools[0].id]}`) : ""])),
           this._el("td", {}, g.material),
