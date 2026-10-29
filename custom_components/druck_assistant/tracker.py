@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import re
 from datetime import datetime, timedelta
 from typing import Any
@@ -49,6 +50,8 @@ from .spools import valid_rfid
 
 UNAVAILABLE = ("unknown", "unavailable", None)
 
+
+_LOGGER = logging.getLogger(__name__)
 
 # Below this progress the printer's start time may still belong to the previous job.
 MIN_PROGRESS_FOR_START_TIME = 3.0
@@ -374,7 +377,12 @@ class PrintTracker:
             async_track_state_change_event(self.hass, watched, self._on_change)
         )
         # The entities may not be ready yet at setup: look for a running print a little later as well.
-        self.entry.async_on_unload(async_call_later(self.hass, 30, lambda _now: self._ensure_session()))
+        @callback
+        def _later(_now: datetime) -> None:
+            self._ensure_session()
+
+        self.entry.async_on_unload(async_call_later(self.hass, 30, _later))
+        self.entry.async_on_unload(async_call_later(self.hass, 120, _later))
         if self.entry.options.get(CONF_AUTO_IMPORT, True):
             slot_ids = list(self.slot_entities().values())
             if slot_ids:
@@ -653,6 +661,23 @@ class PrintTracker:
             return None
         return started
 
+    def _adopt_start(self, session: Any, now: datetime, progress: float | None) -> None:
+        """Give a session that began late the printer's start time and the energy meter reading of that moment.
+
+        Right after a restart the progress is often not known yet when the session begins, so this
+        is tried again on every later change until the progress allows it. The start time of a
+        print that has only just begun may still be the one of the previous job.
+        """
+        if session.start_checked or progress is None or progress < MIN_PROGRESS_FOR_START_TIME:
+            return
+        started = self._printer_start(now)
+        if started is None:  # the start time sensor may not be ready yet right after a restart: try again later
+            return
+        session.start_checked = True
+        if (session.started - started).total_seconds() > 120:
+            session.started = started
+            self.hass.async_create_task(self._backfill_energy(session, started))
+
     def _begin_session(self, now: datetime, progress: float = 0.0) -> None:
         """Fill the session that just began with the spool, the slots and the meters.
 
@@ -665,11 +690,7 @@ class PrintTracker:
         session = self.history.session
         if session is None:
             return
-        # The start time of a print that has only just begun may still be the one of the previous job.
-        started = self._printer_start(now) if progress >= MIN_PROGRESS_FOR_START_TIME else None
-        if started is not None and (session.started - started).total_seconds() > 120:
-            session.started = started
-            self.hass.async_create_task(self._backfill_energy(session, started))
+        self._adopt_start(session, now, progress)
         session.slot_key = self.active_slot_key()
         spool = self.filament.store.spool_for_slot(session.slot_key)
         if spool is not None:
@@ -699,8 +720,10 @@ class PrintTracker:
                     include_start_time_state=True, significant_changes_only=False, no_attributes=True,
                 )
             )
-        except Exception:  # noqa: BLE001 - the recorder is optional; the energy then counts from now on
+        except Exception:  # the recorder is optional; the energy then counts from the pick-up on
+            _LOGGER.warning("Energy meter reading at the start not available from the recorder", exc_info=True)
             return
+        _LOGGER.debug("Recorder returned %s for %s", states, entity)
         for state in states.get(entity, []):
             try:
                 value = float(state.state)
@@ -744,6 +767,7 @@ class PrintTracker:
         print would be neither recorded nor charged to its spool.
         """
         if self.history.session is not None:
+            self._adopt_start(self.history.session, dt_util.utcnow(), self._float("print_progress"))
             self._adopt_spool()
             return
         if self._value("print_status") not in ("running", "pause"):

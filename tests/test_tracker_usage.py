@@ -205,3 +205,43 @@ def test_the_printer_start_time_is_only_used_when_it_is_plausible():
     for bad in ((now + timedelta(minutes=5)).isoformat(), (now - timedelta(hours=60)).isoformat(), "unknown", None, "2026-01-02T08:00:00"):
         values["start_time"] = bad
         assert t._printer_start(now) is None
+
+
+def test_a_session_that_began_before_the_progress_was_known_gets_the_printer_start_later():
+    from datetime import datetime, timedelta, timezone
+
+    now = datetime(2026, 1, 2, 12, tzinfo=timezone.utc)
+    t, _ = make_tracker({})
+    history = sys.modules["druck_assistant.history"]
+    session = history.PrintSession(started=now)  # began right after the restart
+    t.history = history.PrintHistory()
+    t.history.session = session
+    values = {"start_time": (now - timedelta(hours=2)).isoformat()}
+    t._value = lambda key: values.get(key)
+    tasks = []
+    t.hass.async_create_task = lambda coro: (tasks.append(coro), coro.close())
+    t._backfill_energy = lambda s, started: _noop()
+
+    values["start_time"] = None  # the sensor is not ready right after a restart: tried again later
+    t._adopt_start(session, now, 40.0)
+    assert session.started == now and not session.start_checked and not tasks
+    values["start_time"] = (now - timedelta(hours=2)).isoformat()
+
+    t._adopt_start(session, now, None)  # progress not known yet: nothing happens, nothing is marked
+    assert session.started == now and not session.start_checked and not tasks
+    t._adopt_start(session, now, 2.0)  # too early, the start time could be the previous job's
+    assert session.started == now and not session.start_checked
+
+    t._adopt_start(session, now, 40.0)
+    assert session.started == now - timedelta(hours=2) and session.start_checked and len(tasks) == 1
+    t._adopt_start(session, now, 41.0)  # only once
+    assert len(tasks) == 1
+
+    fresh = history.PrintSession(started=now - timedelta(seconds=30))  # a normal start: the printer agrees
+    values["start_time"] = (now - timedelta(seconds=40)).isoformat()
+    t._adopt_start(fresh, now, 10.0)
+    assert fresh.started == now - timedelta(seconds=30) and fresh.start_checked and len(tasks) == 1
+
+
+async def _noop():
+    return None
