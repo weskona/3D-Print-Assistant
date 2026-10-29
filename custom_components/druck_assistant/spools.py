@@ -7,6 +7,8 @@ import uuid
 from dataclasses import asdict, dataclass
 from typing import Any
 
+from .catalog import color_note
+
 HEX_COLOR = re.compile(r"^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$")
 
 
@@ -96,6 +98,8 @@ class Spool:
     batch: str = ""
     location: str = ""
     last_dried: str = ""
+    # The remaining amount is an assumption, not weighed: the AMS suggests that the spool is used, or it is unknown.
+    estimated: bool = False
 
     @property
     def tare(self) -> float:
@@ -114,18 +118,19 @@ class Spool:
         return data
 
 
-def spool_data_from_tray(attrs: dict[str, Any], rfid: str) -> dict[str, Any]:
-    """Spool fields derived from ha-bambulab tray attributes."""
+def spool_data_from_tray(
+    attrs: dict[str, Any], rfid: str, colors: dict[str, list[tuple[str, str]]] | None = None
+) -> dict[str, Any]:
+    """Spool fields derived from ha-bambulab tray attributes.
+
+    colors is the color index of the catalog (see catalog.color_index): the tray only
+    reports a hex value, the catalog turns it into a color name and code for the notes.
+    """
     material = str(attrs.get("type") or "").strip()
     try:
         initial = float(attrs.get("tray_weight") or 0) or 1000.0
     except (TypeError, ValueError):
         initial = 1000.0
-    remain = attrs.get("remain")
-    if attrs.get("remain_enabled", True) and isinstance(remain, (int, float)) and 0 <= remain <= 100:
-        remaining = round(initial * remain / 100, 1)
-    else:
-        remaining = initial
     color = str(attrs.get("color") or "")
     return {
         "name": str(attrs.get("name") or material).strip() or material,
@@ -133,8 +138,9 @@ def spool_data_from_tray(attrs: dict[str, Any], rfid: str) -> dict[str, Any]:
         "brand": "Bambu Lab" if rfid else "",
         "color": color if HEX_COLOR.match(color) else "",
         "initial_weight_g": initial,
-        "remaining_g": remaining,
+        "remaining_g": initial,  # the AMS percent is only an estimate: new spools start full, see _sync_remaining
         "rfid": rfid,
+        "notes": color_note(colors or {}, str(attrs.get("name") or ""), color) if rfid else "",
     }
 
 
@@ -170,6 +176,8 @@ class SpoolStore:
         }
         # Tags the user cleared from a slot by hand: not auto-assigned again.
         self.dismissed_rfids: set[str] = set(dismissed_rfids or [])
+        # Color index of the catalog (catalog.color_index), set by the manager: names the colors of new spools.
+        self.colors: dict[str, list[tuple[str, str]]] = {}
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -177,6 +185,18 @@ class SpoolStore:
             "assignments": dict(self.assignments),
             "dismissed_rfids": sorted(self.dismissed_rfids),
         }
+
+    def backfill_notes(self) -> int:
+        """Fill empty notes of Bambu spools with the catalog color ("Plum (11204)"); returns how many were filled."""
+        filled = 0
+        for spool in self.spools.values():
+            if spool.notes or not (spool.rfid or spool.brand == "Bambu Lab"):
+                continue
+            note = color_note(self.colors, re.sub(r"\s+#\d+$", "", spool.name), spool.color)
+            if note:
+                spool.notes = note
+                filled += 1
+        return filled
 
     def save_spool(self, data: dict[str, Any]) -> Spool:
         """Create a spool, or update the spool with data["id"]."""
@@ -200,6 +220,10 @@ class SpoolStore:
         if spool_id is not None and spool_id not in self.spools:
             raise SpoolError("unknown spool")
         existing = self.spools.get(spool_id) if spool_id else None
+        if "estimated" in data:
+            estimated = bool(data["estimated"])
+        else:  # a value the user typed in is no longer a guess
+            estimated = bool(existing and existing.estimated and remaining == existing.remaining_g)
         spool = Spool(
             id=spool_id or uuid.uuid4().hex[:8],
             name=name,
@@ -213,6 +237,7 @@ class SpoolStore:
             rfid=valid_rfid(data["rfid"]) if "rfid" in data
             else (existing.rfid if existing else ""),
             archived=existing.archived if existing else False,
+            estimated=estimated,
             tare_g=_number(data["tare_g"], "tare_g", optional=True) if "tare_g" in data
             else (existing.tare_g if existing else None),
             purchased=_date(data["purchased"], "purchased") if "purchased" in data
@@ -331,27 +356,30 @@ class SpoolStore:
             self.assign(slot, stock.id)
             return ("adopted" if rfid else "assigned"), stock
 
-        spool = self.save_spool(spool_data_from_tray(attrs, rfid))
+        spool = self.save_spool(spool_data_from_tray(attrs, rfid, self.colors))
         self.assign(slot, spool.id)
         return "created", spool
 
     @staticmethod
     def _sync_remaining(spool: Spool, attrs: dict[str, Any]) -> bool:
-        """Take the AMS remaining amount for a spool that still counts as full.
+        """Mark a spool whose weight is unverified as estimated when the AMS says it is used.
 
-        A new spool is first reported with an unknown remaining amount (-1), so it
-        is created as full; the real value follows a little later. Only a spool
-        that is still exactly full is corrected, never one tracked by prints.
+        The consumption is calculated by the integration; the AMS percent is only a hint.
+        A new spool is first reported with an unknown remaining amount (-1), the real value
+        follows a little later. A spool that still counts as full but that the AMS reports
+        below 100 % is probably a used one: it keeps its weight and is flagged so that it
+        gets weighed once. Spools tracked by prints or weighed are never touched.
         """
         remain = attrs.get("remain")
         if (
-            not attrs.get("remain_enabled", True)
+            spool.estimated
+            or not attrs.get("remain_enabled", True)
             or not isinstance(remain, (int, float))
             or not 0 <= remain < 100
             or spool.remaining_g != spool.initial_weight_g
         ):
             return False
-        spool.remaining_g = round(spool.initial_weight_g * remain / 100, 1)
+        spool.estimated = True
         return True
 
     def delete_spool(self, spool_id: str) -> None:
@@ -433,6 +461,7 @@ class SpoolStore:
         if tare_g not in (None, ""):
             spool.tare_g = _number(tare_g, "tare_g")
         spool.remaining_g = round(min(max(gross - spool.tare, 0.0), spool.initial_weight_g), 1)
+        spool.estimated = False
         return spool
 
     def replacement_for(self, spool: Spool) -> Spool | None:

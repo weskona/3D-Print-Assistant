@@ -38,7 +38,8 @@ Each spool is charged with its own price; the print history lists the spools of 
 Click "Import from AMS" to create spools from the loaded AMS slots. New Bambu spools with an RFID
 tag are also added automatically (option "Automatically add new Bambu spools"); spools without a
 tag, such as third-party filament or the external spool, are only imported with the button.
-The remaining stock of an imported spool is estimated from the AMS percentage, so correct it by hand if needed.
+The AMS only reports the color as a hex value; for Bambu spools the color name and code (e.g. "Plum (11204)") are looked up in the catalog and written to the spool's notes when the hex value matches exactly.
+The AMS is only used to recognize spools: the remaining stock is calculated by the integration from the prints (a new spool starts full), never taken from the AMS percentage, which is often wrong for used spools and missing for third-party spools. If the AMS reports a new spool as used, it is marked "Unweighed" until you weigh it once with the scale button; the AMS tab shows a hint when the AMS and the calculation differ by more than 15 points.
 **Filter:** the Spools card has a search box (name, material, brand, notes, color) and filters for material,
 brand and status (in stock, in a slot, low stock). The table and its totals show only the matching spools; the popup of a type still lists all of its spools.
 
@@ -82,7 +83,7 @@ at your consumption of the last 30 days, with a button that copies the shopping 
 once when a type falls below its minimum.
 
 **Corrections, statistics and lists:** the arrows button of a print in the history charges it to another spool and moves the
-filament. The "Statistics" tab shows cost, filament, failure rate and wasted money per material, the cost per month, the most
+filament. The "Statistics" tab shows cost, filament, failure rate and wasted money per material, the cost per month (split into filament and electricity), the most
 expensive prints and the price per kg of your purchases. Spools and the history can be exported as CSV, and spools can be imported from a CSV file.
 A spool is shared by all printers.
 

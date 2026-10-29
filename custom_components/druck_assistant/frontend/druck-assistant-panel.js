@@ -82,6 +82,9 @@ const TRANSLATIONS = {
     no_spools: "No spools yet. Add your first spool.",
     no_slots: "No AMS or external spool slots found for this printer.",
     assign_spool: "Spool",
+    in_slot: "in {slot}",
+    color_black: "black", color_white: "white", color_gray: "gray", color_red: "red", color_orange: "orange", color_yellow: "yellow",
+    color_green: "green", color_cyan: "cyan", color_blue: "blue", color_purple: "purple", color_pink: "pink", color_brown: "brown",
     none: "none",
     admin_only: "Only administrators can change the filament inventory.",
     price: "Price",
@@ -122,6 +125,7 @@ const TRANSLATIONS = {
     tab_stats: "Statistics",
     stats_materials: "By material",
     stats_months: "Cost per month",
+    energy_cost: "Electricity cost",
     stats_top: "Most expensive prints",
     stats_waste: "Failed prints",
     stats_prices: "Price per kg of the purchases",
@@ -156,6 +160,10 @@ const TRANSLATIONS = {
     filter_reset: "Reset filter",
     no_match: "No spools match the filter.",
     stock_badge: "In stock",
+    almost_empty_badge: "Almost empty",
+    estimated_badge: "Unweighed",
+    estimated_hint: "The remaining amount is an estimate. Weigh the spool once with the scale button; after that the prints are deducted from the weighed value.",
+    ams_differs: "The AMS reports {ams} %, the calculation {own} %. The calculation counts, weigh the spool to be sure.",
     rfid_tag: "RFID tag (clear to unlink)",
     correct_hint: "Wrong spool? Pick the right one: the tag moves to it, and the automatic match stays corrected. Choosing \"none\" stops automatic assignment for the spool currently in this slot.",
     quantity: "Quantity (e.g. 4 for a 4-pack)",
@@ -233,6 +241,9 @@ const TRANSLATIONS = {
     no_spools: "Noch keine Spulen. Lege deine erste Spule an.",
     no_slots: "Keine AMS- oder Externe-Spule-Slots für diesen Drucker gefunden.",
     assign_spool: "Spule",
+    in_slot: "in {slot}",
+    color_black: "schwarz", color_white: "weiß", color_gray: "grau", color_red: "rot", color_orange: "orange", color_yellow: "gelb",
+    color_green: "grün", color_cyan: "türkis", color_blue: "blau", color_purple: "violett", color_pink: "rosa", color_brown: "braun",
     none: "keine",
     admin_only: "Nur Administratoren können den Filamentbestand ändern.",
     price: "Preis",
@@ -273,6 +284,7 @@ const TRANSLATIONS = {
     tab_stats: "Auswertung",
     stats_materials: "Nach Material",
     stats_months: "Kosten pro Monat",
+    energy_cost: "Stromkosten",
     stats_top: "Teuerste Drucke",
     stats_waste: "Fehlgeschlagene Drucke",
     stats_prices: "Preis pro kg der Einkäufe",
@@ -307,6 +319,10 @@ const TRANSLATIONS = {
     filter_reset: "Filter zurücksetzen",
     no_match: "Keine Spulen entsprechen dem Filter.",
     stock_badge: "Vorrat",
+    almost_empty_badge: "Fast leer",
+    estimated_badge: "Ungewogen",
+    estimated_hint: "Das Restgewicht ist eine Schätzung. Wiege die Spule einmal mit dem Waagen-Knopf, danach werden die Drucke vom gewogenen Wert abgezogen.",
+    ams_differs: "Das AMS meldet {ams} %, die Rechnung {own} %. Es zählt die Rechnung, zur Sicherheit die Spule wiegen.",
     rfid_tag: "RFID-Tag (leeren zum Lösen)",
     correct_hint: "Falsche Spule? Wähle die richtige: Der Tag wandert zu ihr, die automatische Zuordnung bleibt korrigiert. „keine“ stoppt die automatische Zuordnung für die Spule, die gerade in diesem Slot steckt.",
     quantity: "Anzahl (z. B. 4 für ein 4er-Pack)",
@@ -660,7 +676,7 @@ class DruckAssistantPanel extends HTMLElement {
     const f = this._filter;
     if (f.material && sp.material !== f.material) return false;
     if (f.brand && (sp.brand || "") !== f.brand) return false;
-    if (f.status === "stock" && slotOf[sp.id]) return false;
+    if (f.status === "stock" && (slotOf[sp.id] || !this._isFull(sp))) return false;
     if (f.status === "slot" && !slotOf[sp.id]) return false;
     if (f.status === "low" && sp.remaining_percent > LOW_PERCENT) return false;
     const text = f.text.trim().toLowerCase();
@@ -864,7 +880,7 @@ class DruckAssistantPanel extends HTMLElement {
             : { title: g.color || "" },
           multi ? this._el("span", { class: "chevron" }, expanded ? "▾" : "▸") : "", dot, g.name,
             multi ? this._el("span", { class: "badge" }, `× ${g.spools.length}`) : "",
-            !multi && !slotOf[g.spools[0].id] ? this._el("span", { class: "badge stock" }, this._t("stock_badge")) : ""),
+            ...(multi ? [] : this._spoolBadges(g.spools[0], slotOf))),
           this._el("td", {}, g.material),
           this._el("td", {}, g.brand || "–"),
           this._el("td", {}, bar, `${this._fmtNum(g.remaining, 0)} / ${this._fmtNum(g.initial, 0)} g (${this._fmtNum(g.percent, 0)} %)`),
@@ -876,10 +892,8 @@ class DruckAssistantPanel extends HTMLElement {
             const spct = Math.max(0, Math.min(100, sp.remaining_percent));
             table.append(this._el("tr", { class: "sub-row" },
               this._el("td", { class: "indent" }, sp.name,
-                sp.rfid ? this._el("span", { class: "badge", title: sp.rfid }, "RFID") : "",
-                slotOf[sp.id]
-                  ? this._el("span", { class: "sub" }, ` · ${slotOf[sp.id]}`)
-                  : this._el("span", { class: "badge stock" }, this._t("stock_badge"))),
+                ...this._spoolBadges(sp, slotOf),
+                slotOf[sp.id] ? this._el("span", { class: "sub" }, ` · ${slotOf[sp.id]}`) : ""),
               this._el("td", {}, ""),
               this._el("td", {}, ""),
               this._el("td", {},
@@ -928,6 +942,19 @@ class DruckAssistantPanel extends HTMLElement {
     // Forms are popups over the list.
     if (this._editing !== null) main.append(this._renderForm(this._editing));
     if (this._dialog) main.append(this._renderDialog(printer));
+  }
+
+  /** A spool nobody has used yet: it still holds its full content. */
+  _isFull(sp) { return sp.remaining_g >= sp.initial_weight_g; }
+
+  /** Badges of a spool row: RFID tag, "In stock" for a full spool outside the AMS, "Almost empty" below the low threshold. */
+  _spoolBadges(sp, slotOf) {
+    const out = [];
+    if (sp.rfid) out.push(this._el("span", { class: "badge", title: sp.rfid }, "RFID"));
+    if (sp.estimated) out.push(this._el("span", { class: "badge est", title: this._t("estimated_hint") }, this._t("estimated_badge")));
+    if (sp.remaining_percent <= LOW_PERCENT) out.push(this._el("span", { class: "badge low" }, this._t("almost_empty_badge")));
+    else if (!slotOf[sp.id] && this._isFull(sp)) out.push(this._el("span", { class: "badge stock" }, this._t("stock_badge")));
+    return out;
   }
 
   /** Warning block for a running print whose spool will run out. */
@@ -1091,15 +1118,23 @@ class DruckAssistantPanel extends HTMLElement {
       const d = new Date(r.finished);
       if (Number.isNaN(d.getTime())) continue;
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-      months.set(key, (months.get(key) || 0) + (r.cost || 0));
+      const m = months.get(key) || { filament: 0, energy: 0 };
+      m.energy += r.energy_cost || 0;
+      m.filament += filamentCost(r) || 0;
+      months.set(key, m);
     }
     const shown = [...months.entries()].sort().slice(-6);
-    const top = Math.max(...shown.map(([, v]) => v), 0.01);
+    const top = Math.max(...shown.map(([, m]) => m.filament + m.energy), 0.01);
     const mon = this._el("div", { class: "card" }, this._el("h2", {}, this._t("stats_months")));
-    for (const [key, value] of shown) {
-      mon.append(this._el("div", { class: "mbar" }, this._el("span", {}, key),
-        this._el("span", { class: "track" }, this._el("i", { style: `width:${Math.round((value / top) * 100)}%` })),
-        this._el("span", {}, this._fmtMoney(value, cur))));
+    mon.append(this._el("div", { class: "mlegend" },
+      this._el("span", {}, this._el("i", { class: "filament" }), this._t("filament_cost")),
+      this._el("span", {}, this._el("i", { class: "energy" }), this._t("energy_cost"))));
+    for (const [key, m] of shown) {
+      const pct = (v) => `width:${(v / top) * 100}%`;
+      mon.append(this._el("div", { class: "mbar", title: this._t("cost_split", { filament: this._fmtMoney(m.filament, cur), energy: this._fmtMoney(m.energy, cur) }) }, this._el("span", {}, key),
+        this._el("span", { class: "track" }, this._el("i", { class: "filament", style: pct(m.filament) }), this._el("i", { class: "energy", style: pct(m.energy) })),
+        this._el("span", {}, this._el("b", {}, this._fmtMoney(m.filament + m.energy, cur)),
+          this._el("span", { class: "sub" }, `${this._fmtMoney(m.filament, cur)} + ${this._fmtMoney(m.energy, cur)}`))));
     }
 
     const exp = this._el("div", { class: "card" }, this._el("h2", {}, this._t("stats_top")));
@@ -1221,6 +1256,46 @@ class DruckAssistantPanel extends HTMLElement {
     input.click();
   }
 
+  // rough color name from an #rrggbb value, so spools with the same name can be told apart
+  _colorName(hex) {
+    const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i.exec(hex || "");
+    if (!m) return "";
+    const [r, g, b] = [m[1], m[2], m[3]].map((x) => parseInt(x, 16) / 255);
+    const max = Math.max(r, g, b), min = Math.min(r, g, b), l = (max + min) / 2, d = max - min;
+    const sat = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
+    let key;
+    if (l < 0.13) key = "black";
+    else if (l > 0.9 && sat < 0.5) key = "white";
+    else if (sat < 0.15) key = l > 0.8 ? "white" : "gray";
+    else {
+      let h = d === 0 ? 0 : max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+      h = (h * 60 + 360) % 360;
+      if (h < 15 || h >= 345) key = l > 0.7 ? "pink" : "red";
+      else if (h < 40) key = l < 0.42 ? "brown" : "orange";
+      else if (h < 70) key = "yellow";
+      else if (h < 165) key = "green";
+      else if (h < 195) key = "cyan";
+      else if (h < 255) key = "blue";
+      else if (h < 295) key = "purple";
+      else key = "pink";
+    }
+    return this._t(`color_${key}`);
+  }
+
+  // the color as the user wrote it into the notes ("Plum (11204)"), else the rough name of the color value
+  _colorLabel(sp) {
+    const note = String(sp.notes || "").split("\n")[0].trim();
+    return note ? (note.length > 40 ? `${note.slice(0, 39)}…` : note) : this._colorName(sp.color);
+  }
+
+  // one line that tells spools of the same product apart: name, color, grams left and the slot it sits in
+  _spoolOption(sp, slots) {
+    const slot = slots.find((x) => x.spool_id === sp.id);
+    const parts = [sp.name, sp.name.toLowerCase().includes(String(sp.material).toLowerCase()) ? "" : sp.material, this._colorLabel(sp),
+      `${this._fmtNum(sp.remaining_g, 0)} g`, sp.location || "", slot ? this._t("in_slot", { slot: /(AMS|Ext).*$/i.exec(slot.label)?.[0] || slot.label }) : ""];
+    return parts.filter(Boolean).join(" · ");
+  }
+
   _renderAms(main, printer) {
     const admin = this._isAdmin();
     if (this._notice) main.append(this._el("div", { class: this._noticeOk ? "sub notice" : "error" }, this._notice));
@@ -1236,8 +1311,8 @@ class DruckAssistantPanel extends HTMLElement {
       for (const sl of slots) {
         const sel = this._el("select", { onchange: (e) => this._call({ type: "druck_assistant/spool_assign", slot_key: sl.key, spool_id: e.target.value || null }) },
           this._el("option", { value: "" }, this._t("none")),
-          ...activeSpools.map((sp) => {
-            const o = this._el("option", { value: sp.id }, `${sp.name} (${sp.material})`);
+          ...[...activeSpools].sort((a, b) => (b.material === sl.type) - (a.material === sl.type)).map((sp) => {
+            const o = this._el("option", { value: sp.id }, this._spoolOption(sp, slots));
             if (sp.id === sl.spool_id) o.selected = true;
             return o;
           }));
@@ -1245,10 +1320,16 @@ class DruckAssistantPanel extends HTMLElement {
         const dot = this._el("span", { class: "dot", style: `background:${/^#[0-9a-f]{6,8}$/i.test(sl.color || "") ? sl.color : "transparent"}` });
         const remain = sl.remain != null ? Math.max(0, Math.min(100, sl.remain)) : null;
         const spool = activeSpools.find((sp) => sp.id === sl.spool_id);
+        // the integration's own calculation counts; the AMS percent is only a hint (and missing for third-party spools)
+        const own = spool ? Math.max(0, Math.min(100, Math.round(spool.remaining_percent))) : null;
+        const shown = own ?? remain;
+        const differs = own !== null && remain !== null && Math.abs(own - remain) > 15;
         grid.append(this._el("div", { class: "slot" + (sl.active ? " active" : "") },
           this._el("div", { class: "top" }, dot, sl.label, sl.tagged ? this._el("span", { class: "badge" }, "RFID") : "",
-            this._el("span", { class: "sub" }, `${sl.type || "–"}${remain !== null ? ` · ${remain} %` : ""}`)),
-          remain !== null ? this._el("div", { class: "bar", style: "width:100%" }, this._el("div", { class: "fill" + (remain <= 15 ? " low" : ""), style: `width:${remain}%` })) : "",
+            this._el("span", { class: "sub" }, `${sl.type || "–"}${shown !== null ? ` · ${spool?.estimated ? "~" : ""}${shown} %` : ""}`)),
+          shown !== null ? this._el("div", { class: "bar", style: "width:100%" }, this._el("div", { class: "fill" + (shown <= 15 ? " low" : ""), style: `width:${shown}%` })) : "",
+          differs ? this._el("div", { class: "sub warn-text" }, this._t("ams_differs", { ams: remain, own })) : "",
+          spool?.estimated && !differs ? this._el("div", { class: "sub warn-text" }, this._t("estimated_hint")) : "",
           sl.replacement
             ? this._el("div", { class: "sub warn-text" }, this._t("replacement", { name: sl.replacement.name, grams: this._fmtNum(sl.replacement.remaining_g, 0) }))
             : "",
@@ -1409,6 +1490,8 @@ class DruckAssistantPanel extends HTMLElement {
       .dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; vertical-align: middle; margin-right: 8px; border: 1px solid rgba(255,255,255,.25); }
       .ok { color: var(--green); } .fail { color: var(--red); }
       .badge { margin-left: 8px; padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; background: rgba(255,255,255,.07); color: var(--muted); border: 1px solid var(--line); }
+      .badge.est { color: #fbbf24; background: rgba(251,191,36,.1); border-color: rgba(251,191,36,.3); }
+      .badge.low { color: #f87171; background: rgba(248,113,113,.1); border-color: rgba(248,113,113,.3); }
       .badge.stock { color: var(--cyan); background: rgba(56,189,248,.1); border-color: rgba(56,189,248,.3); }
       button { font: inherit; font-size: 14px; font-weight: 600; height: 38px; padding: 0 14px; margin-right: 8px; border-radius: 13px; border: 1px solid var(--line); background: rgba(255,255,255,.04); color: var(--muted); cursor: pointer; }
       button:hover { color: var(--text); background: rgba(255,255,255,.08); }
@@ -1444,8 +1527,14 @@ class DruckAssistantPanel extends HTMLElement {
       .toolbar button { margin: 0; }
       .under { color: var(--red); font-weight: 600; }
       .mbar { display: grid; grid-template-columns: 70px minmax(0, 1fr) auto; align-items: center; gap: 10px; margin: 6px 0; font-size: 13px; }
-      .mbar .track { height: 10px; border-radius: 999px; background: rgba(255,255,255,.06); overflow: hidden; }
-      .mbar .track i { display: block; height: 100%; background: var(--cyan); border-radius: 999px; }
+      .mbar .track { display: flex; height: 10px; border-radius: 999px; background: rgba(255,255,255,.06); overflow: hidden; }
+      .mbar .track i { display: block; height: 100%; }
+      .mbar .sub { display: block; font-size: 11px; opacity: .7; text-align: right; }
+      .mbar > span:last-child { text-align: right; }
+      .mbar i.filament, .mlegend i.filament { background: var(--cyan); }
+      .mbar i.energy, .mlegend i.energy { background: #fbbf24; }
+      .mlegend { display: flex; gap: 14px; font-size: 12px; opacity: .8; margin-bottom: 4px; }
+      .mlegend i { display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 5px; }
       .camera { display: block; width: 100%; border-radius: 18px; background: #000; aspect-ratio: 16 / 9; object-fit: contain; }
       .hrow .spools { display: block; }
       .cover { display: block; max-width: 100%; max-height: 220px; margin: 4px auto 12px; border-radius: 18px; object-fit: contain; }

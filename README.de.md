@@ -37,7 +37,8 @@ listet bei solchen Drucken die Spulen auf.
 Mit „Aus AMS importieren“ werden aus den belegten AMS-Slots Spulen angelegt. Neue Bambu-Spulen mit
 RFID-Tag werden zusätzlich automatisch übernommen (Option „Neue Bambu-Spulen automatisch übernehmen“);
 Spulen ohne Tag, etwa Fremdfilament oder die externe Spule, werden nur über den Button importiert.
-Der Restbestand wird aus der AMS-Prozentanzeige geschätzt und lässt sich von Hand korrigieren.
+Das AMS meldet die Farbe nur als Hex-Wert; bei Bambu-Spulen werden Farbname und -nummer (z. B. „Plum (11204)“) im Katalog nachgeschlagen und bei exakt passendem Hex-Wert in die Notizen der Spule geschrieben.
+Das AMS dient nur der Erkennung der Spulen: Der Restbestand wird von der Integration aus den Drucken berechnet (eine neue Spule startet voll) und nie aus der AMS-Prozentanzeige übernommen, die bei gebrauchten Spulen oft falsch ist und bei Fremdspulen fehlt. Meldet das AMS eine neue Spule als gebraucht, steht sie als „Ungewogen“ in der Liste, bis du sie einmal mit dem Waagen-Knopf wiegst; der Tab „AMS“ zeigt einen Hinweis, wenn AMS und Rechnung um mehr als 15 Punkte abweichen.
 **Filter:** Die Karte „Spulen“ hat ein Suchfeld (Name, Material, Hersteller, Notizen, Farbe) und Filter für Material,
 Hersteller und Status (Vorrat, in einem Slot, niedriger Bestand). Tabelle und Summen zeigen nur die passenden Spulen; das Popup einer Sorte listet weiterhin alle ihre Spulen.
 
@@ -86,7 +87,7 @@ Minimum, wird `druck_assistant_stock_low` einmal ausgelöst.
 
 **Korrekturen, Auswertung und Listen:** Mit dem Pfeil-Knopf eines Drucks in der Historie bucht man ihn auf eine andere Spule um, das
 Filament wandert mit. Der Tab „Auswertung“ zeigt Kosten, Filament, Fehlerquote und verschwendetes Geld pro Material, die Kosten pro
-Monat, die teuersten Drucke und den Preis pro kg deiner Einkäufe. Spulen und Historie lassen sich als CSV exportieren, Spulen auch
+Monat (aufgeteilt in Filament und Strom), die teuersten Drucke und den Preis pro kg deiner Einkäufe. Spulen und Historie lassen sich als CSV exportieren, Spulen auch
 aus einer CSV-Datei importieren. Der Spulenbestand wird von allen Druckern gemeinsam genutzt.
 
 ## Installation
