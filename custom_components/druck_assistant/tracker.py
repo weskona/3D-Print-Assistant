@@ -720,7 +720,7 @@ class PrintTracker:
                     include_start_time_state=True, significant_changes_only=False, no_attributes=True,
                 )
             )
-        except Exception:  # noqa: BLE001 - the recorder is optional; the energy then counts from now on
+        except Exception:  # the recorder is optional; the energy then counts from the pick-up on
             _LOGGER.warning("Energy meter reading at the start not available from the recorder", exc_info=True)
             return
         _LOGGER.debug("Recorder returned %s for %s", states, entity)
