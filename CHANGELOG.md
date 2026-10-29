@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0-beta.1] - 2026-10-29
+
+### Changed
+
+- Version number only. The GitHub release list sorts the pre-release part as text, so `beta.9` stood above `beta.10`, `beta.11` and `beta.12` and looked like the newest release. The minor version is raised so that the newest release is listed first again; the code is that of 0.9.0-beta.12.
+
 ## [0.9.0-beta.12] - 2026-10-29
 
 ### Fixed
