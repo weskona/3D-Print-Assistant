@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0-beta.7] - 2026-10-29
+
+### Added
+
+- Filament tab: the spool list can also be filtered by color (the color families of the spools, like black, gray or pink).
+
 ## [0.9.0-beta.6] - 2026-10-29
 
 ### Changed
