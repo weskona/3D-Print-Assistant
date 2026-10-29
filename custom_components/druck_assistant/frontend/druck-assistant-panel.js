@@ -10,6 +10,7 @@ const ICONS = {
   restore: "M12,3A9,9 0 0,0 3,12H0L4,16L8,12H5A7,7 0 0,1 12,5A7,7 0 0,1 19,12A7,7 0 0,1 12,19C10.5,19 9.09,18.5 7.94,17.7L6.5,19.14C8.04,20.3 9.94,21 12,21A9,9 0 0,0 21,12A9,9 0 0,0 12,3M14,12A2,2 0 0,0 12,10A2,2 0 0,0 10,12A2,2 0 0,0 12,14A2,2 0 0,0 14,12Z",
 };
 
+const WEIGH_REMIND_G = 20; // grams used since the last weighing from which a spool outside the AMS is worth weighing
 const LOW_PERCENT = 15; // same threshold as the red stock bar
 
 const COMMON_MATERIALS = ["PLA", "PLA+", "PETG", "ABS", "ASA", "TPU", "PC", "PA", "PA-CF", "PET-CF", "PVA"];
@@ -162,6 +163,19 @@ const TRANSLATIONS = {
     stock_badge: "In stock",
     almost_empty_badge: "Almost empty",
     estimated_badge: "Unweighed",
+    weigh_reminder_title: "Worth weighing",
+    weigh_reminder_hint: "Spools outside the AMS whose amount is a guess or that the prints have used a lot since they were last weighed. Weighing keeps the calculation exact.",
+    weigh_reminder_used: "{grams} g used since the last weighing",
+    weigh_reminder_unweighed: "Unweighed, the amount is an estimate",
+    weigh_done: "Weight saved.",
+    weigh_sample: "Weight saved. The prints had booked {slicer} g, the scale shows {actual} g were used ({pct} % {dir} than the slicer).",
+    weigh_more: "more", weigh_less: "less",
+    cal_title: "Accuracy of the consumption",
+    cal_text: "Each weighing compares what the prints booked with what the scale shows. From three weighings on, the slicer weight can be corrected.",
+    cal_none: "No weighing with at least 50 g of use yet ({samples} so far).",
+    cal_suggest: "Suggested factor {factor} (real consumption ÷ slicer weight), from {samples} weighings.",
+    cal_current: "Applied factor: {factor}",
+    cal_apply: "Apply", cal_reset: "Reset to 1.0",
     estimated_hint: "The remaining amount is an estimate. Weigh the spool once with the scale button; after that the prints are deducted from the weighed value.",
     ams_differs: "The AMS reports {ams} %, the calculation {own} %. The calculation counts, weigh the spool to be sure.",
     rfid_tag: "RFID tag (clear to unlink)",
@@ -321,6 +335,19 @@ const TRANSLATIONS = {
     stock_badge: "Vorrat",
     almost_empty_badge: "Fast leer",
     estimated_badge: "Ungewogen",
+    weigh_reminder_title: "Wiegen lohnt sich",
+    weigh_reminder_hint: "Spulen außerhalb des AMS, deren Menge geschätzt ist oder die seit dem letzten Wiegen viel verbraucht haben. Wiegen hält die Rechnung genau.",
+    weigh_reminder_used: "{grams} g seit dem letzten Wiegen verbraucht",
+    weigh_reminder_unweighed: "Ungewogen, die Menge ist geschätzt",
+    weigh_done: "Gewicht gespeichert.",
+    weigh_sample: "Gewicht gespeichert. Die Drucke hatten {slicer} g gebucht, laut Waage waren es {actual} g ({pct} % {dir} als der Slicer).",
+    weigh_more: "mehr", weigh_less: "weniger",
+    cal_title: "Genauigkeit des Verbrauchs",
+    cal_text: "Jedes Wiegen vergleicht, was die Drucke gebucht haben, mit dem, was die Waage zeigt. Ab drei Wägungen lässt sich das Slicer-Gewicht korrigieren.",
+    cal_none: "Noch keine Wägung mit mindestens 50 g Verbrauch ({samples} bisher).",
+    cal_suggest: "Vorgeschlagener Faktor {factor} (echter Verbrauch ÷ Slicer-Gewicht), aus {samples} Wägungen.",
+    cal_current: "Angewendeter Faktor: {factor}",
+    cal_apply: "Übernehmen", cal_reset: "Auf 1,0 zurücksetzen",
     estimated_hint: "Das Restgewicht ist eine Schätzung. Wiege die Spule einmal mit dem Waagen-Knopf, danach werden die Drucke vom gewogenen Wert abgezogen.",
     ams_differs: "Das AMS meldet {ams} %, die Rechnung {own} %. Es zählt die Rechnung, zur Sicherheit die Spule wiegen.",
     rfid_tag: "RFID-Tag (leeren zum Lösen)",
@@ -835,6 +862,8 @@ class DruckAssistantPanel extends HTMLElement {
 
     const activeSpools = this._spools.filter((sp) => !sp.archived);
     const archivedSpools = this._spools.filter((sp) => sp.archived);
+    const reminder = this._renderWeighReminder(admin, slotOf);
+    if (reminder) main.append(reminder);
     main.append(this._renderStock(printer, admin));
     const card = this._el("div", { class: "card" }, this._el("h2", {}, this._t("spools")));
     if (admin) {
@@ -945,6 +974,24 @@ class DruckAssistantPanel extends HTMLElement {
     if (this._dialog) main.append(this._renderDialog(printer));
   }
 
+  /** Spools outside the AMS that are worth weighing: an estimated amount, or a lot used since the last weighing. */
+  _renderWeighReminder(admin, slotOf) {
+    const due = this._spools
+      .filter((sp) => !sp.archived && !slotOf[sp.id] && (sp.estimated || (sp.used_since_anchor_g || 0) >= WEIGH_REMIND_G))
+      .sort((a, b) => (b.estimated - a.estimated) || (b.used_since_anchor_g || 0) - (a.used_since_anchor_g || 0))
+      .slice(0, 8);
+    if (!due.length) return null;
+    const card = this._el("div", { class: "card" }, this._el("h2", {}, this._t("weigh_reminder_title")), this._el("div", { class: "sub" }, this._t("weigh_reminder_hint")));
+    for (const sp of due) {
+      const dot = this._el("span", { class: "dot", style: `background:${/^#[0-9a-f]{6,8}$/i.test(sp.color || "") ? sp.color : "transparent"}` });
+      const why = sp.estimated ? this._t("weigh_reminder_unweighed") : this._t("weigh_reminder_used", { grams: this._fmtNum(sp.used_since_anchor_g, 0) });
+      card.append(this._el("div", { class: "remind" }, dot,
+        this._el("span", {}, this._el("b", {}, this._spoolOption(sp, [])), this._el("span", { class: "sub" }, ` · ${why}`)),
+        admin ? this._iconButton("scale", this._t("weigh"), () => { this._dialog = { kind: "weigh", spool: sp }; this._render(); }) : ""));
+    }
+    return card;
+  }
+
   /** A spool nobody has used yet: it still holds its full content. */
   _isFull(sp) { return sp.remaining_g >= sp.initial_weight_g; }
 
@@ -994,7 +1041,12 @@ class DruckAssistantPanel extends HTMLElement {
         this._el("div", { class: "actions" },
           this._el("button", { class: "primary", onclick: () => {
             if (!gross.value) return;
-            this._call({ type: "druck_assistant/spool_weigh", spool_id: sp.id, gross_g: gross.value, tare_g: tare.value || null });
+            this._call({ type: "druck_assistant/spool_weigh", spool_id: sp.id, gross_g: gross.value, tare_g: tare.value || null }, (res) => {
+              const x = res.sample;
+              if (!x) return this._t("weigh_done");
+              const pct = Math.round(Math.abs(x.actual_g / x.slicer_g - 1) * 100);
+              return this._t("weigh_sample", { slicer: this._fmtNum(x.slicer_g, 0), actual: this._fmtNum(x.actual_g, 0), pct, dir: this._t(x.actual_g >= x.slicer_g ? "weigh_more" : "weigh_less") });
+            });
           } }, this._t("save")),
           this._el("button", { onclick: close }, this._t("cancel"))));
       setTimeout(() => gross.focus(), 0);
@@ -1163,7 +1215,20 @@ class DruckAssistantPanel extends HTMLElement {
       buys.append(this._el("div", { class: "sub", style: "margin:6px 0" },
         `${key}: ${sorted.length} ${this._t("purchases")} · ${this._fmtMoney(Math.min(...values), cur)} – ${this._fmtMoney(Math.max(...values), cur)} · ${this._t("last_price")} ${this._fmtMoney(values[values.length - 1], cur)}/kg`));
     }
-    main.append(this._el("div", { class: "grid" }, this._el("div", { class: "col" }, mat, mon), this._el("div", { class: "col" }, exp, buys)));
+    const cal = this._data?.calibration;
+    const acc = this._el("div", { class: "card" }, this._el("h2", {}, this._t("cal_title")), this._el("div", { class: "sub" }, this._t("cal_text")));
+    if (cal) {
+      const fmt = (v) => this._fmtNum(v, 2);
+      acc.append(this._el("div", { class: "sub", style: "margin:8px 0" }, this._t("cal_current", { factor: fmt(cal.factor) })));
+      const set = (factor) => this._call({ type: "druck_assistant/usage_factor", factor }, () => this._t("weigh_done"));
+      if (cal.suggested == null) acc.append(this._el("div", { class: "sub" }, this._t("cal_none", { samples: cal.samples })));
+      else {
+        acc.append(this._el("div", { class: "sub" }, this._t("cal_suggest", { factor: fmt(cal.suggested), samples: cal.samples })));
+        if (this._isAdmin() && Math.abs(cal.suggested - cal.factor) >= 0.005) acc.append(this._el("button", { class: "primary", onclick: () => set(cal.suggested) }, this._t("cal_apply")));
+      }
+      if (this._isAdmin() && cal.factor !== 1) acc.append(this._el("button", { onclick: () => set(1) }, this._t("cal_reset")));
+    }
+    main.append(this._el("div", { class: "grid" }, this._el("div", { class: "col" }, mat, mon, acc), this._el("div", { class: "col" }, exp, buys)));
   }
 
   /** A printable label for a spool (name, type, color, weight, place and id). */
@@ -1492,6 +1557,8 @@ class DruckAssistantPanel extends HTMLElement {
       .ok { color: var(--green); } .fail { color: var(--red); }
       .badge { margin-left: 8px; padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; background: rgba(255,255,255,.07); color: var(--muted); border: 1px solid var(--line); }
       .badge.est { color: #fbbf24; background: rgba(251,191,36,.1); border-color: rgba(251,191,36,.3); }
+      .remind { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
+      .remind > span:nth-child(2) { flex: 1; min-width: 0; }
       .badge.low { color: #f87171; background: rgba(248,113,113,.1); border-color: rgba(248,113,113,.3); }
       .badge.stock { color: var(--cyan); background: rgba(56,189,248,.1); border-color: rgba(56,189,248,.3); }
       button { font: inherit; font-size: 14px; font-weight: 600; height: 38px; padding: 0 14px; margin-right: 8px; border-radius: 13px; border: 1px solid var(--line); background: rgba(255,255,255,.04); color: var(--muted); cursor: pointer; }

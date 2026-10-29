@@ -5,9 +5,15 @@ from __future__ import annotations
 import re
 import uuid
 from dataclasses import asdict, dataclass
+from datetime import datetime
 from typing import Any
 
 from .catalog import color_note
+
+CALIBRATION_MIN_G = 50  # a weighing only teaches something when the prints used at least this much
+CALIBRATION_MIN_SAMPLES = 3
+CALIBRATION_KEEP = 30
+FACTOR_RANGE = (0.7, 1.5)
 
 HEX_COLOR = re.compile(r"^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$")
 
@@ -75,6 +81,18 @@ def _date(value: Any, field: str) -> str:
     return text
 
 
+def _today() -> str:
+    return datetime.now().date().isoformat()
+
+
+def _factor(value: Any) -> float:
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return 1.0
+    return round(min(max(number, FACTOR_RANGE[0]), FACTOR_RANGE[1]), 3)
+
+
 @dataclass
 class Spool:
     """A filament spool."""
@@ -100,6 +118,11 @@ class Spool:
     last_dried: str = ""
     # The remaining amount is an assumption, not weighed: the AMS suggests that the spool is used, or it is unknown.
     estimated: bool = False
+    # Last trustworthy amount (a full spool at creation or a weighing) and the grams the prints
+    # deducted since then, as the slicer reports them. A weighing compares the two (see weigh).
+    anchor_g: float | None = None
+    used_since_anchor_g: float = 0.0
+    weighed_at: str = ""
 
     @property
     def tare(self) -> float:
@@ -166,6 +189,8 @@ class SpoolStore:
         spools: list[dict[str, Any]] | None = None,
         assignments: dict[str, str] | None = None,
         dismissed_rfids: list[str] | None = None,
+        usage_factor: float = 1.0,
+        calibration: list[dict[str, Any]] | None = None,
     ) -> None:
         self.spools: dict[str, Spool] = {}
         for item in spools or []:
@@ -178,12 +203,21 @@ class SpoolStore:
         self.dismissed_rfids: set[str] = set(dismissed_rfids or [])
         # Color index of the catalog (catalog.color_index), set by the manager: names the colors of new spools.
         self.colors: dict[str, list[tuple[str, str]]] = {}
+        # Real consumption / slicer weight, learned from weighings; applied to every deduction.
+        self.usage_factor = _factor(usage_factor)
+        self.calibration: list[dict[str, Any]] = list(calibration or [])[-CALIBRATION_KEEP:]
+        self.last_sample: dict[str, Any] | None = None
+        for spool in self.spools.values():  # an untouched full spool is its own anchor
+            if spool.anchor_g is None and not spool.estimated and spool.remaining_g == spool.initial_weight_g:
+                spool.anchor_g = spool.remaining_g
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "spools": [asdict(s) for s in self.spools.values()],
             "assignments": dict(self.assignments),
             "dismissed_rfids": sorted(self.dismissed_rfids),
+            "usage_factor": self.usage_factor,
+            "calibration": list(self.calibration),
         }
 
     def backfill_notes(self) -> int:
@@ -224,6 +258,12 @@ class SpoolStore:
             estimated = bool(data["estimated"])
         else:  # a value the user typed in is no longer a guess
             estimated = bool(existing and existing.estimated and remaining == existing.remaining_g)
+        if existing is None:  # a new full spool is the anchor; a partial one typed in is not trustworthy
+            anchor, used = (remaining if remaining == initial and not estimated else None), 0.0
+        elif remaining != existing.remaining_g:  # edited by hand: the old anchor no longer fits
+            anchor, used = None, 0.0
+        else:
+            anchor, used = existing.anchor_g, existing.used_since_anchor_g
         spool = Spool(
             id=spool_id or uuid.uuid4().hex[:8],
             name=name,
@@ -238,6 +278,9 @@ class SpoolStore:
             else (existing.rfid if existing else ""),
             archived=existing.archived if existing else False,
             estimated=estimated,
+            anchor_g=anchor,
+            used_since_anchor_g=used,
+            weighed_at=existing.weighed_at if existing else "",
             tare_g=_number(data["tare_g"], "tare_g", optional=True) if "tare_g" in data
             else (existing.tare_g if existing else None),
             purchased=_date(data["purchased"], "purchased") if "purchased" in data
@@ -380,6 +423,7 @@ class SpoolStore:
         ):
             return False
         spool.estimated = True
+        spool.anchor_g, spool.used_since_anchor_g = None, 0.0
         return True
 
     def delete_spool(self, spool_id: str) -> None:
@@ -438,7 +482,8 @@ class SpoolStore:
         spool = self.spools.get(spool_id) if spool_id else None
         if spool is None or not grams or grams <= 0:
             return spool
-        spool.remaining_g = round(max(spool.remaining_g - grams, 0.0), 1)
+        spool.remaining_g = round(max(spool.remaining_g - grams * self.usage_factor, 0.0), 1)
+        spool.used_since_anchor_g = round(spool.used_since_anchor_g + grams, 1)
         return spool
 
     def restore(self, spool_id: str | None, grams: float | None) -> Spool | None:
@@ -446,7 +491,8 @@ class SpoolStore:
         spool = self.spools.get(spool_id) if spool_id else None
         if spool is None or not grams or grams <= 0:
             return spool
-        spool.remaining_g = round(min(spool.remaining_g + grams, spool.initial_weight_g), 1)
+        spool.remaining_g = round(min(spool.remaining_g + grams * self.usage_factor, spool.initial_weight_g), 1)
+        spool.used_since_anchor_g = round(max(spool.used_since_anchor_g - grams, 0.0), 1)
         return spool
 
     def weigh(self, spool_id: str, gross_g: Any, tare_g: Any = None) -> Spool:
@@ -460,9 +506,29 @@ class SpoolStore:
         gross = _number(gross_g, "gross_g")
         if tare_g not in (None, ""):
             spool.tare_g = _number(tare_g, "tare_g")
-        spool.remaining_g = round(min(max(gross - spool.tare, 0.0), spool.initial_weight_g), 1)
+        remaining = round(min(max(gross - spool.tare, 0.0), spool.initial_weight_g), 1)
+        sample = None
+        if spool.anchor_g is not None and spool.used_since_anchor_g >= CALIBRATION_MIN_G and not spool.estimated:
+            actual = spool.anchor_g - remaining
+            if actual > 0:  # more than the prints booked means the slicer value is too low
+                sample = {"spool_id": spool.id, "slicer_g": spool.used_since_anchor_g, "actual_g": round(actual, 1), "at": _today()}
+                self.calibration = (self.calibration + [sample])[-CALIBRATION_KEEP:]
+        spool.remaining_g = remaining
         spool.estimated = False
+        spool.anchor_g, spool.used_since_anchor_g, spool.weighed_at = remaining, 0.0, _today()
+        self.last_sample = sample
         return spool
+
+    def suggested_factor(self) -> tuple[float, int] | None:
+        """Real consumption / slicer weight over the recent weighings (None below three samples)."""
+        samples = [s for s in self.calibration if s["slicer_g"] > 0]
+        if len(samples) < CALIBRATION_MIN_SAMPLES:
+            return None
+        return _factor(sum(s["actual_g"] for s in samples) / sum(s["slicer_g"] for s in samples)), len(samples)
+
+    def set_usage_factor(self, value: Any) -> float:
+        self.usage_factor = _factor(value)
+        return self.usage_factor
 
     def replacement_for(self, spool: Spool) -> Spool | None:
         """The stock spool that should take over when this one is used up.

@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0-beta.4] - 2026-10-29
+
+### Added
+
+- Correction factor for the consumption: each weighing compares what the prints booked since the last weighing (or since the spool was new and full) with the weighed amount. From three weighings with at least 50 g of use the Statistics tab suggests a factor (real consumption / slicer weight) that can be applied or reset; it is applied to every deduction and to rebookings. After a weighing the panel shows how far the slicer was off.
+- The Filament tab lists spools outside the AMS that are worth weighing (amount is an estimate, or 20 g or more used since the last weighing) with a scale button.
+
 ## [0.9.0-beta.3] - 2026-10-29
 
 ### Fixed
