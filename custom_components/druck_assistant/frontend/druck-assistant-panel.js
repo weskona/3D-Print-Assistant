@@ -161,6 +161,9 @@ const TRANSLATIONS = {
     no_match: "No spools match the filter.",
     stock_badge: "In stock",
     almost_empty_badge: "Almost empty",
+    estimated_badge: "Unweighed",
+    estimated_hint: "The remaining amount is an estimate. Weigh the spool once with the scale button; after that the prints are deducted from the weighed value.",
+    ams_differs: "The AMS reports {ams} %, the calculation {own} %. The calculation counts, weigh the spool to be sure.",
     rfid_tag: "RFID tag (clear to unlink)",
     correct_hint: "Wrong spool? Pick the right one: the tag moves to it, and the automatic match stays corrected. Choosing \"none\" stops automatic assignment for the spool currently in this slot.",
     quantity: "Quantity (e.g. 4 for a 4-pack)",
@@ -317,6 +320,9 @@ const TRANSLATIONS = {
     no_match: "Keine Spulen entsprechen dem Filter.",
     stock_badge: "Vorrat",
     almost_empty_badge: "Fast leer",
+    estimated_badge: "Ungewogen",
+    estimated_hint: "Das Restgewicht ist eine Schätzung. Wiege die Spule einmal mit dem Waagen-Knopf, danach werden die Drucke vom gewogenen Wert abgezogen.",
+    ams_differs: "Das AMS meldet {ams} %, die Rechnung {own} %. Es zählt die Rechnung, zur Sicherheit die Spule wiegen.",
     rfid_tag: "RFID-Tag (leeren zum Lösen)",
     correct_hint: "Falsche Spule? Wähle die richtige: Der Tag wandert zu ihr, die automatische Zuordnung bleibt korrigiert. „keine“ stoppt die automatische Zuordnung für die Spule, die gerade in diesem Slot steckt.",
     quantity: "Anzahl (z. B. 4 für ein 4er-Pack)",
@@ -945,6 +951,7 @@ class DruckAssistantPanel extends HTMLElement {
   _spoolBadges(sp, slotOf) {
     const out = [];
     if (sp.rfid) out.push(this._el("span", { class: "badge", title: sp.rfid }, "RFID"));
+    if (sp.estimated) out.push(this._el("span", { class: "badge est", title: this._t("estimated_hint") }, this._t("estimated_badge")));
     if (sp.remaining_percent <= LOW_PERCENT) out.push(this._el("span", { class: "badge low" }, this._t("almost_empty_badge")));
     else if (!slotOf[sp.id] && this._isFull(sp)) out.push(this._el("span", { class: "badge stock" }, this._t("stock_badge")));
     return out;
@@ -1313,10 +1320,16 @@ class DruckAssistantPanel extends HTMLElement {
         const dot = this._el("span", { class: "dot", style: `background:${/^#[0-9a-f]{6,8}$/i.test(sl.color || "") ? sl.color : "transparent"}` });
         const remain = sl.remain != null ? Math.max(0, Math.min(100, sl.remain)) : null;
         const spool = activeSpools.find((sp) => sp.id === sl.spool_id);
+        // the integration's own calculation counts; the AMS percent is only a hint (and missing for third-party spools)
+        const own = spool ? Math.max(0, Math.min(100, Math.round(spool.remaining_percent))) : null;
+        const shown = own ?? remain;
+        const differs = own !== null && remain !== null && Math.abs(own - remain) > 15;
         grid.append(this._el("div", { class: "slot" + (sl.active ? " active" : "") },
           this._el("div", { class: "top" }, dot, sl.label, sl.tagged ? this._el("span", { class: "badge" }, "RFID") : "",
-            this._el("span", { class: "sub" }, `${sl.type || "–"}${remain !== null ? ` · ${remain} %` : ""}`)),
-          remain !== null ? this._el("div", { class: "bar", style: "width:100%" }, this._el("div", { class: "fill" + (remain <= 15 ? " low" : ""), style: `width:${remain}%` })) : "",
+            this._el("span", { class: "sub" }, `${sl.type || "–"}${shown !== null ? ` · ${spool?.estimated ? "~" : ""}${shown} %` : ""}`)),
+          shown !== null ? this._el("div", { class: "bar", style: "width:100%" }, this._el("div", { class: "fill" + (shown <= 15 ? " low" : ""), style: `width:${shown}%` })) : "",
+          differs ? this._el("div", { class: "sub warn-text" }, this._t("ams_differs", { ams: remain, own })) : "",
+          spool?.estimated && !differs ? this._el("div", { class: "sub warn-text" }, this._t("estimated_hint")) : "",
           sl.replacement
             ? this._el("div", { class: "sub warn-text" }, this._t("replacement", { name: sl.replacement.name, grams: this._fmtNum(sl.replacement.remaining_g, 0) }))
             : "",
@@ -1477,6 +1490,7 @@ class DruckAssistantPanel extends HTMLElement {
       .dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; vertical-align: middle; margin-right: 8px; border: 1px solid rgba(255,255,255,.25); }
       .ok { color: var(--green); } .fail { color: var(--red); }
       .badge { margin-left: 8px; padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; background: rgba(255,255,255,.07); color: var(--muted); border: 1px solid var(--line); }
+      .badge.est { color: #fbbf24; background: rgba(251,191,36,.1); border-color: rgba(251,191,36,.3); }
       .badge.low { color: #f87171; background: rgba(248,113,113,.1); border-color: rgba(248,113,113,.3); }
       .badge.stock { color: var(--cyan); background: rgba(56,189,248,.1); border-color: rgba(56,189,248,.3); }
       button { font: inherit; font-size: 14px; font-weight: 600; height: 38px; padding: 0 14px; margin-right: 8px; border-radius: 13px; border: 1px solid var(--line); background: rgba(255,255,255,.04); color: var(--muted); cursor: pointer; }

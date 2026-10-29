@@ -160,10 +160,11 @@ def test_import_rfid_spool_and_recognize_it_in_another_slot():
     store = m.SpoolStore()
     action, spool = store.import_slot("p:t1", TRAY, include_untagged=False)
     assert action == "created"
-    assert (spool.material, spool.brand, spool.remaining_g, spool.initial_weight_g) == ("PLA", "Bambu Lab", 800.0, 1000.0)
+    assert (spool.material, spool.brand, spool.remaining_g, spool.initial_weight_g) == ("PLA", "Bambu Lab", 1000.0, 1000.0)
     assert spool.color == "#FF0000FF" and store.assignments == {"p:t1": spool.id}
 
-    assert store.import_slot("p:t1", TRAY, include_untagged=False)[0] == "skipped"  # no duplicate
+    assert store.import_slot("p:t1", TRAY, include_untagged=False)[0] == "synced"  # no duplicate; the AMS says 80 %: flagged
+    assert spool.remaining_g == 1000 and spool.estimated
     action, again = store.import_slot("p:t2", TRAY, include_untagged=False)  # moved to slot 2
     assert action == "assigned" and again.id == spool.id
     assert store.assignments == {"p:t2": spool.id} and len(store.spools) == 1
@@ -443,19 +444,24 @@ def test_stock_matching_needs_a_near_identical_color_within_the_same_product_lin
     assert store.find_stock(same).id == brown.id
 
 
-def test_a_new_spool_takes_the_remaining_amount_the_ams_reports_later():
+def test_the_ams_percent_only_flags_a_new_spool_as_estimated():
     m = _spools_module()
     store = m.SpoolStore()
     first = {**TRAY, "remain": -1}
     action, spool = store.import_slot("p:t1", first, include_untagged=False)
-    assert action == "created" and spool.remaining_g == 1000
+    assert action == "created" and spool.remaining_g == 1000 and not spool.estimated
 
-    assert store.import_slot("p:t1", {**TRAY, "remain": 0}, include_untagged=False)[0] == "synced"
-    assert spool.remaining_g == 0
-    # once corrected, later readings do not overwrite what the prints track
-    spool.remaining_g = 40
+    # the AMS later reports a used spool: the weight stays, the spool is flagged for weighing
+    assert store.import_slot("p:t1", {**TRAY, "remain": 3}, include_untagged=False)[0] == "synced"
+    assert spool.remaining_g == 1000 and spool.estimated
+    assert store.import_slot("p:t1", {**TRAY, "remain": 3}, include_untagged=False)[0] == "skipped"
+
+    # weighing is the anchor and clears the flag; a typed-in value does as well
+    store.weigh(spool.id, 650)
+    assert spool.estimated is False and spool.remaining_g == 400
+    store.assign("p:t1", spool.id)
     assert store.import_slot("p:t1", {**TRAY, "remain": 80}, include_untagged=False)[0] == "skipped"
-    assert spool.remaining_g == 40
+    assert spool.remaining_g == 400
 
     # a full reading changes nothing
     store.import_slot("p:t2", {**first, "tray_uuid": "B" * 32}, include_untagged=False)
