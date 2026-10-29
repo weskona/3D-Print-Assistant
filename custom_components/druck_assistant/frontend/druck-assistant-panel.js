@@ -162,6 +162,7 @@ const TRANSLATIONS = {
     stats_months: "Cost per month",
     energy_cost: "Electricity cost",
     stats_top: "Most expensive prints",
+    stats_longest: "Longest prints",
     stats_waste: "Failed prints",
     stats_prices: "Price per kg of the purchases",
     failed_prints: "Failed",
@@ -369,6 +370,7 @@ const TRANSLATIONS = {
     stats_months: "Kosten pro Monat",
     energy_cost: "Stromkosten",
     stats_top: "Teuerste Drucke",
+    stats_longest: "Längste Drucke",
     stats_waste: "Fehlgeschlagene Drucke",
     stats_prices: "Preis pro kg der Einkäufe",
     failed_prints: "Fehlgeschlagen",
@@ -1490,6 +1492,17 @@ class DruckAssistantPanel extends HTMLElement {
     }
     exp.append(list);
 
+    // the longest prints by print time
+    const longest = this._el("div", { class: "card" }, this._el("h2", {}, this._t("stats_longest")));
+    const longList = this._el("div", { class: "history" });
+    for (const r of [...history].sort((a, b) => (b.duration_min || 0) - (a.duration_min || 0)).slice(0, 5)) {
+      longList.append(this._el("div", { class: "hrow" + (r.result === "failed" ? " failed" : "") },
+        this._el("div", { class: "when" }, this._el("span", {}, new Date(r.finished).toLocaleDateString(this._hass.locale?.language, { day: "2-digit", month: "short" }))),
+        this._el("div", { class: "what" }, this._el("b", {}, r.name), this._el("span", { class: "sub" }, `${this._fmtNum(r.weight_g)} g · ${r.material || ""} · ${this._fmtMoney(r.cost, cur)}`)),
+        this._el("div", { class: "cost" }, this._el("b", {}, this._fmtDuration(r.duration_min)))));
+    }
+    longest.append(longList);
+
     // Price per kg of the purchases, per material, in purchase order.
     const prices = new Map();
     for (const sp of this._spools) {
@@ -1518,7 +1531,7 @@ class DruckAssistantPanel extends HTMLElement {
       }
       if (this._isAdmin() && cal.factor !== 1) acc.append(this._el("button", { onclick: () => set(1) }, this._t("cal_reset")));
     }
-    main.append(this._el("div", { class: "grid" }, this._el("div", { class: "col" }, mat, mon, acc), this._el("div", { class: "col" }, exp, buys)));
+    main.append(this._el("div", { class: "grid" }, this._el("div", { class: "col" }, mat, mon, acc), this._el("div", { class: "col" }, exp, longest, buys)));
   }
 
   /** A printable label for a spool (name, type, color, weight, place and id). */

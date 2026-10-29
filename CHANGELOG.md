@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0-beta.3] - 2026-10-29
+
+### Added
+
+- Statistics tab: a card with the five longest prints (print time, plus weight, material and cost).
+
 ## [0.10.0-beta.2] - 2026-10-29
 
 ### Changed
