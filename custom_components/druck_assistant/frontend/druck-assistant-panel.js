@@ -413,7 +413,7 @@ class DruckAssistantPanel extends HTMLElement {
     this._tab = "overview";
     this._editing = null;
     this._dialog = null;
-    this._filter = { text: "", material: "", brand: "", status: "" };
+    this._filter = { text: "", material: "", brand: "", color: "", status: "" };
     this._refocusSearch = null;
     this._expanded = new Set();
     this._busy = null;
@@ -752,6 +752,7 @@ class DruckAssistantPanel extends HTMLElement {
     const f = this._filter;
     if (f.material && sp.material !== f.material) return false;
     if (f.brand && (sp.brand || "") !== f.brand) return false;
+    if (f.color && this._colorName(sp.color) !== f.color) return false;
     if (f.status === "stock" && (slotOf[sp.id] || !this._isFull(sp))) return false;
     if (f.status === "slot" && !slotOf[sp.id]) return false;
     if (f.status === "low" && sp.remaining_percent > LOW_PERCENT) return false;
@@ -785,17 +786,18 @@ class DruckAssistantPanel extends HTMLElement {
       this._refocusSearch = null;
       queueMicrotask(() => { search.focus(); search.setSelectionRange(caret, caret); });
     }
-    const active = f.text || f.material || f.brand || f.status;
+    const active = f.text || f.material || f.brand || f.color || f.status;
     return this._el("div", { class: "filter" },
       search,
       select("material", this._t("material"), unique(spools.map((sp) => sp.material)).map((m) => [m, m])),
       select("brand", this._t("brand"), unique(spools.map((sp) => sp.brand)).map((b) => [b, b])),
+      select("color", this._t("color"), unique(spools.map((sp) => this._colorName(sp.color))).map((c) => [c, c])),
       select("status", this._t("status"), [["stock", this._t("status_stock")], ["slot", this._t("status_slot")], ["low", this._t("status_low")]]),
       active
         ? this._el("span", { class: "sub" }, this._t("filter_count", { shown, total: spools.length }))
         : "",
       active
-        ? this._el("button", { onclick: () => { this._filter = { text: "", material: "", brand: "", status: "" }; this._render(); } }, this._t("filter_reset"))
+        ? this._el("button", { onclick: () => { this._filter = { text: "", material: "", brand: "", color: "", status: "" }; this._render(); } }, this._t("filter_reset"))
         : "");
   }
 
