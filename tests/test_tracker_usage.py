@@ -109,6 +109,8 @@ def test_a_print_that_is_already_running_gets_a_session_and_its_spool():
     t._external_float = lambda key: None
     t._warn_shortage = lambda: None
     t.active_slot_key = lambda: A
+    t._conf = lambda key: None
+    t.hass.async_create_task = lambda coro: coro.close()
     tracker_mod.dt_util.utcnow = lambda: now
 
     t._ensure_session()
@@ -151,3 +153,55 @@ def test_a_session_without_a_spool_adopts_the_spool_of_the_active_slot_later():
     t.active_slot_key = lambda: B
     t._ensure_session()  # a spool that is known is never replaced
     assert history.session.spool_id == spool.id
+
+
+def test_the_energy_meter_reading_at_the_start_comes_from_the_recorder():
+    import asyncio
+    from datetime import datetime, timedelta, timezone
+
+    t, _ = make_tracker({})
+    started = datetime(2026, 1, 1, 12, tzinfo=timezone.utc)
+    session = SimpleNamespace(energy_start_kwh=40.0)
+    t.history = SimpleNamespace(session=session)
+    t._conf = lambda key: "sensor.plug_energy"
+    asked = {}
+
+    class Instance:
+        async def async_add_executor_job(self, job):
+            return job()
+
+    def get_significant_states(hass, start, end, entity_ids, **kwargs):
+        asked.update(start=start, end=end, ids=entity_ids, **kwargs)
+        return {"sensor.plug_energy": [SimpleNamespace(state="unavailable"), SimpleNamespace(state="35.5")]}
+
+    recorder = types.ModuleType("homeassistant.components.recorder")
+    recorder.get_instance = lambda hass: Instance()
+    recorder.history = SimpleNamespace(get_significant_states=get_significant_states)
+    sys.modules["homeassistant.components"] = types.ModuleType("homeassistant.components")
+    sys.modules["homeassistant.components.recorder"] = recorder
+    sys.modules["homeassistant.components"].recorder = recorder
+    try:
+        asyncio.run(t._backfill_energy(session, started))
+        assert session.energy_start_kwh == 35.5  # the first usable reading, lower than the one taken after the restart
+        assert asked["start"] == started and asked["end"] - started == timedelta(minutes=10) and asked["ids"] == ["sensor.plug_energy"] and asked["include_start_time_state"]
+
+        session.energy_start_kwh = 30.0  # a reading above the current start value is not taken (meter reset)
+        asyncio.run(t._backfill_energy(session, started))
+        assert session.energy_start_kwh == 30.0
+    finally:
+        for name in ("homeassistant.components.recorder", "homeassistant.components"):
+            sys.modules.pop(name, None)
+
+
+def test_the_printer_start_time_is_only_used_when_it_is_plausible():
+    from datetime import datetime, timedelta, timezone
+
+    now = datetime(2026, 1, 2, 12, tzinfo=timezone.utc)
+    t, _ = make_tracker({})
+    values = {}
+    t._value = lambda key: values.get(key)
+    values["start_time"] = (now - timedelta(hours=2)).isoformat()
+    assert t._printer_start(now) == now - timedelta(hours=2)
+    for bad in ((now + timedelta(minutes=5)).isoformat(), (now - timedelta(hours=60)).isoformat(), "unknown", None, "2026-01-02T08:00:00"):
+        values["start_time"] = bad
+        assert t._printer_start(now) is None
