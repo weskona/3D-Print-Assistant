@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import re
 from datetime import datetime, timedelta
 from typing import Any
@@ -49,6 +50,8 @@ from .spools import valid_rfid
 
 UNAVAILABLE = ("unknown", "unavailable", None)
 
+
+_LOGGER = logging.getLogger(__name__)
 
 # Below this progress the printer's start time may still belong to the previous job.
 MIN_PROGRESS_FOR_START_TIME = 3.0
@@ -374,7 +377,12 @@ class PrintTracker:
             async_track_state_change_event(self.hass, watched, self._on_change)
         )
         # The entities may not be ready yet at setup: look for a running print a little later as well.
-        self.entry.async_on_unload(async_call_later(self.hass, 30, lambda _now: self._ensure_session()))
+        @callback
+        def _later(_now: datetime) -> None:
+            self._ensure_session()
+
+        self.entry.async_on_unload(async_call_later(self.hass, 30, _later))
+        self.entry.async_on_unload(async_call_later(self.hass, 120, _later))
         if self.entry.options.get(CONF_AUTO_IMPORT, True):
             slot_ids = list(self.slot_entities().values())
             if slot_ids:
@@ -662,9 +670,11 @@ class PrintTracker:
         """
         if session.start_checked or progress is None or progress < MIN_PROGRESS_FOR_START_TIME:
             return
-        session.start_checked = True
         started = self._printer_start(now)
-        if started is not None and (session.started - started).total_seconds() > 120:
+        if started is None:  # the start time sensor may not be ready yet right after a restart: try again later
+            return
+        session.start_checked = True
+        if (session.started - started).total_seconds() > 120:
             session.started = started
             self.hass.async_create_task(self._backfill_energy(session, started))
 
@@ -711,7 +721,9 @@ class PrintTracker:
                 )
             )
         except Exception:  # noqa: BLE001 - the recorder is optional; the energy then counts from now on
+            _LOGGER.warning("Energy meter reading at the start not available from the recorder", exc_info=True)
             return
+        _LOGGER.debug("Recorder returned %s for %s", states, entity)
         for state in states.get(entity, []):
             try:
                 value = float(state.state)

@@ -222,6 +222,11 @@ def test_a_session_that_began_before_the_progress_was_known_gets_the_printer_sta
     t.hass.async_create_task = lambda coro: (tasks.append(coro), coro.close())
     t._backfill_energy = lambda s, started: _noop()
 
+    values["start_time"] = None  # the sensor is not ready right after a restart: tried again later
+    t._adopt_start(session, now, 40.0)
+    assert session.started == now and not session.start_checked and not tasks
+    values["start_time"] = (now - timedelta(hours=2)).isoformat()
+
     t._adopt_start(session, now, None)  # progress not known yet: nothing happens, nothing is marked
     assert session.started == now and not session.start_checked and not tasks
     t._adopt_start(session, now, 2.0)  # too early, the start time could be the previous job's

@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- A print picked up after a restart now gets the printer's start time and the energy meter reading of its start also when the progress was not yet known when the session began (the usual case right after a restart): the check is repeated on every later change until the progress allows it. In beta.11 the energy was still counted only from the restart on in that case.
+- A print picked up after a restart now gets the printer's start time and the energy meter reading of its start also when the progress was not yet known when the session began (the usual case right after a restart): the check is repeated on every later change (and 30 and 120 seconds after the start) until the progress and the printer's start time are known. In beta.11 the energy was still counted only from the restart on in that case.
 
 ## [0.9.0-beta.11] - 2026-10-29
 
