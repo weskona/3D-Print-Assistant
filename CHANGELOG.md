@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- History: a print can be renamed (pencil button on the row), e.g. when the slicer gave it a wrong name.
+
 ## [0.10.0-beta.3] - 2026-10-29
 
 ### Added

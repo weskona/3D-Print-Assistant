@@ -72,6 +72,22 @@ def test_restore_gives_filament_back_up_to_the_full_weight():
     assert store.restore("nope", 10) is None
 
 
+def test_renaming_a_print_keeps_everything_else():
+    h = PrintHistory()
+    h.update_status("idle", "running", T0, "Wrong name")
+    rec = h.finish("finish", T0 + timedelta(hours=1), 100, None, 20)
+    before = dict(h.find(rec.started))
+    renamed = h.rename(rec.started, "Benchy")
+    assert renamed["name"] == "Benchy"
+    assert {**renamed, "name": before["name"]} == before
+    try:
+        h.rename("missing", "x")
+    except KeyError:
+        pass
+    else:
+        raise AssertionError("unknown print")
+
+
 def test_stock_by_material_sums_active_spools():
     store = SpoolStore()
     store.save_spool({"name": "A", "material": "pla", "remaining_g": 300})
