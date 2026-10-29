@@ -127,6 +127,8 @@ class PrintSession:
     progress: float | None = None
     plan: dict[str, float] = field(default_factory=dict)
     warned: bool = False
+    # The printer's start time has been compared with the session start (needs a progress reading).
+    start_checked: bool = False
 
     def add_power(self, now: datetime, watts: float | None) -> None:
         """Integrate the previous power reading up to now and store the new one."""

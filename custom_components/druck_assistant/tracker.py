@@ -653,6 +653,21 @@ class PrintTracker:
             return None
         return started
 
+    def _adopt_start(self, session: Any, now: datetime, progress: float | None) -> None:
+        """Give a session that began late the printer's start time and the energy meter reading of that moment.
+
+        Right after a restart the progress is often not known yet when the session begins, so this
+        is tried again on every later change until the progress allows it. The start time of a
+        print that has only just begun may still be the one of the previous job.
+        """
+        if session.start_checked or progress is None or progress < MIN_PROGRESS_FOR_START_TIME:
+            return
+        session.start_checked = True
+        started = self._printer_start(now)
+        if started is not None and (session.started - started).total_seconds() > 120:
+            session.started = started
+            self.hass.async_create_task(self._backfill_energy(session, started))
+
     def _begin_session(self, now: datetime, progress: float = 0.0) -> None:
         """Fill the session that just began with the spool, the slots and the meters.
 
@@ -665,11 +680,7 @@ class PrintTracker:
         session = self.history.session
         if session is None:
             return
-        # The start time of a print that has only just begun may still be the one of the previous job.
-        started = self._printer_start(now) if progress >= MIN_PROGRESS_FOR_START_TIME else None
-        if started is not None and (session.started - started).total_seconds() > 120:
-            session.started = started
-            self.hass.async_create_task(self._backfill_energy(session, started))
+        self._adopt_start(session, now, progress)
         session.slot_key = self.active_slot_key()
         spool = self.filament.store.spool_for_slot(session.slot_key)
         if spool is not None:
@@ -744,6 +755,7 @@ class PrintTracker:
         print would be neither recorded nor charged to its spool.
         """
         if self.history.session is not None:
+            self._adopt_start(self.history.session, dt_util.utcnow(), self._float("print_progress"))
             self._adopt_spool()
             return
         if self._value("print_status") not in ("running", "pause"):
