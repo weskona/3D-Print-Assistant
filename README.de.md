@@ -90,7 +90,7 @@ Minimum, wird `druck_assistant_stock_low` einmal ausgelöst.
 
 **Korrekturen, Auswertung und Listen:** Mit dem Pfeil-Knopf eines Drucks in der Historie bucht man ihn auf eine andere Spule um, das
 Filament wandert mit. Der Tab „Auswertung“ zeigt Kosten, Filament, Fehlerquote und verschwendetes Geld pro Material, die Kosten pro
-Monat (aufgeteilt in Filament und Strom), die teuersten Drucke und den Preis pro kg deiner Einkäufe. Spulen und Historie lassen sich als CSV exportieren, Spulen auch
+Monat (aufgeteilt in Filament und Strom), die teuersten und die längsten Drucke und den Preis pro kg deiner Einkäufe. Spulen und Historie lassen sich als CSV exportieren, Spulen auch
 aus einer CSV-Datei importieren. Der Spulenbestand wird von allen Druckern gemeinsam genutzt.
 
 ## Installation
