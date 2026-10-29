@@ -663,6 +663,29 @@ class PrintTracker:
         session.energy_start_kwh = self._external_float(CONF_ENERGY_ENTITY)
         session.add_power(now, self._external_float(CONF_POWER_ENTITY))
 
+    def _adopt_spool(self) -> None:
+        """Give a running session the spool of the active slot when it was not known at its start.
+
+        Right after a restart of Home Assistant the slot entities may not be ready when the
+        session begins; without a spool the print would be charged at the default price per kg
+        and its filament taken from no spool at all.
+        """
+        session = self.history.session
+        if session is None or session.spool_id is not None:
+            return
+        slot = self.active_slot_key()
+        spool = self.filament.store.spool_for_slot(slot) if slot else None
+        if spool is None:
+            return
+        session.slot_key = slot
+        session.spool_id, session.spool_name = spool.id, spool.name
+        session.material = spool.material
+        session.color = spool.color or session.color
+        if not session.start_slots:
+            session.start_slots = self._slot_snapshot()
+        if not session.usage.segments:
+            session.usage.note(slot, self._float("print_progress") or 0.0)
+
     @callback
     def _ensure_session(self) -> None:
         """Pick up a print that is already running, e.g. after a restart of Home Assistant in the middle of it.
@@ -671,7 +694,10 @@ class PrintTracker:
         Assistant comes up during a print that change may never be seen. Without a session the
         print would be neither recorded nor charged to its spool.
         """
-        if self.history.session is not None or self._value("print_status") not in ("running", "pause"):
+        if self.history.session is not None:
+            self._adopt_spool()
+            return
+        if self._value("print_status") not in ("running", "pause"):
             return
         started = None
         try:

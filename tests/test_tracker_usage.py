@@ -124,3 +124,30 @@ def test_a_print_that_is_already_running_gets_a_session_and_its_spool():
     values["print_status"] = "finish"
     t._ensure_session()  # nothing running, nothing to pick up
     assert t.history.session is None
+
+
+def test_a_session_without_a_spool_adopts_the_spool_of_the_active_slot_later():
+    from datetime import datetime, timezone
+
+    t, store = make_tracker({"sensor.ams_1_slot_1": slot_state(100, True), "sensor.ams_1_slot_2": slot_state(100)})
+    spool = store.save_spool({"name": "Bambu PETG Basic", "material": "PETG", "price_per_kg": 12.34})
+    store.assign(A, spool.id)
+    history = sys.modules["druck_assistant.history"].PrintHistory()
+    history.session = sys.modules["druck_assistant.history"].PrintSession(started=datetime(2026, 1, 1, tzinfo=timezone.utc))
+    t.history = history
+    t._float = lambda key: 12.0 if key == "print_progress" else None
+    t.active_slot_key = lambda: None  # the slots are not ready yet
+    t._ensure_session()
+    assert history.session.spool_id is None
+
+    t.active_slot_key = lambda: A
+    t._ensure_session()
+    s = history.session
+    assert (s.spool_id, s.spool_name, s.material, s.slot_key) == (spool.id, "Bambu PETG Basic", "PETG", A)
+    assert s.start_slots and s.usage.segments[0].slot == A
+
+    other = store.save_spool({"name": "Other", "material": "PETG"})
+    store.assign(B, other.id)
+    t.active_slot_key = lambda: B
+    t._ensure_session()  # a spool that is known is never replaced
+    assert history.session.spool_id == spool.id

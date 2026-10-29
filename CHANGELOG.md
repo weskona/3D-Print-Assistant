@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0-beta.10] - 2026-10-29
+
+### Fixed
+
+- A print whose session began before the slots were ready (right after a restart of Home Assistant) is given the spool of the active slot as soon as it is known. Before, it stayed without a spool: the print was charged at the default price per kg and its filament was taken from no spool.
+
 ## [0.9.0-beta.9] - 2026-10-29
 
 ### Fixed
