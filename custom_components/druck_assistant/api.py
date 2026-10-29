@@ -13,6 +13,9 @@ from .const import (
     DOMAIN,
     WS_CATALOG,
     WS_CATALOG_UPDATE,
+    WS_PROJECT_ASSIGN,
+    WS_PROJECT_DELETE,
+    WS_PROJECT_SAVE,
     WS_DATA,
     WS_IMPORT_AMS,
     WS_SPOOL_ARCHIVE,
@@ -38,6 +41,9 @@ def async_register(hass: HomeAssistant) -> None:
         ws_import_ams,
         ws_catalog,
         ws_catalog_update,
+        ws_project_save,
+        ws_project_delete,
+        ws_project_assign,
         ws_spool_archive,
         ws_spool_weigh,
         ws_usage_factor,
@@ -65,6 +71,7 @@ def ws_get_data(
             "printers": printers,
             "spools": [manager.store.spool_dict(s) for s in manager.store.spools.values()],
             "settings": _settings(manager.store, hass.data[DOMAIN]["catalog"]),
+            "projects": manager.store.projects,
             "calibration": _calibration(manager.store),
             "min_stock": {
                 material: minimum
@@ -249,6 +256,59 @@ def ws_settings(
         return
     manager.changed()
     connection.send_result(msg["id"], _settings(manager.store, hass.data[DOMAIN]["catalog"]))
+
+
+@websocket_api.websocket_command({vol.Required("type"): WS_PROJECT_SAVE, vol.Required("project"): dict})
+@websocket_api.require_admin
+@callback
+def ws_project_save(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Create or edit a project."""
+    manager = hass.data[DOMAIN]["filament"]
+    try:
+        project = manager.store.save_project(msg["project"])
+    except SpoolError as err:
+        connection.send_error(msg["id"], "invalid_project", str(err))
+        return
+    manager.changed()
+    connection.send_result(msg["id"], {"project": project})
+
+
+@websocket_api.websocket_command({vol.Required("type"): WS_PROJECT_DELETE, vol.Required("project_id"): str})
+@websocket_api.require_admin
+@callback
+def ws_project_delete(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Delete a project; its prints stay in the history."""
+    manager = hass.data[DOMAIN]["filament"]
+    try:
+        manager.store.delete_project(msg["project_id"])
+    except SpoolError as err:
+        connection.send_error(msg["id"], "invalid_project", str(err))
+        return
+    manager.changed()
+    connection.send_result(msg["id"], {})
+
+
+@websocket_api.websocket_command(
+    {vol.Required("type"): WS_PROJECT_ASSIGN, vol.Required("project_id"): vol.Any(str, None), vol.Required("prints"): [str]}
+)
+@websocket_api.require_admin
+@callback
+def ws_project_assign(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Put prints (keys "<serial>|<start time>") into a project, or out of every project with project_id null."""
+    manager = hass.data[DOMAIN]["filament"]
+    try:
+        manager.store.assign_prints(msg["project_id"], msg["prints"])
+    except SpoolError as err:
+        connection.send_error(msg["id"], "invalid_project", str(err))
+        return
+    manager.changed()
+    connection.send_result(msg["id"], {})
 
 
 def _calibration(store: Any) -> dict[str, Any]:

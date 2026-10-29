@@ -272,3 +272,31 @@ def test_weighing_can_pick_the_spool_type():
         raise AssertionError("expected an error")
     except SpoolError:
         pass
+
+
+def test_projects_group_prints_and_a_print_belongs_to_one_project():
+    store = SpoolStore()
+    a = store.save_project({"name": " Garden box ", "notes": "PETG"})
+    b = store.save_project({"name": "Robot"})
+    assert a["name"] == "Garden box" and a["created"] and a["prints"] == []
+    store.assign_prints(a["id"], ["p1|t1", "p1|t2", "p1|t1"])
+    assert a["prints"] == ["p1|t1", "p1|t2"]
+    store.assign_prints(b["id"], ["p1|t2"])  # moves the print
+    assert a["prints"] == ["p1|t1"] and b["prints"] == ["p1|t2"]
+    store.assign_prints(None, ["p1|t1"])  # out of every project
+    assert a["prints"] == []
+
+    renamed = store.save_project({"id": b["id"], "name": "Robot v2"})
+    assert renamed is b and b["name"] == "Robot v2" and b["prints"] == ["p1|t2"]
+    again = SpoolStore(**store.to_dict())
+    assert [p["name"] for p in again.projects] == ["Garden box", "Robot v2"] and again.projects[1]["prints"] == ["p1|t2"]
+
+    store.delete_project(a["id"])
+    assert [p["id"] for p in store.projects] == [b["id"]]
+    for call in (lambda: store.save_project({"name": " "}), lambda: store.save_project({"id": "x", "name": "n"}),
+                 lambda: store.delete_project("x"), lambda: store.assign_prints("x", ["k"])):
+        try:
+            call()
+            raise AssertionError("expected an error")
+        except SpoolError:
+            pass
