@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
@@ -49,6 +49,9 @@ from .spools import valid_rfid
 
 UNAVAILABLE = ("unknown", "unavailable", None)
 
+
+# Below this progress the printer's start time may still belong to the previous job.
+MIN_PROGRESS_FOR_START_TIME = 3.0
 
 class PrintTracker:
     """Listens to ha-bambulab entities and records prints."""
@@ -640,14 +643,33 @@ class PrintTracker:
         session.material = attrs.get("type") or session.material
         session.color = attrs.get("color") or session.color
 
+    def _printer_start(self, now: datetime) -> datetime | None:
+        """When the running print really started, from the printer's start time (None if not plausible)."""
+        try:
+            started = datetime.fromisoformat(str(self._value("start_time")))
+        except (TypeError, ValueError):
+            return None
+        if started.tzinfo is None or started >= now or (now - started).total_seconds() > 48 * 3600:
+            return None
+        return started
+
     def _begin_session(self, now: datetime, progress: float = 0.0) -> None:
-        """Fill the session that just began with the spool, the slots and the meters."""
+        """Fill the session that just began with the spool, the slots and the meters.
+
+        A print that is already under way (Home Assistant restarted in the middle of it) keeps the
+        printer's start time, and the meter reading of that moment is taken from the recorder.
+        """
         tray = self._state("active_tray")
         if tray is not None:
             self._on_tray(tray.attributes)
         session = self.history.session
         if session is None:
             return
+        # The start time of a print that has only just begun may still be the one of the previous job.
+        started = self._printer_start(now) if progress >= MIN_PROGRESS_FOR_START_TIME else None
+        if started is not None and (session.started - started).total_seconds() > 120:
+            session.started = started
+            self.hass.async_create_task(self._backfill_energy(session, started))
         session.slot_key = self.active_slot_key()
         spool = self.filament.store.spool_for_slot(session.slot_key)
         if spool is not None:
@@ -663,6 +685,56 @@ class PrintTracker:
         session.energy_start_kwh = self._external_float(CONF_ENERGY_ENTITY)
         session.add_power(now, self._external_float(CONF_POWER_ENTITY))
 
+    async def _backfill_energy(self, session: Any, started: datetime) -> None:
+        """Take the energy meter reading at the start of the print from the recorder."""
+        entity = self._conf(CONF_ENERGY_ENTITY)
+        if not entity:
+            return
+        try:
+            from homeassistant.components.recorder import get_instance, history
+
+            states = await get_instance(self.hass).async_add_executor_job(
+                lambda: history.get_significant_states(
+                    self.hass, started, started + timedelta(minutes=10), [entity],
+                    include_start_time_state=True, significant_changes_only=False, no_attributes=True,
+                )
+            )
+        except Exception:  # noqa: BLE001 - the recorder is optional; the energy then counts from now on
+            return
+        for state in states.get(entity, []):
+            try:
+                value = float(state.state)
+            except (TypeError, ValueError):
+                continue
+            if self.history.session is session and (
+                session.energy_start_kwh is None or value <= session.energy_start_kwh
+            ):
+                session.energy_start_kwh = value
+            return
+
+    def _adopt_spool(self) -> None:
+        """Give a running session the spool of the active slot when it was not known at its start.
+
+        Right after a restart of Home Assistant the slot entities may not be ready when the
+        session begins; without a spool the print would be charged at the default price per kg
+        and its filament taken from no spool at all.
+        """
+        session = self.history.session
+        if session is None or session.spool_id is not None:
+            return
+        slot = self.active_slot_key()
+        spool = self.filament.store.spool_for_slot(slot) if slot else None
+        if spool is None:
+            return
+        session.slot_key = slot
+        session.spool_id, session.spool_name = spool.id, spool.name
+        session.material = spool.material
+        session.color = spool.color or session.color
+        if not session.start_slots:
+            session.start_slots = self._slot_snapshot()
+        if not session.usage.segments:
+            session.usage.note(slot, self._float("print_progress") or 0.0)
+
     @callback
     def _ensure_session(self) -> None:
         """Pick up a print that is already running, e.g. after a restart of Home Assistant in the middle of it.
@@ -671,17 +743,13 @@ class PrintTracker:
         Assistant comes up during a print that change may never be seen. Without a session the
         print would be neither recorded nor charged to its spool.
         """
-        if self.history.session is not None or self._value("print_status") not in ("running", "pause"):
+        if self.history.session is not None:
+            self._adopt_spool()
             return
-        started = None
-        try:
-            started = datetime.fromisoformat(str(self._value("start_time")))
-        except (TypeError, ValueError):
-            pass
+        if self._value("print_status") not in ("running", "pause"):
+            return
         now = dt_util.utcnow()
-        if started is None or started.tzinfo is None or started > now:
-            started = now
-        outcome = self.history.update_status(None, "running", started, self._value("subtask_name"))
+        outcome = self.history.update_status(None, "running", now, self._value("subtask_name"))
         if outcome == "started":
             self._begin_session(now, self._float("print_progress") or 0.0)
 
@@ -691,7 +759,7 @@ class PrintTracker:
         name = self._value("subtask_name")
         outcome = self.history.update_status(old, new, now, name)
         if outcome == "started":
-            self._begin_session(now)
+            self._begin_session(now, self._float("print_progress") or 0.0)
             self.hass.bus.async_fire(
                 EVENT_PRINT_STARTED, {"serial": self.serial, "name": name}
             )
