@@ -10,7 +10,7 @@ from typing import Any
 
 from .catalog import color_note
 
-DEFAULT_OPTIONS = {"weigh_remind_g": 20.0, "ams_diff_points": 15.0}
+DEFAULT_OPTIONS = {"weigh_remind_g": 20.0, "ams_diff_points": 15.0, "catalog_auto": 0.0}
 CALIBRATION_MIN_G = 50  # a weighing only teaches something when the prints used at least this much
 CALIBRATION_MIN_SAMPLES = 3
 CALIBRATION_KEEP = 30

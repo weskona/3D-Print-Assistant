@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.helpers.storage import Store
 
-from .catalog import color_index, load_catalog
+from .catalog import color_index
 from .const import DOMAIN, STORAGE_VERSION
 from .spools import SpoolStore
 
@@ -20,11 +22,14 @@ class FilamentManager:
         self.signal = f"{DOMAIN}_filament_update"
         self._storage: Store = Store(hass, STORAGE_VERSION, f"{DOMAIN}.filament")
 
-    async def async_load(self) -> None:
+    async def async_load(self, catalog: dict[str, Any]) -> None:
         data = await self._storage.async_load()
         if data:
             self.store = SpoolStore(**data)
-        catalog = await self.hass.async_add_executor_job(load_catalog)
+        self.use_catalog(catalog)
+
+    def use_catalog(self, catalog: dict[str, Any]) -> None:
+        """Take the color names for new spools from the catalog and fill the notes of known spools."""
         self.store.colors = color_index(catalog)
         if self.store.backfill_notes():
             self.changed()

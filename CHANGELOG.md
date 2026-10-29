@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0-beta.5] - 2026-10-29
+
+### Added
+
+- The filament catalog can be updated from the Settings tab (button, or once a week when switched on): all Bambu Lab colors come from Bambu Studio's color file (new products such as PLA Lite, PLA Tough, ABS and more colors of existing ones), the other manufacturers from SpoolmanDB. The downloaded data is kept beside the bundled catalog; a failed or unexpected download leaves the old catalog in place. Spools the AMS adds afterwards get more color names in their notes.
+
+### Changed
+
+- `scripts/build_third_party_catalog.py` uses the same conversion as the update (`catalog_update.py`).
+
 ## [0.9.0-beta.4] - 2026-10-29
 
 ### Added

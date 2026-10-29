@@ -13,9 +13,12 @@ CATALOG_FILES = ("bambu_filaments.json", "third_party_filaments.json")
 def load_catalog(data_dir: Path = DATA_DIR) -> dict[str, Any]:
     """Merge the catalog files into one product list."""
     products: list[dict[str, Any]] = []
-    for name in CATALOG_FILES:
-        products += json.loads((data_dir / name).read_text(encoding="utf-8"))["products"]
-    return {"products": products}
+    retrieved: dict[str, str] = {}
+    for name, key in zip(CATALOG_FILES, ("bambu", "third_party"), strict=True):
+        data = json.loads((data_dir / name).read_text(encoding="utf-8"))
+        products += data["products"]
+        retrieved[key] = str(data.get("retrieved") or "")
+    return {"products": products, "retrieved": retrieved}
 
 
 def color_index(catalog: dict[str, Any]) -> dict[str, list[tuple[str, str]]]:

@@ -12,6 +12,7 @@ from homeassistant.core import HomeAssistant, callback
 from .const import (
     DOMAIN,
     WS_CATALOG,
+    WS_CATALOG_UPDATE,
     WS_DATA,
     WS_IMPORT_AMS,
     WS_SPOOL_ARCHIVE,
@@ -24,7 +25,6 @@ from .const import (
     WS_SETTINGS,
     WS_USAGE_FACTOR,
 )
-from .catalog import load_catalog
 from .spools import SpoolError
 
 
@@ -37,6 +37,7 @@ def async_register(hass: HomeAssistant) -> None:
         ws_spool_assign,
         ws_import_ams,
         ws_catalog,
+        ws_catalog_update,
         ws_spool_archive,
         ws_spool_weigh,
         ws_usage_factor,
@@ -63,7 +64,7 @@ def ws_get_data(
         {
             "printers": printers,
             "spools": [manager.store.spool_dict(s) for s in manager.store.spools.values()],
-            "settings": _settings(manager.store),
+            "settings": _settings(manager.store, hass.data[DOMAIN]["catalog"]),
             "calibration": _calibration(manager.store),
             "min_stock": {
                 material: minimum
@@ -215,8 +216,9 @@ def ws_spool_weigh(
     )
 
 
-def _settings(store: Any) -> dict[str, Any]:
+def _settings(store: Any, catalog: Any) -> dict[str, Any]:
     return {
+        "catalog": catalog.status(),
         "tare_defaults": dict(store.tare_defaults),
         "tare_presets": list(store.tare_presets),
         "options": dict(store.options),
@@ -245,7 +247,7 @@ def ws_settings(
         connection.send_error(msg["id"], "invalid_settings", str(err))
         return
     manager.changed()
-    connection.send_result(msg["id"], _settings(manager.store))
+    connection.send_result(msg["id"], _settings(manager.store, hass.data[DOMAIN]["catalog"]))
 
 
 def _calibration(store: Any) -> dict[str, Any]:
@@ -329,6 +331,15 @@ async def ws_catalog(
 ) -> None:
     """Return the filament catalog of Bambu Lab and other manufacturers (read once, then cached)."""
     domain_data = hass.data[DOMAIN]
-    if "catalog" not in domain_data:
-        domain_data["catalog"] = await hass.async_add_executor_job(load_catalog)
-    connection.send_result(msg["id"], domain_data["catalog"])
+    connection.send_result(msg["id"], domain_data["catalog"].catalog)
+
+
+@websocket_api.websocket_command({vol.Required("type"): WS_CATALOG_UPDATE})
+@websocket_api.require_admin
+@websocket_api.async_response
+async def ws_catalog_update(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Download the current Bambu Studio and SpoolmanDB data; the result carries the status or the error."""
+    status = await hass.data[DOMAIN]["catalog"].async_update()
+    connection.send_result(msg["id"], status)
