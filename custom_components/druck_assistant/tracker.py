@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 import re
+from datetime import datetime
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import Event, HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.dispatcher import async_dispatcher_send
-from homeassistant.helpers.event import async_track_state_change_event
+from homeassistant.helpers.event import async_call_later, async_track_state_change_event
 from homeassistant.helpers.storage import Store
 from homeassistant.util import dt as dt_util
 
@@ -369,6 +370,8 @@ class PrintTracker:
         self.entry.async_on_unload(
             async_track_state_change_event(self.hass, watched, self._on_change)
         )
+        # The entities may not be ready yet at setup: look for a running print a little later as well.
+        self.entry.async_on_unload(async_call_later(self.hass, 30, lambda _now: self._ensure_session()))
         if self.entry.options.get(CONF_AUTO_IMPORT, True):
             slot_ids = list(self.slot_entities().values())
             if slot_ids:
@@ -412,6 +415,8 @@ class PrintTracker:
         if new is None:
             return
         entity_id = event.data["entity_id"]
+        if entity_id != self.entity_id("print_status"):
+            self._ensure_session()
         if entity_id == self.entity_id("print_status"):
             self._on_status(old.state if old else None, new.state)
         elif entity_id == self.entity_id("print_progress"):
@@ -635,31 +640,58 @@ class PrintTracker:
         session.material = attrs.get("type") or session.material
         session.color = attrs.get("color") or session.color
 
+    def _begin_session(self, now: datetime, progress: float = 0.0) -> None:
+        """Fill the session that just began with the spool, the slots and the meters."""
+        tray = self._state("active_tray")
+        if tray is not None:
+            self._on_tray(tray.attributes)
+        session = self.history.session
+        if session is None:
+            return
+        session.slot_key = self.active_slot_key()
+        spool = self.filament.store.spool_for_slot(session.slot_key)
+        if spool is not None:
+            session.spool_id = spool.id
+            session.spool_name = spool.name
+            session.material = spool.material
+            session.color = spool.color or session.color
+        session.start_slots = self._slot_snapshot()
+        session.progress = self._float("print_progress")
+        session.plan = self._plan_by_slot()
+        session.usage.note(session.slot_key, progress)
+        self._warn_shortage()
+        session.energy_start_kwh = self._external_float(CONF_ENERGY_ENTITY)
+        session.add_power(now, self._external_float(CONF_POWER_ENTITY))
+
+    @callback
+    def _ensure_session(self) -> None:
+        """Pick up a print that is already running, e.g. after a restart of Home Assistant in the middle of it.
+
+        Normally the change of the print status to "running" starts the session; when Home
+        Assistant comes up during a print that change may never be seen. Without a session the
+        print would be neither recorded nor charged to its spool.
+        """
+        if self.history.session is not None or self._value("print_status") not in ("running", "pause"):
+            return
+        started = None
+        try:
+            started = datetime.fromisoformat(str(self._value("start_time")))
+        except (TypeError, ValueError):
+            pass
+        now = dt_util.utcnow()
+        if started is None or started.tzinfo is None or started > now:
+            started = now
+        outcome = self.history.update_status(None, "running", started, self._value("subtask_name"))
+        if outcome == "started":
+            self._begin_session(now, self._float("print_progress") or 0.0)
+
     @callback
     def _on_status(self, old: str | None, new: str) -> None:
         now = dt_util.utcnow()
         name = self._value("subtask_name")
         outcome = self.history.update_status(old, new, now, name)
         if outcome == "started":
-            tray = self._state("active_tray")
-            if tray is not None:
-                self._on_tray(tray.attributes)
-            session = self.history.session
-            if session is not None:
-                session.slot_key = self.active_slot_key()
-                spool = self.filament.store.spool_for_slot(session.slot_key)
-                if spool is not None:
-                    session.spool_id = spool.id
-                    session.spool_name = spool.name
-                    session.material = spool.material
-                    session.color = spool.color or session.color
-                session.start_slots = self._slot_snapshot()
-                session.progress = self._float("print_progress")
-                session.plan = self._plan_by_slot()
-                session.usage.note(session.slot_key, 0.0)
-                self._warn_shortage()
-                session.energy_start_kwh = self._external_float(CONF_ENERGY_ENTITY)
-                session.add_power(now, self._external_float(CONF_POWER_ENTITY))
+            self._begin_session(now)
             self.hass.bus.async_fire(
                 EVENT_PRINT_STARTED, {"serial": self.serial, "name": name}
             )

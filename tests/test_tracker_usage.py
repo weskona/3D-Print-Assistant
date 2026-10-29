@@ -32,6 +32,7 @@ def _load_tracker():
     core.callback = lambda f: f
     sys.modules["homeassistant.helpers.dispatcher"].async_dispatcher_send = lambda *a: None
     sys.modules["homeassistant.helpers.event"].async_track_state_change_event = lambda *a: None
+    sys.modules["homeassistant.helpers.event"].async_call_later = lambda *a: None
     sys.modules["homeassistant.helpers.storage"].Store = object
     pkg = types.ModuleType("druck_assistant")
     pkg.__path__ = [str(PKG)]
@@ -91,3 +92,35 @@ def test_spool_running_empty_is_split_between_both_spools():
         (b.id, 70.0, 10.0),
         (a.id, 30.0, 20.0),
     ]
+
+
+def test_a_print_that_is_already_running_gets_a_session_and_its_spool():
+    from datetime import datetime, timedelta, timezone
+
+    now = datetime(2026, 1, 1, 12, tzinfo=timezone.utc)
+    started = now - timedelta(minutes=40)
+    t, store = make_tracker({"sensor.ams_1_slot_1": slot_state(100, True), "sensor.ams_1_slot_2": slot_state(100)})
+    spool = store.save_spool({"name": "Bambu PETG Basic", "material": "PETG", "price_per_kg": 12.34})
+    store.assign(A, spool.id)
+    t.history = sys.modules["druck_assistant.history"].PrintHistory()
+    values = {"print_status": "running", "start_time": started.isoformat(), "subtask_name": "lid"}
+    t._value = lambda key: values.get(key)
+    t._float = lambda key: 40.0 if key == "print_progress" else None
+    t._external_float = lambda key: None
+    t._warn_shortage = lambda: None
+    t.active_slot_key = lambda: A
+    tracker_mod.dt_util.utcnow = lambda: now
+
+    t._ensure_session()
+    session = t.history.session
+    assert session is not None and session.started == started and session.name == "lid"
+    assert session.spool_id == spool.id and session.slot_key == A
+    assert session.usage.segments[0].slot == A and session.usage.segments[0].start == 40.0
+
+    first = t.history.session
+    t._ensure_session()  # an existing session is left alone
+    assert t.history.session is first
+    t.history.session = None
+    values["print_status"] = "finish"
+    t._ensure_session()  # nothing running, nothing to pick up
+    assert t.history.session is None
