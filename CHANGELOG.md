@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0-beta.2] - 2026-10-29
+
+### Changed
+
+- Filament list: the row of a type with several spools shows the slot of the spool that is in a slot, so it is visible without expanding the group.
+
 ## [0.10.0-beta.1] - 2026-10-29
 
 ### Changed
