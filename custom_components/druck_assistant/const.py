@@ -35,6 +35,7 @@ WS_CATALOG = f"{DOMAIN}/catalog"
 WS_SPOOL_ARCHIVE = f"{DOMAIN}/spool_archive"
 WS_SPOOL_WEIGH = f"{DOMAIN}/spool_weigh"
 WS_USAGE_FACTOR = f"{DOMAIN}/usage_factor"
+WS_SETTINGS = f"{DOMAIN}/settings"
 WS_SPOOL_IMPORT = f"{DOMAIN}/spool_import"
 WS_RECORD_REBOOK = f"{DOMAIN}/record_rebook"
 

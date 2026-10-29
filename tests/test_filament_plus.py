@@ -216,3 +216,43 @@ def test_the_factor_is_kept_in_range_and_saved():
     store.set_usage_factor(1.2)
     again = SpoolStore(**store.to_dict())
     assert again.usage_factor == 1.2
+
+
+def test_tare_comes_from_the_spool_then_its_type_then_the_brand_then_the_default():
+    store = SpoolStore()
+    bambu = store.save_spool({"name": "Bambu PLA Basic", "material": "PLA", "brand": "Bambu Lab"})
+    other = store.save_spool({"name": "Anycubic PLA+", "material": "PLA", "brand": "Anycubic"})
+    assert store.tare_of(bambu) == (250.0, "default") and store.tare_of(other) == (200.0, "default")
+
+    store.set_settings({"tare_defaults": {"Bambu Lab": 245, "": 180}})
+    assert store.tare_of(bambu) == (245.0, "brand") and store.tare_of(other) == (180.0, "brand")
+
+    store.set_settings({"tare_presets": [{"name": "Self-printed spool", "tare_g": 78}]})
+    preset = store.tare_presets[0]
+    bambu = store.save_spool({**bambu.as_dict(), "tare_preset": preset["id"]})
+    assert store.tare_of(bambu) == (78.0, "preset")
+    assert store.spool_dict(bambu)["tare_effective_g"] == 78.0
+
+    # weighing uses the type; the unchanged tare is not pinned to the spool, a different one is
+    store.weigh(bambu.id, 478, tare_g=78)
+    assert bambu.remaining_g == 400 and bambu.tare_g is None
+    store.weigh(bambu.id, 478, tare_g=70)
+    assert bambu.tare_g == 70 and bambu.remaining_g == 408 and store.tare_of(bambu) == (70.0, "spool")
+
+    # deleting a type releases the spools that used it
+    other = store.save_spool({**other.as_dict(), "tare_preset": preset["id"]})
+    store.set_settings({"tare_presets": []})
+    assert store.spools[other.id].tare_preset == ""
+
+
+def test_settings_are_validated_and_saved():
+    store = SpoolStore()
+    try:
+        store.set_settings({"tare_presets": [{"name": " ", "tare_g": 50}]})
+        raise AssertionError("expected an error")
+    except SpoolError:
+        pass
+    store.set_settings({"options": {"weigh_remind_g": 40, "unknown": 1}})
+    assert store.options == {"weigh_remind_g": 40.0, "ams_diff_points": 15.0}
+    again = SpoolStore(**store.to_dict())
+    assert again.options["weigh_remind_g"] == 40.0

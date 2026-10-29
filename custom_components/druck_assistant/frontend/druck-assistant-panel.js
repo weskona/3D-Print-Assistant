@@ -10,7 +10,6 @@ const ICONS = {
   restore: "M12,3A9,9 0 0,0 3,12H0L4,16L8,12H5A7,7 0 0,1 12,5A7,7 0 0,1 19,12A7,7 0 0,1 12,19C10.5,19 9.09,18.5 7.94,17.7L6.5,19.14C8.04,20.3 9.94,21 12,21A9,9 0 0,0 21,12A9,9 0 0,0 12,3M14,12A2,2 0 0,0 12,10A2,2 0 0,0 10,12A2,2 0 0,0 12,14A2,2 0 0,0 14,12Z",
 };
 
-const WEIGH_REMIND_G = 20; // grams used since the last weighing from which a spool outside the AMS is worth weighing
 const LOW_PERCENT = 15; // same threshold as the red stock bar
 
 const COMMON_MATERIALS = ["PLA", "PLA+", "PETG", "ABS", "ASA", "TPU", "PC", "PA", "PA-CF", "PET-CF", "PVA"];
@@ -124,6 +123,18 @@ const TRANSLATIONS = {
     import_csv: "Import spools (CSV)",
     import_csv_result: "Imported {created} spools, {errors} rows skipped.",
     tab_stats: "Statistics",
+    tab_settings: "Settings",
+    set_tare_title: "Empty spool weight per brand",
+    set_tare_hint: "The weight of the empty spool is subtracted when you weigh a spool. Leave a field empty to use the built-in value ({builtin}). A single spool can have its own value or one of the spool types below.",
+    set_brand_other: "All other brands",
+    set_types_title: "Spool types",
+    set_types_hint: "Name your own empty spools, e.g. a self-printed or refillable spool, and pick the type in the spool form.",
+    set_type_name: "Name", set_type_add: "Add spool type", set_type_none: "No spool types yet.",
+    set_limits_title: "Thresholds",
+    set_remind_g: "Suggest weighing from this many grams used (outside the AMS)",
+    set_diff_points: "Warn when the AMS and the calculation differ by more than (points)",
+    spool_type: "Empty spool", spool_type_default: "Default ({grams} g)",
+    saved: "Saved.",
     stats_materials: "By material",
     stats_months: "Cost per month",
     energy_cost: "Electricity cost",
@@ -296,6 +307,18 @@ const TRANSLATIONS = {
     import_csv: "Spulen importieren (CSV)",
     import_csv_result: "{created} Spulen importiert, {errors} Zeilen übersprungen.",
     tab_stats: "Auswertung",
+    tab_settings: "Einstellungen",
+    set_tare_title: "Leergewicht der Spule pro Hersteller",
+    set_tare_hint: "Das Gewicht der leeren Spule wird beim Wiegen abgezogen. Ein leeres Feld nutzt den eingebauten Wert ({builtin}). Eine einzelne Spule kann einen eigenen Wert oder einen der Spulentypen unten bekommen.",
+    set_brand_other: "Alle anderen Hersteller",
+    set_types_title: "Spulentypen",
+    set_types_hint: "Benenne eigene leere Spulen, z. B. eine selbst gedruckte oder nachfüllbare Spule, und wähle den Typ im Spulenformular.",
+    set_type_name: "Name", set_type_add: "Spulentyp hinzufügen", set_type_none: "Noch keine Spulentypen.",
+    set_limits_title: "Schwellen",
+    set_remind_g: "Wiegen vorschlagen ab so vielen verbrauchten Gramm (außerhalb des AMS)",
+    set_diff_points: "Warnen, wenn AMS und Rechnung mehr abweichen als (Punkte)",
+    spool_type: "Leere Spule", spool_type_default: "Standard ({grams} g)",
+    saved: "Gespeichert.",
     stats_materials: "Nach Material",
     stats_months: "Kosten pro Monat",
     energy_cost: "Stromkosten",
@@ -559,6 +582,13 @@ class DruckAssistantPanel extends HTMLElement {
     const datalists = Object.entries(lists).map(([key, options]) =>
       this._el("datalist", { id: `suggest-${key}` }, ...options.map((o) => this._el("option", { value: o }))));
 
+    const settings = this._data?.settings || { tare_presets: [] };
+    const brandTare = (settings.tare_defaults || {})[(v.brand || "").toLowerCase()];
+    const typeSel = this._el("select", {},
+      this._el("option", { value: "" }, this._t("spool_type_default", { grams: this._fmtNum(brandTare ?? (/bambu/i.test(v.brand || "") ? 250 : 200), 0) })),
+      ...settings.tare_presets.map((pt) => this._el("option", { value: pt.id }, `${pt.name} (${this._fmtNum(pt.tare_g, 0)} g)`)));
+    typeSel.value = v.tare_preset || "";
+    inputs.tare_preset = typeSel;
     const mk = (key, type = "text", extra = {}) => {
       inputs[key] = this._el("input", { type, value: v[key] ?? "", ...(lists[key] ? { list: `suggest-${key}`, autocomplete: "off" } : {}), ...extra });
       inputs[key].addEventListener("input", () => touched.add(key));
@@ -588,6 +618,7 @@ class DruckAssistantPanel extends HTMLElement {
       this._field(this._t("remaining_weight"), mk("remaining_g", "number", { min: "0", step: "1" })),
       this._field(this._t("notes"), mk("notes")),
       this._el("details", { class: "more" }, this._el("summary", {}, this._t("more_details")),
+        this._field(this._t("spool_type"), typeSel),
         this._field(this._t("tare_weight"), mk("tare_g", "number", { min: "0", step: "1", placeholder: String(v.tare_effective_g ?? "") })),
         this._field(this._t("purchased"), mk("purchased", "date")),
         this._field(this._t("shop"), mk("shop")),
@@ -974,10 +1005,71 @@ class DruckAssistantPanel extends HTMLElement {
     if (this._dialog) main.append(this._renderDialog(printer));
   }
 
+  /** Settings tab: empty spool weight per brand, own spool types and thresholds. */
+  _renderSettings(main) {
+    const admin = this._isAdmin();
+    const st = this._data?.settings || { tare_defaults: {}, tare_presets: [], options: {}, builtin_tares: {} };
+    if (!this._draft) {
+      this._draft = {
+        tare: { ...st.tare_defaults },
+        types: st.tare_presets.map((x) => ({ ...x })),
+        options: { weigh_remind_g: 20, ams_diff_points: 15, ...st.options },
+      };
+    }
+    const d = this._draft;
+    if (this._notice) main.append(this._el("div", { class: this._noticeOk ? "sub notice" : "error" }, this._notice));
+    if (!admin) main.append(this._el("div", { class: "sub notice" }, this._t("admin_only")));
+    const num = (value, onInput, extra = {}) => {
+      const el = this._el("input", { type: "number", min: "0", step: "1", value: value ?? "", ...extra });
+      el.disabled = !admin;
+      el.addEventListener("input", () => onInput(el.value));
+      return el;
+    };
+    const row = (label, input, ...more) => this._el("div", { class: "setrow" }, this._el("span", {}, label), input, ...more);
+
+    const brands = [...new Set(["Bambu Lab", ...this._spools.map((sp) => sp.brand).filter(Boolean)])].sort((a, b) => (a === "Bambu Lab" ? -1 : b === "Bambu Lab" ? 1 : a.localeCompare(b)));
+    const tare = this._el("div", { class: "card" }, this._el("h2", {}, this._t("set_tare_title")),
+      this._el("div", { class: "sub" }, this._t("set_tare_hint", { builtin: "Bambu Lab 250 g, " + this._t("set_brand_other") + " 200 g" })));
+    for (const b of brands) {
+      const key = b.toLowerCase();
+      tare.append(row(b, num(d.tare[key], (v) => { if (v === "") delete d.tare[key]; else d.tare[key] = v; }, { placeholder: /bambu/i.test(b) ? "250" : "200" }), "g"));
+    }
+    tare.append(row(this._t("set_brand_other"), num(d.tare[""], (v) => { if (v === "") delete d.tare[""]; else d.tare[""] = v; }, { placeholder: "200" }), "g"));
+
+    const types = this._el("div", { class: "card" }, this._el("h2", {}, this._t("set_types_title")), this._el("div", { class: "sub" }, this._t("set_types_hint")));
+    if (!d.types.length) types.append(this._el("div", { class: "empty" }, this._t("set_type_none")));
+    d.types.forEach((ty, i) => {
+      const name = this._el("input", { type: "text", value: ty.name, placeholder: this._t("set_type_name") });
+      name.disabled = !admin;
+      name.addEventListener("input", () => { ty.name = name.value; });
+      types.append(this._el("div", { class: "setrow" }, name, num(ty.tare_g, (v) => { ty.tare_g = v; }), "g",
+        admin ? this._iconButton("delete", this._t("delete"), () => { d.types.splice(i, 1); this._render(); }, true) : ""));
+    });
+    if (admin) types.append(this._el("button", { onclick: () => { d.types.push({ name: "", tare_g: "" }); this._render(); } }, this._t("set_type_add")));
+
+    const limits = this._el("div", { class: "card" }, this._el("h2", {}, this._t("set_limits_title")),
+      row(this._t("set_remind_g"), num(d.options.weigh_remind_g, (v) => { d.options.weigh_remind_g = v; }), "g"),
+      row(this._t("set_diff_points"), num(d.options.ams_diff_points, (v) => { d.options.ams_diff_points = v; }), "%"));
+
+    main.append(this._el("div", { class: "grid" }, this._el("div", { class: "col" }, tare, types), this._el("div", { class: "col" }, limits)));
+    if (admin) {
+      main.append(this._el("button", { class: "primary", onclick: () => {
+        const draft = this._draft;
+        this._draft = null;
+        this._call({
+          type: "druck_assistant/settings",
+          tare_defaults: Object.fromEntries(Object.entries(draft.tare).filter(([, v]) => v !== "")),
+          tare_presets: draft.types.filter((x) => x.name.trim() || x.tare_g !== "").map((x) => ({ id: x.id, name: x.name, tare_g: x.tare_g })),
+          options: draft.options,
+        }, () => this._t("saved"));
+      } }, this._t("save")));
+    }
+  }
+
   /** Spools outside the AMS that are worth weighing: an estimated amount, or a lot used since the last weighing. */
   _renderWeighReminder(admin, slotOf) {
     const due = this._spools
-      .filter((sp) => !sp.archived && !slotOf[sp.id] && (sp.estimated || (sp.used_since_anchor_g || 0) >= WEIGH_REMIND_G))
+      .filter((sp) => !sp.archived && !slotOf[sp.id] && (sp.estimated || (sp.used_since_anchor_g || 0) >= (this._data?.settings?.options?.weigh_remind_g ?? 20)))
       .sort((a, b) => (b.estimated - a.estimated) || (b.used_since_anchor_g || 0) - (a.used_since_anchor_g || 0))
       .slice(0, 8);
     if (!due.length) return null;
@@ -1389,7 +1481,7 @@ class DruckAssistantPanel extends HTMLElement {
         // the integration's own calculation counts; the AMS percent is only a hint (and missing for third-party spools)
         const own = spool ? Math.max(0, Math.min(100, Math.round(spool.remaining_percent))) : null;
         const shown = own ?? remain;
-        const differs = own !== null && remain !== null && Math.abs(own - remain) > 15;
+        const differs = own !== null && remain !== null && Math.abs(own - remain) > (this._data?.settings?.options?.ams_diff_points ?? 15);
         grid.append(this._el("div", { class: "slot" + (sl.active ? " active" : "") },
           this._el("div", { class: "top" }, dot, sl.label, sl.tagged ? this._el("span", { class: "badge" }, "RFID") : "",
             this._el("span", { class: "sub" }, `${sl.type || "–"}${shown !== null ? ` · ${spool?.estimated ? "~" : ""}${shown} %` : ""}`)),
@@ -1557,6 +1649,9 @@ class DruckAssistantPanel extends HTMLElement {
       .ok { color: var(--green); } .fail { color: var(--red); }
       .badge { margin-left: 8px; padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; background: rgba(255,255,255,.07); color: var(--muted); border: 1px solid var(--line); }
       .badge.est { color: #fbbf24; background: rgba(251,191,36,.1); border-color: rgba(251,191,36,.3); }
+      .setrow { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
+      .setrow > span, .setrow > input[type=text] { flex: 1; min-width: 0; }
+      .setrow input[type=number] { width: 90px; }
       .remind { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
       .remind > span:nth-child(2) { flex: 1; min-width: 0; }
       .badge.low { color: #f87171; background: rgba(248,113,113,.1); border-color: rgba(248,113,113,.3); }
@@ -1641,9 +1736,9 @@ class DruckAssistantPanel extends HTMLElement {
       header.append(sel);
     }
     const tabs = this._el("div", { class: "tabs" },
-      ...["overview", "filament", "ams", "stats"].map((k) => this._el("button", {
+      ...["overview", "filament", "ams", "stats", "settings"].map((k) => this._el("button", {
         class: this._tab === k ? "active" : "",
-        onclick: () => { this._tab = k; this._editing = null; this._dialog = null; this._render(); },
+        onclick: () => { this._tab = k; this._editing = null; this._dialog = null; this._draft = null; this._render(); },
       }, this._t(`tab_${k}`))));
     header.insertBefore(tabs, header.querySelector(".printer-select"));
     const wrap = this._el("div", { class: "wrap" });
@@ -1658,6 +1753,7 @@ class DruckAssistantPanel extends HTMLElement {
     if (this._tab === "filament") { this._renderFilament(main, printer); return; }
     if (this._tab === "ams") { this._renderAms(main, printer); return; }
     if (this._tab === "stats") { this._renderStats(main, printer); return; }
+    if (this._tab === "settings") { this._renderSettings(main); return; }
     if (!printer) { main.append(this._el("div", { class: "empty" }, this._t("no_printer"))); return; }
 
     const t = printer.totals;
