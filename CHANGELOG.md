@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0-beta.6] - 2026-10-29
+
+### Changed
+
+- The weigh dialog has a dropdown with the spool types of the settings (and the brand default) next to the weight of the empty spool; picking one fills the weight and is kept for the spool.
+
+### Fixed
+
+- Catalog update: the downloaded files were read only in part ("Unterminated string"), so the update always failed and kept the bundled catalog. They are now read completely.
+
 ## [0.9.0-beta.5] - 2026-10-29
 
 ### Added

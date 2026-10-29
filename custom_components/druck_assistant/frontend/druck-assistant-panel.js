@@ -1160,6 +1160,19 @@ class DruckAssistantPanel extends HTMLElement {
       const sp = d.spool;
       const gross = this._el("input", { type: "number", min: "0", step: "1", placeholder: "g" });
       const tare = this._el("input", { type: "number", min: "0", step: "1", value: String(sp.tare_effective_g ?? 0) });
+      // the spool types of the settings: picking one fills the weight of the empty spool
+      const types = this._data?.settings?.tare_presets || [];
+      const brandTare = (this._data?.settings?.tare_defaults || {})[(sp.brand || "").toLowerCase()] ?? (/bambu/i.test(sp.brand || "") ? 250 : 200);
+      const typeSel = this._el("select", {},
+        this._el("option", { value: "" }, this._t("spool_type_default", { grams: this._fmtNum(brandTare, 0) })),
+        ...types.map((pt) => this._el("option", { value: pt.id }, `${pt.name} (${this._fmtNum(pt.tare_g, 0)} g)`)));
+      typeSel.value = sp.tare_preset || "";
+      let typeChanged = false;
+      typeSel.addEventListener("change", () => {
+        typeChanged = true;
+        tare.value = String(types.find((pt) => pt.id === typeSel.value)?.tare_g ?? brandTare);
+        update();
+      });
       const preview = this._el("div", { class: "sub notice" }, "");
       const update = () => {
         const left = Math.min(Math.max((parseFloat(gross.value) || 0) - (parseFloat(tare.value) || 0), 0), sp.initial_weight_g);
@@ -1171,12 +1184,13 @@ class DruckAssistantPanel extends HTMLElement {
         this._el("h2", {}, this._t("weigh_title")),
         this._el("div", { class: "sub notice" }, sp.name),
         this._field(this._t("gross_weight"), gross),
+        types.length ? this._field(this._t("spool_type"), typeSel) : "",
         this._field(this._t("tare_weight"), tare),
         preview,
         this._el("div", { class: "actions" },
           this._el("button", { class: "primary", onclick: () => {
             if (!gross.value) return;
-            this._call({ type: "druck_assistant/spool_weigh", spool_id: sp.id, gross_g: gross.value, tare_g: tare.value || null }, (res) => {
+            this._call({ type: "druck_assistant/spool_weigh", spool_id: sp.id, gross_g: gross.value, tare_g: tare.value || null, ...(typeChanged ? { tare_preset: typeSel.value } : {}) }, (res) => {
               const x = res.sample;
               if (!x) return this._t("weigh_done");
               const pct = Math.round(Math.abs(x.actual_g / x.slicer_g - 1) * 100);

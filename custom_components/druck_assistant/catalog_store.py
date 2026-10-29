@@ -82,9 +82,11 @@ class CatalogManager:
             response.raise_for_status()
             if response.content_length and response.content_length > MAX_BYTES:
                 raise CatalogError("download too large")
-            body = await response.content.read(MAX_BYTES + 1)
-        if len(body) > MAX_BYTES:
-            raise CatalogError("download too large")
+            body = bytearray()
+            async for chunk in response.content.iter_chunked(64 * 1024):  # read() alone returns only what has arrived
+                body += chunk
+                if len(body) > MAX_BYTES:
+                    raise CatalogError("download too large")
         return json.loads(body)
 
     async def async_update(self) -> dict[str, Any]:

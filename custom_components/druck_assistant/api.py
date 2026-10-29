@@ -195,6 +195,7 @@ def ws_spool_archive(
         vol.Required("spool_id"): str,
         vol.Required("gross_g"): vol.Any(int, float, str),
         vol.Optional("tare_g"): vol.Any(int, float, str, None),
+        vol.Optional("tare_preset"): vol.Any(str, None),
     }
 )
 @websocket_api.require_admin
@@ -205,7 +206,7 @@ def ws_spool_weigh(
     """Set the remaining filament of a spool from its weight on a scale."""
     manager = hass.data[DOMAIN]["filament"]
     try:
-        spool = manager.store.weigh(msg["spool_id"], msg["gross_g"], msg.get("tare_g"))
+        spool = manager.store.weigh(msg["spool_id"], msg["gross_g"], msg.get("tare_g"), msg.get("tare_preset"))
     except SpoolError as err:
         connection.send_error(msg["id"], "invalid_spool", str(err))
         return
