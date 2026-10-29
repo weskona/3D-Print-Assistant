@@ -197,6 +197,7 @@ class SpoolStore:
         tare_defaults: dict[str, float] | None = None,
         tare_presets: list[dict[str, Any]] | None = None,
         options: dict[str, float] | None = None,
+        projects: list[dict[str, Any]] | None = None,
     ) -> None:
         self.spools: dict[str, Spool] = {}
         for item in spools or []:
@@ -216,6 +217,8 @@ class SpoolStore:
         # Settings: empty spool weight per brand ("" = every other brand), named spool types, thresholds.
         self.tare_defaults: dict[str, float] = {k: float(v) for k, v in (tare_defaults or {}).items()}
         self.tare_presets: list[dict[str, Any]] = list(tare_presets or [])
+        # Projects group prints of the history ("<serial>|<start time>") to add up their cost.
+        self.projects: list[dict[str, Any]] = [dict(p, prints=list(p.get("prints", []))) for p in (projects or [])]
         self.options: dict[str, float] = {**DEFAULT_OPTIONS, **{k: float(v) for k, v in (options or {}).items() if k in DEFAULT_OPTIONS}}
         for spool in self.spools.values():  # an untouched full spool is its own anchor
             if spool.anchor_g is None and not spool.estimated and spool.remaining_g == spool.initial_weight_g:
@@ -231,7 +234,41 @@ class SpoolStore:
             "tare_defaults": dict(self.tare_defaults),
             "tare_presets": list(self.tare_presets),
             "options": dict(self.options),
+            "projects": [dict(p, prints=list(p["prints"])) for p in self.projects],
         }
+
+    def save_project(self, data: dict[str, Any]) -> dict[str, Any]:
+        """Create a project, or rename / re-describe the one with data["id"]."""
+        name = str(data.get("name") or "").strip()
+        if not name:
+            raise SpoolError("a project needs a name")
+        notes = str(data.get("notes") or "").strip()
+        existing = next((p for p in self.projects if p["id"] == data.get("id")), None) if data.get("id") else None
+        if data.get("id") and existing is None:
+            raise SpoolError("unknown project")
+        if existing is None:
+            existing = {"id": uuid.uuid4().hex[:8], "created": _today(), "prints": []}
+            self.projects.append(existing)
+        existing.update(name=name, notes=notes)
+        return existing
+
+    def delete_project(self, project_id: str) -> None:
+        if not any(p["id"] == project_id for p in self.projects):
+            raise SpoolError("unknown project")
+        self.projects = [p for p in self.projects if p["id"] != project_id]
+
+    def assign_prints(self, project_id: str | None, keys: list[str]) -> None:
+        """Put prints into a project (None: out of every project). A print belongs to one project at most."""
+        target = None
+        if project_id:
+            target = next((p for p in self.projects if p["id"] == project_id), None)
+            if target is None:
+                raise SpoolError("unknown project")
+        wanted = {str(k) for k in keys}
+        for project in self.projects:
+            project["prints"] = [k for k in project["prints"] if k not in wanted]
+        if target is not None:
+            target["prints"] += [k for k in dict.fromkeys(str(k) for k in keys)]
 
     def tare_of(self, spool: Spool) -> tuple[float, str]:
         """Empty weight of a spool and where it comes from: spool, preset, brand or default."""

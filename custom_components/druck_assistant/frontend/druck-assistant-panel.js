@@ -115,6 +115,20 @@ const TRANSLATIONS = {
     range_days: "Lasts about",
     days: "{n} days",
     copy_list: "Copy shopping list",
+    tab_projects: "Projects",
+    proj_title: "Projects",
+    proj_hint: "Group the prints of a project, e.g. a box with several parts, and see filament, time and cost of the whole project. Add prints from the history in the Overview tab: tick the prints and pick the project.",
+    proj_new: "New project", proj_name: "Name", proj_notes: "Notes", proj_create: "Create project",
+    proj_none: "No projects yet.", proj_empty: "No prints yet. Tick prints in the history of the Overview tab and add them here.",
+    proj_prints: "{count} prints", proj_rename: "Rename", proj_delete: "Delete project",
+    proj_delete_confirm: "Delete the project \"{name}\"? Its prints stay in the history.",
+    proj_remove: "Remove from project", proj_add_to: "Add to project", proj_pick: "Choose project", proj_new_name: "or a new project",
+    proj_added: "Added to the project.", proj_saved: "Project saved.",
+    pick_title: "Selection ({count} prints)",
+    pick_hint: "Click prints in the history to add them up, e.g. all prints of a project.",
+    pick_duration: "Print time", pick_clear: "Clear selection", pick_all: "Select all", pick_copy: "Copy summary",
+    pick_copied: "Summary copied to the clipboard.",
+    pick_summary: "{count} prints: {grams} g filament, {kwh} kWh, filament {filament}, electricity {energy}, total {total}",
     copied: "Shopping list copied to the clipboard.",
     nothing_to_buy: "Nothing to buy: every type is above its minimum.",
     set_min_hint: "Set the minimum stock per type in the integration options (e.g. PLA=2000).",
@@ -308,6 +322,20 @@ const TRANSLATIONS = {
     range_days: "Reicht etwa",
     days: "{n} Tage",
     copy_list: "Einkaufsliste kopieren",
+    tab_projects: "Projekte",
+    proj_title: "Projekte",
+    proj_hint: "Fasse die Drucke eines Projekts zusammen, z. B. eine Box aus mehreren Teilen, und sieh Filament, Zeit und Kosten des ganzen Projekts. Drucke fügst du in der Historie im Tab Übersicht hinzu: Drucke ankreuzen und das Projekt wählen.",
+    proj_new: "Neues Projekt", proj_name: "Name", proj_notes: "Notizen", proj_create: "Projekt anlegen",
+    proj_none: "Noch keine Projekte.", proj_empty: "Noch keine Drucke. Kreuze Drucke in der Historie im Tab Übersicht an und füge sie hier hinzu.",
+    proj_prints: "{count} Drucke", proj_rename: "Umbenennen", proj_delete: "Projekt löschen",
+    proj_delete_confirm: "Projekt „{name}“ löschen? Die Drucke bleiben in der Historie.",
+    proj_remove: "Aus dem Projekt entfernen", proj_add_to: "Zu Projekt hinzufügen", proj_pick: "Projekt wählen", proj_new_name: "oder ein neues Projekt",
+    proj_added: "Zum Projekt hinzugefügt.", proj_saved: "Projekt gespeichert.",
+    pick_title: "Auswahl ({count} Drucke)",
+    pick_hint: "Klicke Drucke in der Historie an, um sie zusammenzurechnen, z. B. alle Drucke eines Projekts.",
+    pick_duration: "Druckzeit", pick_clear: "Auswahl leeren", pick_all: "Alle auswählen", pick_copy: "Zusammenfassung kopieren",
+    pick_copied: "Zusammenfassung in die Zwischenablage kopiert.",
+    pick_summary: "{count} Drucke: {grams} g Filament, {kwh} kWh, Filament {filament}, Strom {energy}, gesamt {total}",
     copied: "Einkaufsliste in die Zwischenablage kopiert.",
     nothing_to_buy: "Nichts zu kaufen: jede Sorte liegt über ihrem Minimum.",
     set_min_hint: "Den Mindestbestand pro Sorte stellst du in den Optionen der Integration ein (z. B. PLA=2000).",
@@ -1142,6 +1170,114 @@ class DruckAssistantPanel extends HTMLElement {
     return out;
   }
 
+  /** Tiles with the sums of some prints: filament per material, time, electricity and costs. */
+  _sumTiles(rows, cur) {
+    const sum = (f) => rows.reduce((a, r) => a + (f(r) || 0), 0);
+    const grams = sum((r) => r.weight_g), kwh = sum((r) => r.energy_kwh), minutes = sum((r) => r.duration_min);
+    const energy = sum((r) => r.energy_cost), total = sum((r) => r.cost);
+    const filament = sum((r) => r.filament_cost ?? r.cost - (r.energy_cost || 0));
+    const byMaterial = new Map();
+    for (const r of rows) {
+      const parts = r.usages?.length ? r.usages.map((u) => [u.material || r.material, u.weight_g]) : [[r.material, r.weight_g]];
+      for (const [m, g] of parts) byMaterial.set(String(m || "?").toUpperCase(), (byMaterial.get(String(m || "?").toUpperCase()) || 0) + (g || 0));
+    }
+    const text = this._t("pick_summary", { count: rows.length, grams: this._fmtNum(grams, 0), kwh: this._fmtNum(kwh, 2), filament: this._fmtMoney(filament, cur), energy: this._fmtMoney(energy, cur), total: this._fmtMoney(total, cur) })
+      + "\n" + rows.map((r) => `- ${r.name}: ${this._fmtNum(r.weight_g, 0)} g, ${this._fmtMoney(r.cost, cur)}`).join("\n");
+    const tiles = this._el("div", { class: "tiles" },
+      this._tile(this._t("filament"), `${this._fmtNum(grams, 0)} g`, [...byMaterial].map(([m, g]) => `${m} ${this._fmtNum(g, 0)} g`).join(" · ")),
+      this._tile(this._t("pick_duration"), this._fmtDuration(minutes)),
+      this._tile(this._t("energy"), `${this._fmtNum(kwh, 2)} kWh`, this._fmtMoney(energy, cur)),
+      this._tile(this._t("total_cost"), this._fmtMoney(total, cur), this._t("cost_split", { filament: this._fmtMoney(filament, cur), energy: this._fmtMoney(energy, cur) })));
+    return { tiles, text };
+  }
+
+  async _copy(text) {
+    try { await navigator.clipboard.writeText(text); this._notice = this._t("pick_copied"); this._noticeOk = true; } catch (e) { this._notice = text; this._noticeOk = true; }
+    this._render();
+  }
+
+  /** The ticked prints of the history: sums, and adding them to a project. */
+  _renderPicked(rows, cur, keys) {
+    const { tiles, text } = this._sumTiles(rows, cur);
+    const card = this._el("div", { class: "pickbox" }, this._el("h3", {}, this._t("pick_title", { count: rows.length })), tiles);
+    const admin = this._isAdmin();
+    const projects = this._data.projects || [];
+    const sel = this._el("select", {}, this._el("option", { value: "" }, this._t("proj_pick")), ...projects.map((pr) => this._el("option", { value: pr.id }, pr.name)));
+    const fresh = this._el("input", { type: "text", placeholder: this._t("proj_new_name") });
+    const add = this._el("button", { class: "primary", onclick: async () => {
+      let id = sel.value;
+      const name = fresh.value.trim();
+      if (!id && !name) return;
+      try {
+        if (name) id = (await this._hass.connection.sendMessagePromise({ type: "druck_assistant/project_save", project: { name } })).project.id;
+        await this._hass.connection.sendMessagePromise({ type: "druck_assistant/project_assign", project_id: id, prints: keys });
+        this._notice = this._t("proj_added"); this._noticeOk = true;
+        this._picked.clear();
+      } catch (e) { this._notice = e && e.message ? e.message : String(e); this._noticeOk = false; }
+      await this._load();
+      this._render();
+    } }, this._t("proj_add_to"));
+    card.append(this._el("div", { class: "toolbar" },
+      this._el("button", { onclick: () => { this._picked.clear(); this._render(); } }, this._t("pick_clear")),
+      this._el("button", { onclick: () => this._copy(text) }, this._t("pick_copy"))),
+      ...(admin ? [this._el("div", { class: "toolbar" }, sel, fresh, add)] : []));
+    return card;
+  }
+
+  /** Projects tab: every project with the sums of its prints. */
+  _renderProjects(main) {
+    const admin = this._isAdmin();
+    const cur = this._data.printers[0]?.currency || "EUR";
+    const projects = this._data.projects || [];
+    if (this._notice) main.append(this._el("div", { class: this._noticeOk ? "sub notice" : "error" }, this._notice));
+    if (!admin) main.append(this._el("div", { class: "sub notice" }, this._t("admin_only")));
+    const records = new Map();
+    for (const pr of this._data.printers) for (const r of pr.history || []) records.set(`${pr.serial}|${r.started}`, r);
+    const intro = this._el("div", { class: "card" }, this._el("h2", {}, this._t("proj_title")), this._el("div", { class: "sub" }, this._t("proj_hint")));
+    if (admin) {
+      const name = this._el("input", { type: "text", placeholder: this._t("proj_name") });
+      const notes = this._el("input", { type: "text", placeholder: this._t("proj_notes") });
+      intro.append(this._el("div", { class: "toolbar" }, name, notes, this._el("button", { class: "primary", onclick: () => {
+        if (!name.value.trim()) return;
+        this._call({ type: "druck_assistant/project_save", project: { name: name.value, notes: notes.value } }, () => this._t("proj_saved"));
+      } }, this._t("proj_create"))));
+    }
+    main.append(intro);
+    if (!projects.length) { main.append(this._el("div", { class: "card" }, this._el("div", { class: "empty" }, this._t("proj_none")))); return; }
+    for (const pr of [...projects].sort((a, b) => (b.created || "").localeCompare(a.created || ""))) {
+      const rows = pr.prints.map((k) => records.get(k)).filter(Boolean);
+      const card = this._el("div", { class: "card" }, this._el("h2", {}, pr.name, this._el("span", { class: "badge" }, this._t("proj_prints", { count: rows.length }))));
+      if (pr.notes) card.append(this._el("div", { class: "sub" }, pr.notes));
+      if (!rows.length) card.append(this._el("div", { class: "empty" }, this._t("proj_empty")));
+      else {
+        const { tiles, text } = this._sumTiles(rows, cur);
+        card.append(tiles);
+        const list = this._el("div", { class: "history" });
+        for (const r of [...rows].sort((a, b) => String(b.finished).localeCompare(String(a.finished)))) {
+          const key = [...records.entries()].find(([, v]) => v === r)[0];
+          list.append(this._el("div", { class: "hrow" + (r.result === "failed" ? " failed" : ""), style: "grid-template-columns:auto minmax(0,1fr) auto" },
+            this._el("div", { class: "when" }, this._el("span", {}, new Date(r.finished).toLocaleDateString(this._hass.locale?.language, { day: "2-digit", month: "short" }))),
+            this._el("div", { class: "what" }, this._el("b", {}, r.name), this._el("span", { class: "sub" }, [this._fmtDuration(r.duration_min), r.material || null, `${this._fmtNum(r.weight_g)} g`].filter(Boolean).join(" · "))),
+            this._el("div", { class: "cost" }, this._el("b", {}, this._fmtMoney(r.cost, cur)),
+              admin ? this._iconButton("delete", this._t("proj_remove"), () => this._call({ type: "druck_assistant/project_assign", project_id: null, prints: [key] })) : "")));
+        }
+        card.append(list);
+        card.append(this._el("div", { class: "toolbar" }, this._el("button", { onclick: () => this._copy(`${pr.name}\n${text}`) }, this._t("pick_copy"))));
+      }
+      if (admin) {
+        card.append(this._el("div", { class: "toolbar" },
+          this._el("button", { onclick: () => {
+            const name = window.prompt(this._t("proj_name"), pr.name);
+            if (name && name.trim()) this._call({ type: "druck_assistant/project_save", project: { id: pr.id, name, notes: pr.notes } }, () => this._t("proj_saved"));
+          } }, this._t("proj_rename")),
+          this._el("button", { onclick: () => {
+            if (window.confirm(this._t("proj_delete_confirm", { name: pr.name }))) this._call({ type: "druck_assistant/project_delete", project_id: pr.id });
+          } }, this._t("proj_delete"))));
+      }
+      main.append(card);
+    }
+  }
+
   /** Warning block for a running print whose spool will run out. */
   _renderShortages(printer, shortages) {
     const labelOf = (key) => printer.slots?.find((sl) => sl.key === key)?.label || key;
@@ -1762,13 +1898,18 @@ class DruckAssistantPanel extends HTMLElement {
       .cover { display: block; max-width: 100%; max-height: 220px; margin: 4px auto 12px; border-radius: 18px; object-fit: contain; }
       .cover[hidden], .camera[hidden], .card .sub[hidden] { display: none; }
       .history { display: flex; flex-direction: column; gap: 8px; }
-      .hrow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 11px 14px; border-radius: 18px; background: var(--tile); border: 1px solid var(--tile-line); }
+      .hrow { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto; cursor: pointer; align-items: center; gap: 14px; padding: 11px 14px; border-radius: 18px; background: var(--tile); border: 1px solid var(--tile-line); }
       .hrow .when { display: flex; flex-direction: column; align-items: center; min-width: 52px; font-size: 12px; color: var(--muted); line-height: 1.25; }
       .hrow .when b { font-size: 15px; color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
       .hrow .what { min-width: 0; }
       .hrow .what b { display: block; font-size: 15.5px; font-weight: 600; overflow-wrap: anywhere; }
       .hrow .cost { text-align: right; white-space: nowrap; }
       .hrow .cost b { display: block; font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+      .hrow.picked { border-color: rgba(52,211,153,.5); background: rgba(52,211,153,.07); }
+      .hrow input[type=checkbox] { width: 18px; height: 18px; margin: 0; accent-color: #34d399; }
+      .tiles + .history { margin-top: 10px; }
+      .pickbox { margin: 10px 0 14px; padding: 12px 14px; border-radius: 18px; border: 1px solid rgba(52,211,153,.35); background: rgba(52,211,153,.05); }
+      .pickbox h3 { margin: 0 0 8px; font-size: 14px; }
       .hrow.failed { border-color: rgba(248,113,113,.25); }
       .slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
       .slot { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; border-radius: 20px; background: var(--tile); border: 1px solid var(--tile-line); }
@@ -1795,7 +1936,7 @@ class DruckAssistantPanel extends HTMLElement {
       header.append(sel);
     }
     const tabs = this._el("div", { class: "tabs" },
-      ...["overview", "filament", "ams", "stats", "settings"].map((k) => this._el("button", {
+      ...["overview", "filament", "ams", "stats", "projects", "settings"].map((k) => this._el("button", {
         class: this._tab === k ? "active" : "",
         onclick: () => { this._tab = k; this._editing = null; this._dialog = null; this._draft = null; this._render(); },
       }, this._t(`tab_${k}`))));
@@ -1812,6 +1953,7 @@ class DruckAssistantPanel extends HTMLElement {
     if (this._tab === "filament") { this._renderFilament(main, printer); return; }
     if (this._tab === "ams") { this._renderAms(main, printer); return; }
     if (this._tab === "stats") { this._renderStats(main, printer); return; }
+    if (this._tab === "projects") { this._renderProjects(main); return; }
     if (this._tab === "settings") { this._renderSettings(main); return; }
     if (!printer) { main.append(this._el("div", { class: "empty" }, this._t("no_printer"))); return; }
 
@@ -1827,6 +1969,18 @@ class DruckAssistantPanel extends HTMLElement {
           this._t("cost_split", { filament: this._fmtMoney(t.filament_cost ?? t.cost - t.energy_cost, cur), energy: this._fmtMoney(t.energy_cost, cur) }))));
 
     const hist = this._el("div", { class: "card" }, this._el("h2", {}, this._t("history")));
+    // prints picked by a click are added up (a project of several prints)
+    this._picked = this._picked || new Set();
+    const keyOf = (r) => `${printer.serial}|${r.started}`;
+    for (const k of [...this._picked]) if (!printer.history.some((r) => keyOf(r) === k)) this._picked.delete(k);
+    const picked = printer.history.filter((r) => this._picked.has(keyOf(r)));
+    const projectOf = new Map();
+    for (const pr of this._data.projects || []) for (const k of pr.prints) projectOf.set(k, pr.name);
+    if (printer.history.length) hist.append(this._el("div", { class: picked.length ? "toolbar" : "sub" },
+      picked.length ? "" : this._t("pick_hint"),
+      ...(printer.history.length > 1 && picked.length < printer.history.length
+        ? [this._el("button", { onclick: () => { printer.history.forEach((r) => this._picked.add(keyOf(r))); this._render(); } }, this._t("pick_all"))] : [])));
+    if (picked.length) hist.append(this._renderPicked(picked, cur, picked.map(keyOf)));
     if (!printer.history.length) {
       hist.append(this._el("div", { class: "empty" }, this._t("no_history")));
     } else {
@@ -1836,7 +1990,13 @@ class DruckAssistantPanel extends HTMLElement {
         const finished = new Date(r.finished);
         const lang = this._hass.locale?.language;
         const filamentCost = r.filament_cost ?? r.cost - (r.energy_cost || 0);
-        list.append(this._el("div", { class: "hrow" + (ok ? "" : " failed") },
+        const on = this._picked.has(keyOf(r));
+        const box = this._el("input", { type: "checkbox", "aria-label": r.name });
+        box.checked = on;
+        const toggle = () => { if (this._picked.has(keyOf(r))) this._picked.delete(keyOf(r)); else this._picked.add(keyOf(r)); this._render(); };
+        box.addEventListener("change", toggle);
+        const row = this._el("div", { class: "hrow" + (ok ? "" : " failed") + (on ? " picked" : "") },
+          box,
           this._el("div", { class: "when" },
             this._el("span", {}, finished.toLocaleDateString(lang, { day: "2-digit", month: "short" })),
             this._el("b", {}, finished.toLocaleTimeString(lang, { hour: "2-digit", minute: "2-digit" }))),
@@ -1847,13 +2007,17 @@ class DruckAssistantPanel extends HTMLElement {
             r.usages?.length
               ? this._el("span", { class: "sub spools" }, r.usages.map((u) => `${u.spool_name || u.material || "?"} ${this._fmtNum(u.weight_g)} g`).join(" + "))
               : "",
+            projectOf.get(keyOf(r)) ? this._el("span", { class: "badge stock" }, projectOf.get(keyOf(r))) : "",
             ok ? "" : this._el("span", { class: "badge", style: "color:var(--red);margin-left:8px" }, this._t("failed"))),
           this._el("div", { class: "cost", title: this._t("cost_split", { filament: this._fmtMoney(filamentCost, cur), energy: this._fmtMoney(r.energy_cost || 0, cur) }) },
             this._el("b", {}, this._fmtMoney(r.cost, cur)),
             this._el("span", { class: "sub" }, `${this._fmtMoney(filamentCost, cur)} + ${this._fmtMoney(r.energy_cost || 0, cur)}`),
             this._isAdmin()
               ? this._iconButton("swap", this._t("rebook"), () => { this._dialog = { kind: "rebook", record: r }; this._render(); })
-              : "")));
+              : ""));
+        // a click anywhere on the row picks it, except on the buttons and the checkbox itself
+        row.addEventListener("click", (e) => { if (!e.target.closest("button, input, a")) toggle(); });
+        list.append(row);
       }
       hist.append(list);
     }

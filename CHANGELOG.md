@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0-beta.8] - 2026-10-29
+
+### Added
+
+- Projects: tick prints in the history (a click on the row) to add up filament, time, electricity and cost, and add them to a project. The new Projects tab shows every project with the totals of its prints (filament per material, time, electricity, filament and electricity cost), lets you remove prints, rename and delete a project, and copy the summary as text. A print belongs to one project at most; the history row shows its project.
+
 ## [0.9.0-beta.7] - 2026-10-29
 
 ### Added
