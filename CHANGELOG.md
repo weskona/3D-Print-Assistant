@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0-beta.9] - 2026-10-29
+
+### Fixed
+
+- A print that is already running when Home Assistant starts (restart in the middle of a print) now gets its session: the tracker looks for it at startup and on every slot or progress change. Without a session the print was neither recorded in the history nor charged to its spool, and the panel showed the default price per kg instead of the spool's.
+
 ## [0.9.0-beta.8] - 2026-10-29
 
 ### Added
