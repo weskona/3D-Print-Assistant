@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from homeassistant.components import frontend, panel_custom
@@ -10,10 +11,12 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.loader import async_get_integration
 
 from . import api
+from .catalog_store import CatalogManager
 from .const import DOMAIN, PANEL_COMPONENT, PANEL_URL_PATH, STATIC_URL
 from .filament import FilamentManager
 from .tracker import PrintTracker
@@ -25,9 +28,22 @@ type DruckAssistantConfigEntry = ConfigEntry[PrintTracker]
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    catalog = CatalogManager(hass)
+    await catalog.async_load()
     manager = FilamentManager(hass)
-    await manager.async_load()
-    hass.data[DOMAIN] = {"filament": manager}
+    await manager.async_load(catalog.catalog)
+    catalog.on_update = lambda: manager.use_catalog(catalog.catalog)
+    hass.data[DOMAIN] = {"filament": manager, "catalog": catalog}
+
+    async def _auto_update(now: datetime) -> None:
+        """Once a week, when the setting asks for it."""
+        if not manager.store.options.get("catalog_auto"):
+            return
+        last = catalog.updated_at
+        if not last or now - datetime.fromisoformat(last) >= timedelta(days=7):
+            await catalog.async_update()
+
+    async_track_time_interval(hass, _auto_update, timedelta(hours=12))
     api.async_register(hass)
     await hass.http.async_register_static_paths(
         [

@@ -253,6 +253,6 @@ def test_settings_are_validated_and_saved():
     except SpoolError:
         pass
     store.set_settings({"options": {"weigh_remind_g": 40, "unknown": 1}})
-    assert store.options == {"weigh_remind_g": 40.0, "ams_diff_points": 15.0}
+    assert store.options == {"weigh_remind_g": 40.0, "ams_diff_points": 15.0, "catalog_auto": 0.0}
     again = SpoolStore(**store.to_dict())
     assert again.options["weigh_remind_g"] == 40.0

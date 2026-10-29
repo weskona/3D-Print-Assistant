@@ -130,6 +130,15 @@ const TRANSLATIONS = {
     set_types_title: "Spool types",
     set_types_hint: "Name your own empty spools, e.g. a self-printed or refillable spool, and pick the type in the spool form.",
     set_type_name: "Name", set_type_add: "Add spool type", set_type_none: "No spool types yet.",
+    cat_title: "Filament catalog",
+    cat_hint: "Colors and products for the spool form. The catalog is bundled; it can be refreshed from Bambu Studio (all Bambu Lab colors) and SpoolmanDB (other manufacturers).",
+    cat_stats: "{products} products, {colors} colors.",
+    cat_bundled: "Status: bundled (Bambu Lab {bambu}, other manufacturers {third}).",
+    cat_updated: "Status: updated on {date}.",
+    cat_update: "Update now", cat_busy: "Updating …",
+    cat_done: "Catalog updated: {products} products, {colors} colors.",
+    cat_error: "Catalog not updated, the old one stays: {error}",
+    cat_auto: "Update automatically once a week",
     set_limits_title: "Thresholds",
     set_remind_g: "Suggest weighing from this many grams used (outside the AMS)",
     set_diff_points: "Warn when the AMS and the calculation differ by more than (points)",
@@ -314,6 +323,15 @@ const TRANSLATIONS = {
     set_types_title: "Spulentypen",
     set_types_hint: "Benenne eigene leere Spulen, z. B. eine selbst gedruckte oder nachfüllbare Spule, und wähle den Typ im Spulenformular.",
     set_type_name: "Name", set_type_add: "Spulentyp hinzufügen", set_type_none: "Noch keine Spulentypen.",
+    cat_title: "Filament-Katalog",
+    cat_hint: "Farben und Produkte für das Spulenformular. Der Katalog ist mitgeliefert; er lässt sich von Bambu Studio (alle Bambu-Lab-Farben) und SpoolmanDB (andere Hersteller) aktualisieren.",
+    cat_stats: "{products} Produkte, {colors} Farben.",
+    cat_bundled: "Stand: mitgeliefert (Bambu Lab {bambu}, andere Hersteller {third}).",
+    cat_updated: "Stand: aktualisiert am {date}.",
+    cat_update: "Jetzt aktualisieren", cat_busy: "Wird aktualisiert …",
+    cat_done: "Katalog aktualisiert: {products} Produkte, {colors} Farben.",
+    cat_error: "Katalog nicht aktualisiert, der alte bleibt: {error}",
+    cat_auto: "Einmal pro Woche automatisch aktualisieren",
     set_limits_title: "Schwellen",
     set_remind_g: "Wiegen vorschlagen ab so vielen verbrauchten Gramm (außerhalb des AMS)",
     set_diff_points: "Warnen, wenn AMS und Rechnung mehr abweichen als (Punkte)",
@@ -1051,7 +1069,32 @@ class DruckAssistantPanel extends HTMLElement {
       row(this._t("set_remind_g"), num(d.options.weigh_remind_g, (v) => { d.options.weigh_remind_g = v; }), "g"),
       row(this._t("set_diff_points"), num(d.options.ams_diff_points, (v) => { d.options.ams_diff_points = v; }), "%"));
 
-    main.append(this._el("div", { class: "grid" }, this._el("div", { class: "col" }, tare, types), this._el("div", { class: "col" }, limits)));
+    const cat = st.catalog || {};
+    const catalogCard = this._el("div", { class: "card" }, this._el("h2", {}, this._t("cat_title")), this._el("div", { class: "sub" }, this._t("cat_hint")),
+      this._el("div", { class: "sub", style: "margin:8px 0" }, `${this._t("cat_stats", { products: cat.products ?? 0, colors: cat.colors ?? 0 })} ${cat.updated_at
+        ? this._t("cat_updated", { date: new Date(cat.updated_at).toLocaleString(this._hass?.locale?.language) })
+        : this._t("cat_bundled", { bambu: cat.bundled?.bambu || "–", third: cat.bundled?.third_party || "–" })}`));
+    if (cat.error) catalogCard.append(this._el("div", { class: "error" }, this._t("cat_error", { error: cat.error })));
+    if (admin) {
+      const busy = this._catalogBusy || cat.busy;
+      const btn = this._el("button", { onclick: async () => {
+        this._catalogBusy = true;
+        this._render();
+        await this._call({ type: "druck_assistant/catalog_update" }, (res) => (res.error
+          ? this._t("cat_error", { error: res.error })
+          : this._t("cat_done", { products: res.products, colors: res.colors })));
+        this._catalogBusy = false;
+        this._catalog = undefined; // the spool form reads the new catalog
+        this._render();
+      } }, busy ? this._t("cat_busy") : this._t("cat_update"));
+      btn.disabled = !!busy;
+      const auto = this._el("input", { type: "checkbox" });
+      auto.checked = !!d.options.catalog_auto;
+      auto.addEventListener("change", () => { d.options.catalog_auto = auto.checked ? 1 : 0; });
+      catalogCard.append(btn, this._el("label", { class: "setrow" }, auto, this._el("span", {}, this._t("cat_auto"))));
+    }
+
+    main.append(this._el("div", { class: "grid" }, this._el("div", { class: "col" }, tare, types), this._el("div", { class: "col" }, catalogCard, limits)));
     if (admin) {
       main.append(this._el("button", { class: "primary", onclick: () => {
         const draft = this._draft;
