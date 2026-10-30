@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Narrow screens: the tables (filament list, archive, stock, statistics) show every row as a small block with labelled values instead of a wide table that has to be scrolled.
+
 ## [0.10.0-beta.4] - 2026-10-30
 
 ### Added

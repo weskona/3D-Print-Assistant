@@ -589,6 +589,22 @@ class DruckAssistantPanel extends HTMLElement {
 
   _isAdmin() { return !!this._hass?.user?.is_admin; }
 
+  /** Mark a table so that a narrow card shows every row as a small block with labelled values (see the CSS). */
+  _stack(table) {
+    const [head, ...rows] = [...table.rows];
+    const labels = [...head.cells].map((c) => c.textContent.trim());
+    table.classList.add("stack");
+    head.classList.add("head");
+    for (const row of rows) {
+      [...row.cells].forEach((cell, i) => {
+        if (i > 0 && labels[i]) cell.dataset.label = labels[i];
+        if (!cell.textContent.trim() && !cell.children.length) cell.classList.add("none");
+        else if (i === 0 || !labels[i] || cell.querySelector(".bar")) cell.classList.add("wide");
+      });
+    }
+    return table;
+  }
+
   /** A round icon button with a tooltip and an accessible name. */
   _iconButton(icon, label, onclick, danger = false) {
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -1021,7 +1037,7 @@ class DruckAssistantPanel extends HTMLElement {
           }
         }
       }
-      card.append(table);
+      card.append(this._stack(table));
     }
     main.append(card);
 
@@ -1051,7 +1067,7 @@ class DruckAssistantPanel extends HTMLElement {
           this._el("td", {}, this._perKg(this._printedPrice(printer, new Set([sp.id])), cur)),
           actions));
       }
-      details.append(table);
+      details.append(this._stack(table));
     }
     main.append(details);
 
@@ -1429,7 +1445,7 @@ class DruckAssistantPanel extends HTMLElement {
         this._el("td", {}, r.cost != null && r.missing > 0 ? this._fmtMoney(r.cost, cur) : "–"),
         this._el("td", {}, r.days != null ? this._t("days", { n: this._fmtNum(r.days, 0) }) : "–")));
     }
-    card.append(table);
+    card.append(this._stack(table));
     const total = buy.reduce((sum, r) => sum + (r.cost || 0), 0);
     card.append(this._el("div", { class: "sub notice", style: "margin-top:10px" },
       buy.length ? `${this._t("missing")}: ${buy.map((r) => `${r.material} ${this._fmtNum(r.missing, 0)} g`).join(", ")}${total ? ` · ${this._t("est_cost")}: ${this._fmtMoney(total, cur)}` : ""}`
@@ -1470,7 +1486,7 @@ class DruckAssistantPanel extends HTMLElement {
         this._el("td", {}, this._fmtMoney(r.cost, cur)), this._el("td", {}, r.failed),
         this._el("td", {}, `${this._fmtNum((r.failed / r.prints) * 100, 0)} %`), this._el("td", {}, this._fmtMoney(r.wasted, cur))));
     }
-    mat.append(table);
+    mat.append(this._stack(table));
 
     const months = new Map();
     for (const r of history) {
@@ -1973,6 +1989,22 @@ class DruckAssistantPanel extends HTMLElement {
         .hrow:not([style]) { grid-template-columns: auto auto minmax(0, 1fr); gap: 8px 12px; padding: 10px 12px; }
         .hrow:not([style]) .cost { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; text-align: left; white-space: normal; }
         .hrow:not([style]) .cost .icon-btn:first-of-type { margin-left: auto; }
+      }
+      /* Tables become stacked blocks in a narrow card (the cells carry data-label, see _stack). */
+      @container card (max-width: 560px) {
+        table.stack, table.stack tr, table.stack td { display: block; }
+        table.stack tr.head { display: none; }
+        table.stack tr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+        table.stack tr:last-child { border-bottom: 0; }
+        table.stack td { border: 0; padding: 0; white-space: normal; min-width: 0; overflow-wrap: anywhere; }
+        table.stack td.none { display: none; }
+        table.stack td.wide { grid-column: 1 / -1; }
+        table.stack td:first-child { font-weight: 600; font-size: 15px; }
+        table.stack td[data-label]::before { content: attr(data-label); display: block; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+        table.stack td:last-child:not([data-label]):not(:first-child) { display: flex; justify-content: flex-end; }
+        table.stack tr.sub-row { padding: 10px 0 10px 14px; background: rgba(255,255,255,.02); border-radius: 12px; }
+        table.stack tr.sub-row td.indent { padding-left: 0; }
+        table.stack .bar { width: 100%; }
       }
       /* Touch screens: bigger targets, and 16px inputs so that iOS does not zoom in on focus. */
       @media (pointer: coarse) {
