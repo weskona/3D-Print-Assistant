@@ -107,6 +107,7 @@ const TRANSLATIONS = {
     rebook_none: "No spool",
     rebook_hint: "The filament of the print moves from the current spool to the chosen one.",
     rebook_multi: "This print used several spools and cannot be rebooked.",
+    rename: "Rename print",
     stock_title: "Stock and shopping list",
     stock_g: "Stock",
     min_stock: "Minimum",
@@ -315,6 +316,7 @@ const TRANSLATIONS = {
     rebook_none: "Keine Spule",
     rebook_hint: "Das Filament des Drucks wandert von der bisherigen Spule auf die gewählte.",
     rebook_multi: "Dieser Druck hat mehrere Spulen verwendet und kann nicht umgebucht werden.",
+    rename: "Druck umbenennen",
     stock_title: "Bestand und Einkaufsliste",
     stock_g: "Bestand",
     min_stock: "Minimum",
@@ -1342,6 +1344,18 @@ class DruckAssistantPanel extends HTMLElement {
           } }, this._t("save")),
           this._el("button", { onclick: close }, this._t("cancel"))));
       setTimeout(() => gross.focus(), 0);
+    } else if (d.kind === "rename") {
+      const r = d.record;
+      const name = this._el("input", { type: "text", value: r.name, maxlength: 200 });
+      const save = () => { if (name.value.trim()) this._call({ type: "druck_assistant/record_rename", started: r.started, name: name.value.trim() }); };
+      name.addEventListener("keydown", (e) => { if (e.key === "Enter") save(); });
+      form = this._el("div", { class: "dialog form", role: "dialog" },
+        this._el("h2", {}, this._t("rename")),
+        this._field(this._t("name"), name),
+        this._el("div", { class: "actions" },
+          this._el("button", { class: "primary", onclick: save }, this._t("save")),
+          this._el("button", { onclick: close }, this._t("cancel"))));
+      setTimeout(() => { name.focus(); name.select(); }, 0);
     } else {
       const r = d.record;
       const multi = !!r.usages?.length;
@@ -2028,6 +2042,9 @@ class DruckAssistantPanel extends HTMLElement {
           this._el("div", { class: "cost", title: this._t("cost_split", { filament: this._fmtMoney(filamentCost, cur), energy: this._fmtMoney(r.energy_cost || 0, cur) }) },
             this._el("b", {}, this._fmtMoney(r.cost, cur)),
             this._el("span", { class: "sub" }, `${this._fmtMoney(filamentCost, cur)} + ${this._fmtMoney(r.energy_cost || 0, cur)}`),
+            this._isAdmin()
+              ? this._iconButton("edit", this._t("rename"), () => { this._dialog = { kind: "rename", record: r }; this._render(); })
+              : "",
             this._isAdmin()
               ? this._iconButton("swap", this._t("rebook"), () => { this._dialog = { kind: "rebook", record: r }; this._render(); })
               : ""));

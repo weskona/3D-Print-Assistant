@@ -18,6 +18,7 @@ from .const import (
     WS_PROJECT_DELETE,
     WS_PROJECT_SAVE,
     WS_RECORD_REBOOK,
+    WS_RECORD_RENAME,
     WS_SETTINGS,
     WS_SPOOL_ARCHIVE,
     WS_SPOOL_ASSIGN,
@@ -49,6 +50,7 @@ def async_register(hass: HomeAssistant) -> None:
         ws_settings,
         ws_spool_import,
         ws_record_rebook,
+        ws_record_rename,
     ):
         websocket_api.async_register_command(hass, command)
 
@@ -380,6 +382,28 @@ def ws_record_rebook(
             connection.send_error(msg["id"], "not_possible", str(err))
         else:
             connection.send_result(msg["id"], {"record": record})
+        return
+    connection.send_error(msg["id"], "unknown_record", "unknown print")
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): WS_RECORD_RENAME,
+        vol.Required("started"): str,
+        vol.Required("name"): vol.All(str, vol.Strip, vol.Length(min=1, max=200)),
+    }
+)
+@websocket_api.require_admin
+@callback
+def ws_record_rename(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Give a recorded print another name (the slicer may have named it wrongly)."""
+    for entry in hass.config_entries.async_loaded_entries(DOMAIN):
+        tracker = entry.runtime_data
+        if tracker.history.find(msg["started"]) is None:
+            continue
+        connection.send_result(msg["id"], {"record": tracker.rename(msg["started"], msg["name"])})
         return
     connection.send_error(msg["id"], "unknown_record", "unknown print")
 

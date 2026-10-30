@@ -260,6 +260,14 @@ class PrintHistory:
     def find(self, started: str) -> dict[str, Any] | None:
         return next((r for r in self.records if r.get("started") == started), None)
 
+    def rename(self, started: str, name: str) -> dict[str, Any]:
+        """Rename a recorded print."""
+        record = self.find(started)
+        if record is None:
+            raise KeyError(started)
+        record["name"] = name
+        return record
+
     def rebook(
         self,
         started: str,

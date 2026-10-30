@@ -42,6 +42,7 @@ WS_PROJECT_DELETE = f"{DOMAIN}/project_delete"
 WS_PROJECT_ASSIGN = f"{DOMAIN}/project_assign"
 WS_SPOOL_IMPORT = f"{DOMAIN}/spool_import"
 WS_RECORD_REBOOK = f"{DOMAIN}/record_rebook"
+WS_RECORD_RENAME = f"{DOMAIN}/record_rename"
 
 # Raw print_status values reported by ha-bambulab.
 STATUS_RUNNING = "running"

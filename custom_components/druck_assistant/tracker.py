@@ -503,6 +503,13 @@ class PrintTracker:
                     },
                 )
 
+    def rename(self, started: str, name: str) -> dict[str, Any]:
+        """Rename a recorded print."""
+        record = self.history.rename(started, name)
+        self._store.async_delay_save(lambda: {"records": self.history.records}, 1)
+        async_dispatcher_send(self.hass, self.signal)
+        return record
+
     def rebook(self, started: str, spool_id: str | None) -> dict[str, Any]:
         """Charge a recorded print to another spool and move the stock accordingly."""
         store = self.filament.store
