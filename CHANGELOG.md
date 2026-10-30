@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- The panel jumped back to the top a few seconds after scrolling down (introduced with the scrolling tab bar in 0.10.0-beta.4): the refresh scrolled the active tab into view.
+
 ## [0.10.0-beta.5] - 2026-10-30
 
 ### Changed

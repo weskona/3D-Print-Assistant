@@ -2039,7 +2039,14 @@ class DruckAssistantPanel extends HTMLElement {
     const wrap = this._el("div", { class: "wrap" });
     root.append(wrap);
     wrap.append(header);
-    tabs.querySelector(".active")?.scrollIntoView({ inline: "center", block: "nearest" });
+    // Centre the active tab in the scrolling tab bar. Not scrollIntoView: that would also scroll the page
+    // up to the tabs on every refresh.
+    const active = tabs.querySelector(".active");
+    if (active && tabs.scrollWidth > tabs.clientWidth) {
+      const box = tabs.getBoundingClientRect();
+      const at = active.getBoundingClientRect();
+      tabs.scrollLeft += at.left - box.left - (box.width - at.width) / 2;
+    }
 
     const main = this._el("main");
     wrap.append(main);
