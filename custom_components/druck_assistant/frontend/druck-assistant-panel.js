@@ -1807,7 +1807,7 @@ class DruckAssistantPanel extends HTMLElement {
         --tile: rgba(255,255,255,.032); --tile-line: rgba(255,255,255,.07);
         --text: #f3f5f9; --muted: #8b91a1; --dim: #5d6373;
         --green: #34d399; --orange: #fb923c; --gold: #f7b733; --red: #f87171; --blue: #60a5fa; --cyan: #38bdf8;
-        display: block; min-height: 100vh; background: var(--bg); color: var(--text); container-type: inline-size;
+        display: block; min-height: 100vh; min-height: 100dvh; background: var(--bg); color: var(--text); container-type: inline-size;
         font-family: "Outfit", "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif; -webkit-font-smoothing: antialiased;
         color-scheme: dark;
       }
@@ -1949,6 +1949,39 @@ class DruckAssistantPanel extends HTMLElement {
       .slot select { width: 100%; }
       .empty, .error { color: var(--dim); font-size: 14px; padding: 14px 4px; }
       .error { color: var(--red); }
+
+      /* Phones and narrow panes: the tabs scroll instead of overflowing, cards and dialogs get tighter. */
+      .tabs { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+      .tabs::-webkit-scrollbar { display: none; }
+      .tabs button { flex: none; white-space: nowrap; }
+      .card { container: card / inline-size; }
+      @container (max-width: 560px) {
+        .wrap { padding: 10px 10px calc(20px + env(safe-area-inset-bottom)); }
+        header { margin-bottom: 12px; }
+        .tabs, header .printer-select { width: 100%; }
+        .tabs button { padding: 0 12px; font-size: 14px; }
+        .card { padding: 14px; border-radius: 22px; }
+        .dialog { padding: 16px; border-radius: 22px; max-height: 92vh; }
+        .overlay { padding: 8px; }
+        .bignum b { font-size: 60px; }
+        .bignum small { font-size: 22px; }
+        .setrow, .remind { flex-wrap: wrap; }
+        .mlegend { flex-wrap: wrap; }
+      }
+      /* A history row in a narrow card: the cost moves to a line of its own under the title. */
+      @container card (max-width: 520px) {
+        .hrow:not([style]) { grid-template-columns: auto auto minmax(0, 1fr); gap: 8px 12px; padding: 10px 12px; }
+        .hrow:not([style]) .cost { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; text-align: left; white-space: normal; }
+        .hrow:not([style]) .cost .icon-btn:first-of-type { margin-left: auto; }
+      }
+      /* Touch screens: bigger targets, and 16px inputs so that iOS does not zoom in on focus. */
+      @media (pointer: coarse) {
+        button { height: 44px; }
+        .tabs button { height: 40px; }
+        .icon-btn { width: 44px; height: 44px; }
+        input, select { height: 44px; font-size: 16px; }
+        .field input, .field select { font-size: 16px; }
+      }
     `));
 
     const printers = this._data?.printers || [];
@@ -1974,6 +2007,7 @@ class DruckAssistantPanel extends HTMLElement {
     const wrap = this._el("div", { class: "wrap" });
     root.append(wrap);
     wrap.append(header);
+    tabs.querySelector(".active")?.scrollIntoView({ inline: "center", block: "nearest" });
 
     const main = this._el("main");
     wrap.append(main);

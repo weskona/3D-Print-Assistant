@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Panel layout for phones and tablets: the tabs scroll instead of overflowing (the active one is kept in view), cards and dialogs use less padding on narrow screens, history rows move the cost to its own line in a narrow card, and touch screens get larger buttons and 16px inputs (no zoom on focus in iOS).
+
 ### Added
 
 - History: a print can be renamed (pencil button on the row), e.g. when the slicer gave it a wrong name.
