@@ -9,15 +9,18 @@ from homeassistant.components import frontend, panel_custom
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
-from homeassistant.core import HomeAssistant
+from homeassistant.core import Event, HomeAssistant, callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.event import async_track_time_interval
+from homeassistant.helpers.storage import Store
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.loader import async_get_integration
+from homeassistant.util import dt as dt_util
 
 from . import api
 from .catalog_store import CatalogManager
-from .const import DOMAIN, PANEL_COMPONENT, PANEL_URL_PATH, STATIC_URL
+from .const import DOMAIN, LOGGED_EVENTS, PANEL_COMPONENT, PANEL_URL_PATH, STATIC_URL
+from .events import EventLog
 from .filament import FilamentManager
 from .tracker import PrintTracker
 
@@ -33,7 +36,18 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     manager = FilamentManager(hass)
     await manager.async_load(catalog.catalog)
     catalog.on_update = lambda: manager.use_catalog(catalog.catalog)
-    hass.data[DOMAIN] = {"filament": manager, "catalog": catalog}
+    event_store = Store(hass, 1, f"{DOMAIN}.events")
+    events = EventLog((await event_store.async_load() or {}).get("entries"))
+    hass.data[DOMAIN] = {"filament": manager, "catalog": catalog, "events": events, "event_store": event_store}
+
+    @callback
+    def _log_event(event: Event) -> None:
+        kind = event.event_type.removeprefix(f"{DOMAIN}_")
+        events.add(kind, dict(event.data), dt_util.utcnow().isoformat())
+        event_store.async_delay_save(lambda: {"entries": events.entries}, 5)
+
+    for event_type in LOGGED_EVENTS:
+        hass.bus.async_listen(event_type, _log_event)
 
     async def _auto_update(now: datetime) -> None:
         """Once a week, when the setting asks for it."""

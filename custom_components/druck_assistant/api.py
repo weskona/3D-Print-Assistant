@@ -18,6 +18,7 @@ from .const import (
     WS_CATALOG,
     WS_CATALOG_UPDATE,
     WS_DATA,
+    WS_EVENTS_CLEAR,
     WS_IMPORT_AMS,
     WS_PROJECT_ASSIGN,
     WS_PROJECT_DELETE,
@@ -59,6 +60,7 @@ def async_register(hass: HomeAssistant) -> None:
         ws_record_rename,
         ws_backup,
         ws_restore,
+        ws_events_clear,
     ):
         websocket_api.async_register_command(hass, command)
 
@@ -81,6 +83,7 @@ def ws_get_data(
             "spools": [manager.store.spool_dict(s) for s in manager.store.spools.values()],
             "settings": _settings(manager.store, hass.data[DOMAIN]["catalog"]),
             "projects": manager.store.projects,
+            "events": hass.data[DOMAIN]["events"].recent(100),
             "calibration": _calibration(manager.store),
             "min_stock": {
                 material: minimum
@@ -416,6 +419,26 @@ def ws_record_rename(
     connection.send_error(msg["id"], "unknown_record", "unknown print")
 
 
+def _log(hass: HomeAssistant, kind: str, data: dict[str, Any]) -> None:
+    """Add an entry to the event log."""
+    domain_data = hass.data[DOMAIN]
+    domain_data["events"].add(kind, data, dt_util.utcnow().isoformat())
+    domain_data["event_store"].async_delay_save(lambda: {"entries": domain_data["events"].entries}, 5)
+
+
+@websocket_api.websocket_command({vol.Required("type"): WS_EVENTS_CLEAR})
+@websocket_api.require_admin
+@callback
+def ws_events_clear(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Empty the event log."""
+    domain_data = hass.data[DOMAIN]
+    domain_data["events"].clear()
+    domain_data["event_store"].async_delay_save(lambda: {"entries": []}, 1)
+    connection.send_result(msg["id"])
+
+
 async def _backup_of(hass: HomeAssistant) -> dict[str, Any]:
     """The current inventory and history of all printers as a backup."""
     version = (await async_get_integration(hass, DOMAIN)).version
@@ -464,6 +487,7 @@ async def ws_restore(
             tracker.restore_history(records[tracker.serial])
             restored += len(records[tracker.serial])
     skipped = sorted(set(records) - known)
+    _log(hass, "restored", {"spools": len(filament.get("spools", [])), "prints": restored})
     connection.send_result(
         msg["id"], {"spools": len(filament.get("spools", [])), "records": restored, "skipped_printers": skipped}
     )
