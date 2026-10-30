@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0-beta.6] - 2026-10-30
+
+### Fixed
+
+- The panel jumped back to the top a few seconds after scrolling down (since 0.10.0-beta.4): the refresh rebuilt the page and read its layout half way, which reset the scroll position. The position is now put back after a rebuild, and the active tab is centred once the page is complete.
+
 ## [0.10.0-beta.5] - 2026-10-30
 
 ### Changed

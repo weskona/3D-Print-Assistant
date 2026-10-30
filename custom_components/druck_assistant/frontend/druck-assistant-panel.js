@@ -1813,7 +1813,24 @@ class DruckAssistantPanel extends HTMLElement {
       sub ? this._el("div", { class: "sub" }, sub) : "");
   }
 
+  /** The element the panel is scrolled in (the page or an ancestor, also across shadow roots), if scrolled down. */
+  _scrolledParent() {
+    for (let n = this; n; n = n.parentNode || n.host) {
+      if (n instanceof Element && n.scrollTop > 0) return n;
+    }
+    const page = document.scrollingElement;
+    return page && page.scrollTop > 0 ? page : null;
+  }
+
+  /** Rebuilds the page. The rebuild empties it for a moment, so the scroll position is put back afterwards. */
   _render() {
+    const scroller = this._scrolledParent();
+    const top = scroller ? scroller.scrollTop : 0;
+    this._draw();
+    if (scroller && scroller.scrollTop !== top) scroller.scrollTop = top;
+  }
+
+  _draw() {
     const root = this.shadowRoot;
     // Start or stop the camera stream once this render has put the Overview (or another tab) in place.
     queueMicrotask(() => this._cameraSync());
@@ -2039,7 +2056,15 @@ class DruckAssistantPanel extends HTMLElement {
     const wrap = this._el("div", { class: "wrap" });
     root.append(wrap);
     wrap.append(header);
-    tabs.querySelector(".active")?.scrollIntoView({ inline: "center", block: "nearest" });
+    // Centre the active tab in the scrolling tab bar, once the whole page is in place (reading the layout
+    // earlier would collapse the half built page and reset the scroll position).
+    queueMicrotask(() => {
+      const active = tabs.querySelector(".active");
+      if (!active || tabs.scrollWidth <= tabs.clientWidth) return;
+      const box = tabs.getBoundingClientRect();
+      const at = active.getBoundingClientRect();
+      tabs.scrollLeft += at.left - box.left - (box.width - at.width) / 2;
+    });
 
     const main = this._el("main");
     wrap.append(main);
