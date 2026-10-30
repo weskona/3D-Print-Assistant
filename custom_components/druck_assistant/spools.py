@@ -36,7 +36,7 @@ def color_distance(a: str, b: str) -> float | None:
     ca, cb = _rgb(a), _rgb(b)
     if ca is None or cb is None:
         return None
-    return sum((x - y) ** 2 for x, y in zip(ca, cb)) ** 0.5
+    return sum((x - y) ** 2 for x, y in zip(ca, cb, strict=True)) ** 0.5
 
 
 def valid_rfid(value: Any) -> str:

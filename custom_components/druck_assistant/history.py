@@ -15,7 +15,6 @@ from .const import (
 )
 from .consumption import UsageTracker
 
-
 _MINUTES_PER_UNIT = {"s": 1 / 60, "min": 1.0, "h": 60.0, "d": 1440.0}
 
 
