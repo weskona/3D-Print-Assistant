@@ -503,6 +503,12 @@ class PrintTracker:
                     },
                 )
 
+    def restore_history(self, records: list[dict[str, Any]]) -> None:
+        """Replace the recorded prints by those of a backup (a print that is running right now goes on)."""
+        self.history.records = list(records)
+        self._store.async_delay_save(lambda: {"records": self.history.records}, 1)
+        async_dispatcher_send(self.hass, self.signal)
+
     def rename(self, started: str, name: str) -> dict[str, Any]:
         """Rename a recorded print."""
         record = self.history.rename(started, name)

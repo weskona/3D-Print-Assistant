@@ -154,6 +154,14 @@ const TRANSLATIONS = {
     cat_done: "Catalog updated: {products} products, {colors} colors.",
     cat_error: "Catalog not updated, the old one stays: {error}",
     cat_auto: "Update automatically once a week",
+    backup_title: "Backup and restore",
+    backup_hint: "The backup file holds the spools, slots, projects, settings and the print history. Restoring replaces all of it; the state before is kept aside in Home Assistant.",
+    backup_download: "Download backup",
+    restore_button: "Restore from file",
+    restore_confirm: "Restore the backup from {date}? It has {spools} spools and {prints} prints and replaces the current spools, projects, settings and history.",
+    restore_done: "Restored: {spools} spools, {prints} prints.",
+    restore_skipped: " Not restored (printer not set up here): {printers}.",
+    restore_invalid: "This file is not a backup of the 3D Print Assistant.",
     set_limits_title: "Thresholds",
     set_remind_g: "Suggest weighing from this many grams used (outside the AMS)",
     set_diff_points: "Warn when the AMS and the calculation differ by more than (points)",
@@ -363,6 +371,14 @@ const TRANSLATIONS = {
     cat_done: "Katalog aktualisiert: {products} Produkte, {colors} Farben.",
     cat_error: "Katalog nicht aktualisiert, der alte bleibt: {error}",
     cat_auto: "Einmal pro Woche automatisch aktualisieren",
+    backup_title: "Sicherung und Wiederherstellung",
+    backup_hint: "Die Sicherungsdatei enthält Spulen, Slots, Projekte, Einstellungen und die Druckhistorie. Beim Wiederherstellen wird alles ersetzt; der Stand davor bleibt in Home Assistant zur Seite gelegt.",
+    backup_download: "Sicherung herunterladen",
+    restore_button: "Aus Datei wiederherstellen",
+    restore_confirm: "Die Sicherung vom {date} wiederherstellen? Sie enthält {spools} Spulen und {prints} Drucke und ersetzt die aktuellen Spulen, Projekte, Einstellungen und die Historie.",
+    restore_done: "Wiederhergestellt: {spools} Spulen, {prints} Drucke.",
+    restore_skipped: " Nicht wiederhergestellt (Drucker hier nicht eingerichtet): {printers}.",
+    restore_invalid: "Diese Datei ist keine Sicherung des 3D Print Assistant.",
     set_limits_title: "Schwellen",
     set_remind_g: "Wiegen vorschlagen ab so vielen verbrauchten Gramm (außerhalb des AMS)",
     set_diff_points: "Warnen, wenn AMS und Rechnung mehr abweichen als (Punkte)",
@@ -1147,7 +1163,8 @@ class DruckAssistantPanel extends HTMLElement {
       catalogCard.append(btn, this._el("label", { class: "setrow" }, auto, this._el("span", {}, this._t("cat_auto"))));
     }
 
-    main.append(this._el("div", { class: "grid" }, this._el("div", { class: "col" }, tare, types), this._el("div", { class: "col" }, catalogCard, limits)));
+    main.append(this._el("div", { class: "grid" }, this._el("div", { class: "col" }, tare, types),
+      this._el("div", { class: "col" }, catalogCard, limits, admin ? this._renderBackupCard() : "")));
     if (admin) {
       main.append(this._el("button", { class: "primary", onclick: () => {
         const draft = this._draft;
@@ -1160,6 +1177,40 @@ class DruckAssistantPanel extends HTMLElement {
         }, () => this._t("saved"));
       } }, this._t("save")));
     }
+  }
+
+  /** Settings tab: download a backup of the inventory and the history, or restore one. */
+  _renderBackupCard() {
+    const lang = this._hass.locale?.language;
+    const fail = (message) => { this._notice = message; this._noticeOk = false; this._render(); };
+    const file = this._el("input", { type: "file", accept: ".json,application/json", style: "display:none" });
+    file.addEventListener("change", async () => {
+      const chosen = file.files[0];
+      file.value = "";
+      if (!chosen) return;
+      let backup;
+      try { backup = JSON.parse(await chosen.text()); } catch (e) { return fail(this._t("restore_invalid")); }
+      if (!backup || backup.format !== "druck_assistant_backup") return fail(this._t("restore_invalid"));
+      const prints = Object.values(backup.printers || {}).reduce((n, p) => n + (p.records?.length || 0), 0);
+      const date = backup.created ? new Date(backup.created).toLocaleString(lang) : "?";
+      if (!window.confirm(this._t("restore_confirm", { date, spools: backup.filament?.spools?.length ?? 0, prints }))) return;
+      this._draft = null;
+      this._call({ type: "druck_assistant/restore", backup }, (res) => this._t("restore_done", { spools: res.spools, prints: res.records })
+        + (res.skipped_printers.length ? this._t("restore_skipped", { printers: res.skipped_printers.join(", ") }) : ""));
+    });
+    const download = this._el("button", { class: "primary", onclick: async () => {
+      try {
+        const data = await this._hass.connection.sendMessagePromise({ type: "druck_assistant/backup" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+        link.download = `druck-assistant-backup-${new Date().toISOString().slice(0, 10)}.json`;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(link.href), 10000);
+      } catch (e) { fail(e && e.message ? e.message : String(e)); }
+    } }, this._t("backup_download"));
+    return this._el("div", { class: "card" }, this._el("h2", {}, this._t("backup_title")),
+      this._el("div", { class: "sub notice" }, this._t("backup_hint")),
+      this._el("div", { class: "toolbar" }, download, this._el("button", { onclick: () => file.click() }, this._t("restore_button")), file));
   }
 
   /** Spools outside the AMS that are worth weighing: an estimated amount, or a lot used since the last weighing. */

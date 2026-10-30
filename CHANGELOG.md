@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Settings tab: download a backup file with the spools, slots, projects, settings and the print history, and restore it from a file. A restore replaces all of that (history per printer serial); the state before is kept aside in the Home Assistant storage (`druck_assistant.before_restore`).
+
 ## [0.10.0-beta.6] - 2026-10-30
 
 ### Fixed

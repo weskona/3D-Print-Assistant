@@ -7,9 +7,14 @@ from typing import Any
 import voluptuous as vol
 from homeassistant.components import websocket_api
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.storage import Store
+from homeassistant.loader import async_get_integration
+from homeassistant.util import dt as dt_util
 
+from .backup import make_backup, parse_backup
 from .const import (
     DOMAIN,
+    WS_BACKUP,
     WS_CATALOG,
     WS_CATALOG_UPDATE,
     WS_DATA,
@@ -19,6 +24,7 @@ from .const import (
     WS_PROJECT_SAVE,
     WS_RECORD_REBOOK,
     WS_RECORD_RENAME,
+    WS_RESTORE,
     WS_SETTINGS,
     WS_SPOOL_ARCHIVE,
     WS_SPOOL_ASSIGN,
@@ -28,7 +34,7 @@ from .const import (
     WS_SPOOL_WEIGH,
     WS_USAGE_FACTOR,
 )
-from .spools import SpoolError
+from .spools import SpoolError, SpoolStore
 
 
 @callback
@@ -51,6 +57,8 @@ def async_register(hass: HomeAssistant) -> None:
         ws_spool_import,
         ws_record_rebook,
         ws_record_rename,
+        ws_backup,
+        ws_restore,
     ):
         websocket_api.async_register_command(hass, command)
 
@@ -406,6 +414,59 @@ def ws_record_rename(
         connection.send_result(msg["id"], {"record": tracker.rename(msg["started"], msg["name"])})
         return
     connection.send_error(msg["id"], "unknown_record", "unknown print")
+
+
+async def _backup_of(hass: HomeAssistant) -> dict[str, Any]:
+    """The current inventory and history of all printers as a backup."""
+    version = (await async_get_integration(hass, DOMAIN)).version
+    records = {
+        entry.runtime_data.serial: entry.runtime_data.history.records
+        for entry in hass.config_entries.async_loaded_entries(DOMAIN)
+    }
+    return make_backup(
+        hass.data[DOMAIN]["filament"].store.to_dict(), records, str(version), dt_util.utcnow().isoformat()
+    )
+
+
+@websocket_api.websocket_command({vol.Required("type"): WS_BACKUP})
+@websocket_api.require_admin
+@websocket_api.async_response
+async def ws_backup(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Return a backup file: the spool inventory, projects, settings and the print history."""
+    connection.send_result(msg["id"], await _backup_of(hass))
+
+
+@websocket_api.websocket_command({vol.Required("type"): WS_RESTORE, vol.Required("backup"): dict})
+@websocket_api.require_admin
+@websocket_api.async_response
+async def ws_restore(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Replace the inventory and the history by those of a backup (the previous state is kept aside)."""
+    try:
+        filament, records = parse_backup(msg["backup"])
+        # Build the inventory once beforehand so that a damaged backup fails before anything is replaced.
+        SpoolStore(**filament)
+    except (ValueError, TypeError, KeyError) as err:
+        connection.send_error(msg["id"], "invalid_backup", str(err))
+        return
+    await Store(hass, 1, f"{DOMAIN}.before_restore").async_save(await _backup_of(hass))
+    manager = hass.data[DOMAIN]["filament"]
+    manager.restore(filament)
+    restored = 0
+    known = set()
+    for entry in hass.config_entries.async_loaded_entries(DOMAIN):
+        tracker = entry.runtime_data
+        known.add(tracker.serial)
+        if tracker.serial in records:
+            tracker.restore_history(records[tracker.serial])
+            restored += len(records[tracker.serial])
+    skipped = sorted(set(records) - known)
+    connection.send_result(
+        msg["id"], {"spools": len(filament.get("spools", [])), "records": restored, "skipped_printers": skipped}
+    )
 
 
 @websocket_api.websocket_command({vol.Required("type"): WS_CATALOG})
