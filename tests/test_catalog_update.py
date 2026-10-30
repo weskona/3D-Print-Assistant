@@ -1,7 +1,6 @@
 """Catalog update: Bambu Studio colors and SpoolmanDB files become catalog products."""
 
 import importlib.util
-import json
 import sys
 from pathlib import Path
 

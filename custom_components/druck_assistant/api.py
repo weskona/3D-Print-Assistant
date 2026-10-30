@@ -5,7 +5,6 @@ from __future__ import annotations
 from typing import Any
 
 import voluptuous as vol
-
 from homeassistant.components import websocket_api
 from homeassistant.core import HomeAssistant, callback
 
@@ -13,20 +12,20 @@ from .const import (
     DOMAIN,
     WS_CATALOG,
     WS_CATALOG_UPDATE,
+    WS_DATA,
+    WS_IMPORT_AMS,
     WS_PROJECT_ASSIGN,
     WS_PROJECT_DELETE,
     WS_PROJECT_SAVE,
-    WS_DATA,
-    WS_IMPORT_AMS,
-    WS_SPOOL_ARCHIVE,
     WS_RECORD_REBOOK,
     WS_RECORD_RENAME,
+    WS_SETTINGS,
+    WS_SPOOL_ARCHIVE,
     WS_SPOOL_ASSIGN,
     WS_SPOOL_DELETE,
     WS_SPOOL_IMPORT,
     WS_SPOOL_SAVE,
     WS_SPOOL_WEIGH,
-    WS_SETTINGS,
     WS_USAGE_FACTOR,
 )
 from .spools import SpoolError

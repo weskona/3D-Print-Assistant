@@ -245,3 +245,14 @@ def test_a_session_that_began_before_the_progress_was_known_gets_the_printer_sta
 
 async def _noop():
     return None
+
+
+def test_tray_data_does_not_override_the_material_of_the_assigned_spool():
+    t, _ = make_tracker({})
+    session = SimpleNamespace(spool_id="s1", material="PLA+", color="#f1f0ed")
+    t.history = SimpleNamespace(session=session)
+    t._on_tray({"type": "Empty", "color": "#00000000"})
+    assert (session.material, session.color) == ("PLA+", "#f1f0ed")
+    session.spool_id = None
+    t._on_tray({"type": "PETG", "color": "#112233FF"})
+    assert (session.material, session.color) == ("PETG", "#112233FF")

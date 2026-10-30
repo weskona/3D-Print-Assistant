@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - History: a print can be renamed (pencil button on the row), e.g. when the slicer gave it a wrong name.
 
+### Fixed
+
+- A print on a spool the printer cannot read (third-party filament) is stored with the material and colour of the assigned spool instead of "Empty" and a transparent colour.
+
 ## [0.10.0-beta.3] - 2026-10-29
 
 ### Added

@@ -16,8 +16,8 @@ for name in ("const", "catalog", "consumption", "history", "spools"):
     sys.modules[f"druck_assistant.{name}"] = mod
     spec.loader.exec_module(mod)
 
-from druck_assistant.consumption import SlotInfo, shortages  # noqa: E402
 from druck_assistant.catalog import color_index, load_catalog  # noqa: E402
+from druck_assistant.consumption import SlotInfo, shortages  # noqa: E402
 from druck_assistant.history import PrintHistory  # noqa: E402
 from druck_assistant.spools import SpoolError, SpoolStore, default_tare  # noqa: E402
 

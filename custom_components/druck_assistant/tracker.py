@@ -655,6 +655,9 @@ class PrintTracker:
         session = self.history.session
         if session is None or not attrs:
             return
+        if session.spool_id is not None:
+            # The assigned spool knows its filament; a third-party spool reads "Empty" in the AMS.
+            return
         session.material = attrs.get("type") or session.material
         session.color = attrs.get("color") or session.color
 
