@@ -195,6 +195,19 @@ def test_import_adopts_manual_spool_and_skips_empty_slots():
     assert edited.rfid == TRAY["tray_uuid"]
 
 
+def test_import_does_not_adopt_foreign_spool():
+    m = _spools_module()
+    store = m.SpoolStore()
+    other = store.save_spool({"name": "Anycubic PLA+", "brand": "Anycubic", "material": "PLA+"})
+    store.assign("p:t1", other.id)
+    action, spool = store.import_slot("p:t1", TRAY, include_untagged=False)
+    assert action == "created" and spool.id != other.id and spool.rfid == TRAY["tray_uuid"]
+    assert other.rfid == "" and store.assignments == {"p:t1": spool.id}
+    petg = store.save_spool({"name": "Mine", "material": "PETG"})
+    store.assign("p:t2", petg.id)
+    assert store.import_slot("p:t2", {**TRAY, "tray_uuid": "B" * 32}, include_untagged=False)[0] == "created"
+
+
 def test_import_unknown_remaining_uses_full_spool():
     m = _spools_module()
     store = m.SpoolStore()

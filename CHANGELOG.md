@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Event log tab: the last 200 things the assistant noticed (print started, finished or failed, a spool almost empty or used up, a spool taken over from the AMS, not enough filament for a print, low stock, a restored backup), newest first, with a button to clear it. The log is kept across restarts.
 - Settings tab: download a backup file with the spools, slots, projects, settings and the print history, and restore it from a file. A restore replaces all of that (history per printer serial); the state before is kept aside in the Home Assistant storage (`druck_assistant.before_restore`).
 
+### Fixed
+
+- A Bambu Lab spool with an RFID tag put into a slot that held a third-party spool (e.g. Anycubic) was taken for that spool: the tag was written onto it and the slot kept showing it. A hand-entered spool is now only tagged when it is a Bambu Lab spool of the same material; otherwise the Bambu spool is created (or found in the stock) and takes the slot.
+
 ## [0.10.0-beta.6] - 2026-10-30
 
 ### Fixed

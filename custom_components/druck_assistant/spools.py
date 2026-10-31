@@ -485,7 +485,7 @@ class SpoolStore:
                     return "skipped", known
                 self.assign(slot, known.id)
                 return "assigned", known
-            if current is not None and not current.rfid:
+            if current is not None and not current.rfid and self._fits_tray(current, material):
                 # The user already put a spool in this slot by hand: tag it.
                 current.rfid = rfid
                 return "adopted", current
@@ -502,6 +502,11 @@ class SpoolStore:
         spool = self.save_spool(spool_data_from_tray(attrs, rfid, self.colors))
         self.assign(slot, spool.id)
         return "created", spool
+
+    @staticmethod
+    def _fits_tray(spool: Spool, material: str) -> bool:
+        """Whether a hand-entered spool can be the Bambu Lab spool the AMS reads (not a third-party one)."""
+        return spool.brand in ("", "Bambu Lab") and spool.material.casefold() == material.casefold()
 
     @staticmethod
     def _sync_remaining(spool: Spool, attrs: dict[str, Any]) -> bool:
