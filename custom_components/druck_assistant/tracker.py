@@ -610,6 +610,16 @@ class PrintTracker:
         if session is None or not total_g:
             return []
         end = self._slot_snapshot()
+        for key, start in session.start_slots.items():
+            # A spool reassigned to a slot during the print (a correction) is the one that is charged.
+            spool = self.filament.store.spool_for_slot(key)
+            if spool is not None and spool.id != start.get("spool_id"):
+                start.update(
+                    spool_id=spool.id,
+                    initial_g=spool.initial_weight_g,
+                    capacity_g=spool.remaining_g,
+                    material=spool.material,
+                )
         slots = {
             key: SlotInfo(
                 key,

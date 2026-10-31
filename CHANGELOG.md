@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - A Bambu Lab spool with an RFID tag put into a slot that held a third-party spool (e.g. Anycubic) was taken for that spool: the tag was written onto it and the slot kept showing it. A hand-entered spool is now only tagged when it is a Bambu Lab spool of the same material; otherwise the Bambu spool is created (or found in the stock) and takes the slot.
+- A spool that is reassigned to a slot while a print is running is now the one charged for that slot; before, the spool assigned at the start of the print kept the filament.
 
 ## [0.10.0-beta.6] - 2026-10-30
 
