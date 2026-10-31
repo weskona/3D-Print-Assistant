@@ -479,3 +479,38 @@ def test_the_ams_percent_only_flags_a_new_spool_as_estimated():
     # a full reading changes nothing
     store.import_slot("p:t2", {**first, "tray_uuid": "B" * 32}, include_untagged=False)
     assert store.import_slot("p:t2", {**TRAY, "tray_uuid": "B" * 32, "remain": 100}, include_untagged=False)[0] == "skipped"
+
+
+def test_running_session_survives_a_restart():
+    from druck_assistant.consumption import Segment
+    from druck_assistant.history import PrintSession
+
+    session = PrintSession(started=T0, name="two colors", material="PLA", slot_key="a", spool_id="s1")
+    session.usage.note("a", 0.0)
+    session.usage.note("b", 40.0)
+    session.start_slots = {"a": {"spool_id": "s1", "remain": 50}}
+    session.progress, session.plan, session.warned = 55.0, {"a": 10.0}, True
+    session.add_power(T0, 120.0)
+    data = __import__("json").loads(__import__("json").dumps(session.to_dict()))
+    back = PrintSession.from_dict(data)
+    assert back is not None and back.started == T0 and back.name == "two colors"
+    assert back.usage.segments == [Segment("a", 0.0), Segment("b", 40.0)]
+    assert back.start_slots == session.start_slots and back.plan == {"a": 10.0} and back.warned
+    assert back.power_w == 120.0 and back.power_ts == T0
+    assert PrintSession.from_dict({"name": "no start"}) is None
+
+
+def test_set_usages_splits_weight_and_cost():
+    h = PrintHistory()
+    h.update_status(None, "running", T0, "p")
+    h.finish("finish", T0 + timedelta(hours=1), 30.0, None, 20.0, "p", None, 0.0, None, 30.0)
+    started = h.records[0]["started"]
+    parts = [
+        {"spool_id": "a", "spool_name": "A", "weight_g": 10.0, "price_per_kg": 10.0, "material": "PLA", "color": "#111111"},
+        {"spool_id": "b", "spool_name": "B", "weight_g": 20.0, "price_per_kg": 20.0, "material": "PLA", "color": None},
+    ]
+    record = h.set_usages(started, parts)
+    assert record["weight_g"] == 30.0 and record["filament_cost"] == 0.5 and record["cost"] == 0.5
+    assert [u["spool_id"] for u in record["usages"]] == ["a", "b"] and record["spool_id"] == "a"
+    record = h.set_usages(started, parts[1:])  # a single spool again: no split list
+    assert record["usages"] == [] and record["spool_id"] == "b" and record["weight_g"] == 20.0

@@ -129,6 +129,56 @@ class PrintSession:
     # The printer's start time has been compared with the session start (needs a progress reading).
     start_checked: bool = False
 
+    def to_dict(self) -> dict[str, Any]:
+        """Plain values, to keep a running print across a restart of Home Assistant."""
+        return {
+            "started": self.started.isoformat(),
+            "name": self.name,
+            "material": self.material,
+            "color": self.color,
+            "energy_start_kwh": self.energy_start_kwh,
+            "power_w": self.power_w,
+            "power_ts": self.power_ts.isoformat() if self.power_ts else None,
+            "energy_acc_kwh": self.energy_acc_kwh,
+            "slot_key": self.slot_key,
+            "spool_id": self.spool_id,
+            "spool_name": self.spool_name,
+            "usage": self.usage.to_dict(),
+            "start_slots": self.start_slots,
+            "progress": self.progress,
+            "plan": self.plan,
+            "warned": self.warned,
+            "start_checked": self.start_checked,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> PrintSession | None:
+        """The session saved by to_dict; None if the data is not usable."""
+        try:
+            started = datetime.fromisoformat(data["started"])
+            power_ts = datetime.fromisoformat(data["power_ts"]) if data.get("power_ts") else None
+            return cls(
+                started=started,
+                name=data.get("name"),
+                material=data.get("material"),
+                color=data.get("color"),
+                energy_start_kwh=data.get("energy_start_kwh"),
+                power_w=data.get("power_w"),
+                power_ts=power_ts,
+                energy_acc_kwh=float(data.get("energy_acc_kwh") or 0.0),
+                slot_key=data.get("slot_key"),
+                spool_id=data.get("spool_id"),
+                spool_name=data.get("spool_name"),
+                usage=UsageTracker.from_dict(data.get("usage")),
+                start_slots=dict(data.get("start_slots") or {}),
+                progress=data.get("progress"),
+                plan=dict(data.get("plan") or {}),
+                warned=bool(data.get("warned")),
+                start_checked=bool(data.get("start_checked")),
+            )
+        except (KeyError, TypeError, ValueError, AttributeError):
+            return None
+
     def add_power(self, now: datetime, watts: float | None) -> None:
         """Integrate the previous power reading up to now and store the new one."""
         if self.power_w is not None and self.power_ts is not None:
@@ -302,6 +352,38 @@ class PrintHistory:
         if color:
             record["color"] = color
         return previous, grams
+
+    def set_usages(self, started: str, usages: list[dict[str, Any]]) -> dict[str, Any]:
+        """Replace the filament split of a recorded print.
+
+        usages: [{"spool_id", "spool_name", "weight_g", "price_per_kg", "material", "color"}]. The
+        weight and the costs of the print follow the split, as when the print was recorded.
+        """
+        record = self.find(started)
+        if record is None:
+            raise KeyError(started)
+        if not usages:
+            raise ValueError("no spool given")
+        usages = [dict(u) for u in usages]
+        for usage in usages:
+            usage["cost"] = calculate_cost(usage["weight_g"], usage["price_per_kg"])
+        weight = round(sum(u["weight_g"] for u in usages), 1)
+        filament_cost = round(sum(u["cost"] for u in usages), 2)
+        first = usages[0]
+        record.update(
+            weight_g=weight,
+            filament_cost=filament_cost,
+            cost=round(filament_cost + float(record.get("energy_cost") or 0), 2),
+            price_per_kg=round(filament_cost / weight * 1000, 2) if weight else first["price_per_kg"],
+            spool_id=first["spool_id"],
+            spool_name=first["spool_name"],
+            usages=usages if len(usages) > 1 else [],
+        )
+        if first.get("material"):
+            record["material"] = first["material"]
+        if first.get("color"):
+            record["color"] = first["color"]
+        return record
 
     @property
     def total_weight_g(self) -> float:

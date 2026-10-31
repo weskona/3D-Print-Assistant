@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0-beta.8] - 2026-10-31
+
+### Added
+
+- The spools of a recorded print can be edited: the "Spools of this print" dialog (formerly "Change spool") takes several spools with the grams from each, also for multi color prints. The stock of the spools is adjusted by default; untick that when the spools were weighed after the print.
+
+### Fixed
+
+- A restart of Home Assistant in the middle of a print lost the slot history, the start state of the slots and the plan of the print (a multi color print was then charged to the last slot only). The running print is now saved and picked up again after the restart, and a restart no longer starts a second session or a second "print started" event.
+
 ## [0.10.0-beta.7] - 2026-10-31
 
 ### Added
