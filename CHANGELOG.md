@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0-beta.8] - 2026-10-31
+
 ### Added
 
 - The spools of a recorded print can be edited: the "Spools of this print" dialog (formerly "Change spool") takes several spools with the grams from each, also for multi color prints. The stock of the spools is adjusted by default; untick that when the spools were weighed after the print.
