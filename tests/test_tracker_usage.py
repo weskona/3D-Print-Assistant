@@ -59,6 +59,9 @@ def make_tracker(states):
     t.slot_entities = lambda: {A: "sensor.ams_1_slot_1", B: "sensor.ams_1_slot_2"}
     t.price_for_material = lambda material: 12.0
     t._plan_attrs = {}
+    t.signal = "update"
+    t._save = lambda *a: None
+    t._saved_session = None
     t._state = lambda key: SimpleNamespace(attributes=t._plan_attrs) if key == "print_weight" else None
     return t, store
 
@@ -272,3 +275,53 @@ def test_tray_data_does_not_override_the_material_of_the_assigned_spool():
     session.spool_id = None
     t._on_tray({"type": "PETG", "color": "#112233FF"})
     assert (session.material, session.color) == ("PETG", "#112233FF")
+
+
+def test_changing_the_usages_moves_the_stock_only_when_asked():
+    t, store = make_tracker({})
+    t.price_for_material = lambda material: 12.0
+    t._check_spool = lambda spool: None
+    t._check_stock = lambda: None
+    one = store.save_spool({"name": "One", "material": "PLA", "remaining_g": 500, "price_per_kg": 10})
+    two = store.save_spool({"name": "Two", "material": "PLA", "remaining_g": 500, "price_per_kg": 20})
+    t.history = sys.modules["druck_assistant.history"].PrintHistory()
+    from datetime import datetime, timezone
+    now = datetime(2026, 1, 1, 12, tzinfo=timezone.utc)
+    t.history.update_status(None, "running", now, "p")
+    t.history.session.spool_id, t.history.session.spool_name = two.id, two.name
+    t.history.finish("finish", now, 30.0, None, 20.0, "p", None, 0.0, None, 30.0)
+    store.consume(two.id, 30.0)  # as when the print ended
+    started = t.history.records[0]["started"]
+    assert two.remaining_g == 470.0
+
+    record = t.set_usages(started, [(one.id, 10.0), (two.id, 20.0)], adjust_stock=True)
+    assert (one.remaining_g, two.remaining_g) == (490.0, 480.0)
+    assert record["weight_g"] == 30.0 and len(record["usages"]) == 2
+
+    t.set_usages(started, [(one.id, 25.0), (two.id, 5.0)], adjust_stock=False)  # weighed after the print
+    assert (one.remaining_g, two.remaining_g) == (490.0, 480.0)
+    assert [u["weight_g"] for u in t.history.find(started)["usages"]] == [25.0, 5.0]
+
+
+def test_saved_print_is_resumed_after_a_restart():
+    from datetime import datetime, timedelta, timezone
+
+    now = datetime(2026, 1, 1, 12, tzinfo=timezone.utc)
+    t, _ = make_tracker({})
+    hist = sys.modules["druck_assistant.history"]
+    t.history = hist.PrintHistory()
+    t._save = lambda *a: None
+    started = now - timedelta(minutes=40)
+    values = {"start_time": started.isoformat()}
+    t._value = lambda key: values.get(key)
+    saved = hist.PrintSession(started=started, name="lid")
+    t._saved_session = saved
+    assert t._resume_saved(now) is True and t.history.session is saved and t._saved_session is None
+
+    t.history.session = None
+    t._saved_session = hist.PrintSession(started=started - timedelta(hours=5))  # the printer is on another print
+    assert t._resume_saved(now) is False and t.history.session is None
+
+    values.clear()  # the start time is not known yet: trust the saved print
+    t._saved_session = saved
+    assert t._resume_saved(now) is True

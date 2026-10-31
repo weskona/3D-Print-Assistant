@@ -25,6 +25,7 @@ from .const import (
     WS_PROJECT_SAVE,
     WS_RECORD_REBOOK,
     WS_RECORD_RENAME,
+    WS_RECORD_USAGES,
     WS_RESTORE,
     WS_SETTINGS,
     WS_SPOOL_ARCHIVE,
@@ -58,6 +59,7 @@ def async_register(hass: HomeAssistant) -> None:
         ws_spool_import,
         ws_record_rebook,
         ws_record_rename,
+        ws_record_usages,
         ws_backup,
         ws_restore,
         ws_events_clear,
@@ -415,6 +417,40 @@ def ws_record_rename(
         if tracker.history.find(msg["started"]) is None:
             continue
         connection.send_result(msg["id"], {"record": tracker.rename(msg["started"], msg["name"])})
+        return
+    connection.send_error(msg["id"], "unknown_record", "unknown print")
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): WS_RECORD_USAGES,
+        vol.Required("started"): str,
+        vol.Required("parts"): vol.All(
+            [{vol.Required("spool_id"): str, vol.Required("weight_g"): vol.All(vol.Coerce(float), vol.Range(min=0, max=100000))}],
+            vol.Length(min=1, max=20),
+        ),
+        vol.Optional("adjust_stock", default=True): bool,
+    }
+)
+@websocket_api.require_admin
+@callback
+def ws_record_usages(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Change which spools a recorded print took its filament from (and how much from each)."""
+    for entry in hass.config_entries.async_loaded_entries(DOMAIN):
+        tracker = entry.runtime_data
+        if tracker.history.find(msg["started"]) is None:
+            continue
+        parts = [(part["spool_id"], part["weight_g"]) for part in msg["parts"]]
+        try:
+            record = tracker.set_usages(msg["started"], parts, msg["adjust_stock"])
+        except KeyError:
+            connection.send_error(msg["id"], "unknown_spool", "unknown spool")
+        except ValueError as err:
+            connection.send_error(msg["id"], "not_possible", str(err))
+        else:
+            connection.send_result(msg["id"], {"record": record})
         return
     connection.send_error(msg["id"], "unknown_record", "unknown print")
 

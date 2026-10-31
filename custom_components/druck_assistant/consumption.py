@@ -203,3 +203,16 @@ class UsageTracker:
         if self.segments and self.segments[-1].slot == slot:
             return
         self.segments.append(Segment(slot, float(progress or 0.0)))
+
+    def to_dict(self) -> list[dict[str, Any]]:
+        return [{"slot": seg.slot, "start": seg.start} for seg in self.segments]
+
+    @classmethod
+    def from_dict(cls, data: Any) -> UsageTracker:
+        segments = []
+        for item in data if isinstance(data, list) else []:
+            try:
+                segments.append(Segment(str(item["slot"]), float(item["start"])))
+            except (KeyError, TypeError, ValueError):
+                continue
+        return cls(segments)

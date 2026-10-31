@@ -45,7 +45,7 @@ from .const import (
     STORAGE_VERSION,
 )
 from .consumption import Segment, SlotInfo, measured_grams, shortages, split_usage
-from .history import PrintHistory, parse_prices, price_for, to_minutes
+from .history import PrintHistory, PrintSession, parse_prices, price_for, to_minutes
 from .spools import valid_rfid
 
 UNAVAILABLE = ("unknown", "unavailable", None)
@@ -70,6 +70,8 @@ class PrintTracker:
         )
         self._low_notified: set[str] = set()
         self.filament = hass.data[DOMAIN]["filament"]
+        # The print that was running when Home Assistant stopped, until it is picked up again.
+        self._saved_session: PrintSession | None = None
 
     @property
     def price_per_kg(self) -> float:
@@ -359,10 +361,36 @@ class PrintTracker:
             return None
         return to_minutes(self._float(key), state.attributes.get("unit_of_measurement"))
 
+    def _data(self) -> dict[str, Any]:
+        session = self.history.session
+        return {"records": self.history.records, "session": session.to_dict() if session else None}
+
+    def _save(self, delay: float = 1) -> None:
+        """Save the records and the running print (so that a restart in the middle of a print loses nothing)."""
+        self._store.async_delay_save(self._data, delay)
+
+    def _resume_saved(self, now: datetime) -> bool:
+        """Take up the print that was running before the restart, if the printer is still on it.
+
+        The printer's start time tells whether it is the same print (None: not known yet, so
+        the saved print is taken on trust).
+        """
+        saved, self._saved_session = self._saved_session, None
+        if saved is None or self.history.session is not None:
+            return False
+        started = self._printer_start(now)
+        if started is not None and abs((saved.started - started).total_seconds()) > 300:
+            return False
+        self.history.session = saved
+        self._save()
+        return True
+
     async def async_start(self) -> None:
         data = await self._store.async_load()
         if data:
             self.history = PrintHistory(data.get("records"))
+            if isinstance(data.get("session"), dict):
+                self._saved_session = PrintSession.from_dict(data["session"])
         watched = [
             eid
             for eid in (
@@ -381,8 +409,13 @@ class PrintTracker:
         def _later(_now: datetime) -> None:
             self._ensure_session()
 
+        @callback
+        def _drop_saved(_now: datetime) -> None:
+            self._saved_session = None  # the printer is not on that print any more
+
         self.entry.async_on_unload(async_call_later(self.hass, 30, _later))
         self.entry.async_on_unload(async_call_later(self.hass, 120, _later))
+        self.entry.async_on_unload(async_call_later(self.hass, 125, _drop_saved))
         if self.entry.options.get(CONF_AUTO_IMPORT, True):
             slot_ids = list(self.slot_entities().values())
             if slot_ids:
@@ -470,6 +503,7 @@ class PrintTracker:
         if not found:
             return
         session.warned = True
+        self._save()
         for item in found:
             self.hass.bus.async_fire(
                 EVENT_SPOOL_INSUFFICIENT,
@@ -506,15 +540,63 @@ class PrintTracker:
     def restore_history(self, records: list[dict[str, Any]]) -> None:
         """Replace the recorded prints by those of a backup (a print that is running right now goes on)."""
         self.history.records = list(records)
-        self._store.async_delay_save(lambda: {"records": self.history.records}, 1)
+        self._save()
         async_dispatcher_send(self.hass, self.signal)
 
     def rename(self, started: str, name: str) -> dict[str, Any]:
         """Rename a recorded print."""
         record = self.history.rename(started, name)
-        self._store.async_delay_save(lambda: {"records": self.history.records}, 1)
+        self._save()
         async_dispatcher_send(self.hass, self.signal)
         return record
+
+    def set_usages(self, started: str, parts: list[tuple[str, float]], adjust_stock: bool) -> dict[str, Any]:
+        """Change how much filament of a recorded print came from which spool.
+
+        parts: (spool id, grams). With adjust_stock the old split is given back to the spools and
+        the new one is taken from them; without it the stock stays as it is (the spools were weighed
+        after the print).
+        """
+        store = self.filament.store
+        record = self.history.find(started)
+        if record is None:
+            raise KeyError(started)
+        usages = []
+        for spool_id, grams in parts:
+            spool = store.spools.get(spool_id)
+            if spool is None:
+                raise KeyError(spool_id)
+            if grams < 0:
+                raise ValueError("negative weight")
+            usages.append(
+                {
+                    "slot": None,
+                    "spool_id": spool.id,
+                    "spool_name": spool.name,
+                    "weight_g": round(grams, 1),
+                    "price_per_kg": spool.price_per_kg
+                    if spool.price_per_kg is not None
+                    else self.price_for_material(spool.material),
+                    "material": spool.material,
+                    "color": spool.color,
+                }
+            )
+        old = record.get("usages") or (
+            [{"spool_id": record["spool_id"], "weight_g": record.get("weight_g")}] if record.get("spool_id") else []
+        )
+        self.history.set_usages(started, usages)
+        if adjust_stock:
+            for item in old:
+                store.restore(item["spool_id"], item["weight_g"])
+            for item in usages:
+                used = store.consume(item["spool_id"], item["weight_g"])
+                if used is not None:
+                    self._check_spool(used)
+            self._check_stock()
+            self.filament.changed()
+        self._save()
+        async_dispatcher_send(self.hass, self.signal)
+        return self.history.find(started) or {}
 
     def rebook(self, started: str, spool_id: str | None) -> dict[str, Any]:
         """Charge a recorded print to another spool and move the stock accordingly."""
@@ -541,7 +623,7 @@ class PrintTracker:
                 store.consume(spool.id, grams)
                 self._check_spool(spool)
             self._check_stock()
-        self._store.async_delay_save(lambda: {"records": self.history.records}, 1)
+        self._save()
         self.filament.changed()
         async_dispatcher_send(self.hass, self.signal)
         return self.history.find(started) or {}
@@ -553,6 +635,7 @@ class PrintTracker:
         if session is None or progress is None:
             return
         session.progress = max(session.progress or 0.0, progress)
+        self._save(10)
         if not session.plan:
             session.plan = self._plan_by_slot()
             if session.plan:
@@ -562,7 +645,10 @@ class PrintTracker:
         """Record which slot is feeding the print, to split the filament over several spools."""
         session = self.history.session
         if session is not None:
+            before = len(session.usage.segments)
             session.usage.note(self.active_slot_key(), session.progress)
+            if len(session.usage.segments) != before:
+                self._save()
 
     def _slot_snapshot(self) -> dict[str, dict[str, Any]]:
         """Per slot: the assigned spool and the remaining percent the AMS reports."""
@@ -731,6 +817,7 @@ class PrintTracker:
         self._warn_shortage()
         session.energy_start_kwh = self._external_float(CONF_ENERGY_ENTITY)
         session.add_power(now, self._external_float(CONF_POWER_ENTITY))
+        self._save()
 
     async def _backfill_energy(self, session: Any, started: datetime) -> None:
         """Take the energy meter reading at the start of the print from the recorder."""
@@ -783,6 +870,7 @@ class PrintTracker:
             session.start_slots = self._slot_snapshot()
         if not session.usage.segments:
             session.usage.note(slot, self._float("print_progress") or 0.0)
+        self._save()
 
     @callback
     def _ensure_session(self) -> None:
@@ -799,6 +887,8 @@ class PrintTracker:
         if self._value("print_status") not in ("running", "pause"):
             return
         now = dt_util.utcnow()
+        if self._resume_saved(now):
+            return
         outcome = self.history.update_status(None, "running", now, self._value("subtask_name"))
         if outcome == "started":
             self._begin_session(now, self._float("print_progress") or 0.0)
@@ -807,6 +897,13 @@ class PrintTracker:
     def _on_status(self, old: str | None, new: str) -> None:
         now = dt_util.utcnow()
         name = self._value("subtask_name")
+        if new in ("running", "pause") and old in (None, "unavailable", "unknown"):
+            # The printer came back (Home Assistant restarted): not a new print.
+            if self._resume_saved(now) or self.history.session is not None:
+                async_dispatcher_send(self.hass, self.signal)
+                return
+        elif new == "running":
+            self._saved_session = None  # a real new print
         outcome = self.history.update_status(old, new, now, name)
         if outcome == "started":
             self._begin_session(now, self._float("print_progress") or 0.0)
@@ -847,9 +944,7 @@ class PrintTracker:
                     else EVENT_PRINT_FINISHED,
                     {"serial": self.serial, **record.as_dict()},
                 )
-                self._store.async_delay_save(
-                    lambda: {"records": self.history.records}, 1
-                )
+                self._save()
                 # Every spool the print used loses its share (the start spool, all of it, without a split).
                 charged = (
                     [(u["spool_id"], u["weight_g"]) for u in usages if u["spool_id"]]

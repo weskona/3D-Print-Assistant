@@ -103,10 +103,14 @@ const TRANSLATIONS = {
     location: "Location",
     last_dried: "Last dried",
     rebook: "Change spool",
-    rebook_title: "Charge the print to another spool",
+    rebook_title: "Spools of this print",
     rebook_none: "No spool",
-    rebook_hint: "The filament of the print moves from the current spool to the chosen one.",
-    rebook_multi: "This print used several spools and cannot be rebooked.",
+    rebook_hint: "Which spool the filament of this print came from, and how much of it from each.",
+    usages_sum: "Total {sum} g (recorded: {recorded} g)",
+    usages_add: "Add spool",
+    usages_remove: "Remove",
+    usages_adjust: "Adjust the stock of the spools (untick if you weighed them after the print)",
+    usages_invalid: "Pick a spool and a weight for every line.",
     rename: "Rename print",
     stock_title: "Stock and shopping list",
     stock_g: "Stock",
@@ -336,10 +340,14 @@ const TRANSLATIONS = {
     location: "Lagerort",
     last_dried: "Zuletzt getrocknet",
     rebook: "Spule ändern",
-    rebook_title: "Druck einer anderen Spule zuordnen",
+    rebook_title: "Spulen dieses Drucks",
     rebook_none: "Keine Spule",
-    rebook_hint: "Das Filament des Drucks wandert von der bisherigen Spule auf die gewählte.",
-    rebook_multi: "Dieser Druck hat mehrere Spulen verwendet und kann nicht umgebucht werden.",
+    rebook_hint: "Von welcher Spule das Filament dieses Drucks kam und wie viel von jeder.",
+    usages_sum: "Gesamt {sum} g (erfasst: {recorded} g)",
+    usages_add: "Spule hinzufügen",
+    usages_remove: "Entfernen",
+    usages_adjust: "Bestand der Spulen anpassen (abwählen, wenn du sie nach dem Druck gewogen hast)",
+    usages_invalid: "Wähle für jede Zeile eine Spule und ein Gewicht.",
     rename: "Druck umbenennen",
     stock_title: "Bestand und Einkaufsliste",
     stock_g: "Bestand",
@@ -1497,22 +1505,48 @@ class DruckAssistantPanel extends HTMLElement {
       setTimeout(() => { name.focus(); name.select(); }, 0);
     } else {
       const r = d.record;
-      const multi = !!r.usages?.length;
-      const sel = this._el("select", {}, this._el("option", { value: "" }, this._t("rebook_none")));
+      const rows = this._el("div", { class: "usage-rows" });
+      const total = this._el("div", { class: "sub notice" });
       const sameMaterial = (sp) => !r.material || sp.material.toLowerCase() === String(r.material).toLowerCase();
-      for (const sp of this._spools.filter((x) => !x.archived).sort((a, b) => sameMaterial(b) - sameMaterial(a) || a.name.localeCompare(b.name))) {
-        const o = this._el("option", { value: sp.id }, `${sp.name} (${sp.material}, ${this._fmtNum(sp.remaining_g, 0)} g)`);
-        if (sp.id === r.spool_id) o.selected = true;
-        sel.append(o);
-      }
+      const options = this._spools.filter((x) => !x.archived || x.id === r.spool_id || (r.usages || []).some((u) => u.spool_id === x.id))
+        .sort((a, b) => sameMaterial(b) - sameMaterial(a) || a.name.localeCompare(b.name));
+      const sum = () => {
+        const grams = [...rows.querySelectorAll("input")].reduce((acc, i) => acc + (parseFloat(i.value) || 0), 0);
+        total.textContent = this._t("usages_sum", { sum: this._fmtNum(grams), recorded: this._fmtNum(r.weight_g) });
+      };
+      const addRow = (spoolId, grams) => {
+        const sel = this._el("select", {}, this._el("option", { value: "" }, this._t("rebook_none")));
+        for (const sp of options) {
+          const o = this._el("option", { value: sp.id }, `${sp.name} (${sp.material}, ${this._fmtNum(sp.remaining_g, 0)} g)`);
+          if (sp.id === spoolId) o.selected = true;
+          sel.append(o);
+        }
+        const amount = this._el("input", { type: "number", step: "0.1", min: "0", value: String(grams), "aria-label": "g" });
+        amount.addEventListener("input", sum);
+        const row = this._el("div", { class: "usage-row" }, sel, amount, this._el("span", { class: "sub" }, "g"),
+          this._iconButton("delete", this._t("usages_remove"), () => { row.remove(); sum(); }));
+        rows.append(row);
+      };
+      const parts = r.usages?.length ? r.usages : [{ spool_id: r.spool_id || "", weight_g: r.weight_g }];
+      for (const u of parts) addRow(u.spool_id || "", u.weight_g);
+      const adjust = this._el("input", { type: "checkbox", checked: true });
+      const error = this._el("div", { class: "error" });
+      const save = () => {
+        const out = [...rows.children].map((row) => ({ spool_id: row.querySelector("select").value, weight_g: parseFloat(row.querySelector("input").value) }));
+        if (!out.length || out.some((x) => !x.spool_id || !(x.weight_g >= 0))) { error.textContent = this._t("usages_invalid"); return; }
+        this._call({ type: "druck_assistant/record_usages", started: r.started, parts: out, adjust_stock: adjust.checked });
+      };
+      sum();
       form = this._el("div", { class: "dialog form", role: "dialog" },
         this._el("h2", {}, this._t("rebook_title")),
         this._el("div", { class: "sub notice" }, `${r.name} · ${this._fmtNum(r.weight_g)} g`),
-        multi ? this._el("div", { class: "error" }, this._t("rebook_multi")) : this._el("div", { class: "sub notice" }, this._t("rebook_hint")),
-        this._field(this._t("spools"), sel),
+        this._el("div", { class: "sub notice" }, this._t("rebook_hint")),
+        rows, total,
+        this._el("button", { onclick: () => { addRow("", 0); sum(); } }, this._t("usages_add")),
+        this._el("label", { class: "field check" }, adjust, this._el("span", {}, this._t("usages_adjust"))),
+        error,
         this._el("div", { class: "actions" },
-          multi ? "" : this._el("button", { class: "primary", onclick: () =>
-            this._call({ type: "druck_assistant/record_rebook", started: r.started, spool_id: sel.value || null }) }, this._t("save")),
+          this._el("button", { class: "primary", onclick: save }, this._t("save")),
           this._el("button", { onclick: close }, this._t("cancel"))));
     }
     return this._el("div", { class: "overlay" }, form);
@@ -2049,6 +2083,10 @@ class DruckAssistantPanel extends HTMLElement {
       .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; font-size: 12.5px; letter-spacing: .04em; color: var(--muted); }
       .field input, .field select { width: 100%; letter-spacing: 0; font-size: 15px; }
       .field.check { flex-direction: row; align-items: center; gap: 8px; }
+      .usage-row { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+      .usage-row select { flex: 1; min-width: 0; }
+      .usage-row input { width: 80px; }
+      .dialog > button { margin-bottom: 12px; }
       .row { display: flex; align-items: center; gap: 8px; }
       .row select { flex: 1; }
       .filter { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0; }
