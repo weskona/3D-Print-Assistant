@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0-beta.7] - 2026-10-31
+
 ### Added
 
 - Event log tab: the last 200 things the assistant noticed (print started, finished or failed, a spool almost empty or used up, a spool taken over from the AMS, not enough filament for a print, low stock, a restored backup), newest first, with a button to clear it. The log is kept across restarts.
