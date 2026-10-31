@@ -94,6 +94,22 @@ def test_spool_running_empty_is_split_between_both_spools():
     ]
 
 
+def test_spool_reassigned_during_the_print_is_the_one_charged():
+    states = {"sensor.ams_1_slot_1": slot_state(100, True), "sensor.ams_1_slot_2": slot_state(100)}
+    t, store = make_tracker(states)
+    wrong = store.save_spool({"name": "Anycubic PLA+", "material": "PLA+", "price_per_kg": 20})
+    right = store.save_spool({"name": "Bambu PETG Basic", "material": "PETG", "price_per_kg": 10})
+    store.assign(A, wrong.id)
+    session = SimpleNamespace(
+        start_slots=t._slot_snapshot(), slot_key=A, progress=100.0, plan={},
+        usage=sys.modules["druck_assistant.consumption"].UsageTracker(),
+    )
+    session.usage.note(A, 0.0)
+    store.assign(A, right.id)  # corrected while the print runs
+    usages = t._usages(session, "finish", 50.0)
+    assert [(u["spool_id"], u["material"], u["price_per_kg"]) for u in usages] == [(right.id, "PETG", 10.0)]
+
+
 def test_a_print_that_is_already_running_gets_a_session_and_its_spool():
     from datetime import datetime, timedelta, timezone
 

@@ -34,6 +34,14 @@ class FilamentManager:
         if self.store.backfill_notes():
             self.changed()
 
+    def restore(self, data: dict[str, Any]) -> None:
+        """Replace the inventory (spools, slots, projects, settings) by the data of a backup."""
+        colors = self.store.colors
+        self.store = SpoolStore(**data)
+        self.store.colors = colors
+        self.store.backfill_notes()
+        self.changed()
+
     @callback
     def changed(self) -> None:
         """Persist the inventory and notify listeners (sensors, panel)."""

@@ -138,7 +138,23 @@ const TRANSLATIONS = {
     import_csv: "Import spools (CSV)",
     import_csv_result: "Imported {created} spools, {errors} rows skipped.",
     tab_stats: "Statistics",
+    tab_events: "Log",
     tab_settings: "Settings",
+    events_title: "Event log",
+    events_empty: "Nothing logged yet.",
+    events_clear: "Clear log",
+    ev_print_started: "Print started: {name}",
+    ev_print_finished: "Print finished: {name} ({weight} g, {cost})",
+    ev_print_failed: "Print failed: {name}",
+    ev_filament_low: "{what} is almost empty ({remain} %)",
+    ev_spool_empty: "{spool} is used up and was archived",
+    ev_spool_imported_created: "New spool from the AMS: {spool} ({slot})",
+    ev_spool_imported_assigned: "Spool assigned to a slot: {spool} ({slot})",
+    ev_spool_imported_adopted: "Spool taken over from the AMS: {spool} ({slot})",
+    ev_spool_imported_synced: "Remaining amount synced from the AMS: {spool} ({slot})",
+    ev_spool_insufficient: "Not enough filament for {print}: {spool} is {missing} g short",
+    ev_stock_low: "Stock of {material} is low: {stock} g (minimum {minimum} g)",
+    ev_restored: "Backup restored: {spools} spools, {prints} prints",
     set_tare_title: "Empty spool weight per brand",
     set_tare_hint: "The weight of the empty spool is subtracted when you weigh a spool. Leave a field empty to use the built-in value ({builtin}). A single spool can have its own value or one of the spool types below.",
     set_brand_other: "All other brands",
@@ -154,6 +170,14 @@ const TRANSLATIONS = {
     cat_done: "Catalog updated: {products} products, {colors} colors.",
     cat_error: "Catalog not updated, the old one stays: {error}",
     cat_auto: "Update automatically once a week",
+    backup_title: "Backup and restore",
+    backup_hint: "The backup file holds the spools, slots, projects, settings and the print history. Restoring replaces all of it; the state before is kept aside in Home Assistant.",
+    backup_download: "Download backup",
+    restore_button: "Restore from file",
+    restore_confirm: "Restore the backup from {date}? It has {spools} spools and {prints} prints and replaces the current spools, projects, settings and history.",
+    restore_done: "Restored: {spools} spools, {prints} prints.",
+    restore_skipped: " Not restored (printer not set up here): {printers}.",
+    restore_invalid: "This file is not a backup of the 3D Print Assistant.",
     set_limits_title: "Thresholds",
     set_remind_g: "Suggest weighing from this many grams used (outside the AMS)",
     set_diff_points: "Warn when the AMS and the calculation differ by more than (points)",
@@ -347,7 +371,23 @@ const TRANSLATIONS = {
     import_csv: "Spulen importieren (CSV)",
     import_csv_result: "{created} Spulen importiert, {errors} Zeilen übersprungen.",
     tab_stats: "Auswertung",
+    tab_events: "Protokoll",
     tab_settings: "Einstellungen",
+    events_title: "Ereignisprotokoll",
+    events_empty: "Noch nichts protokolliert.",
+    events_clear: "Protokoll leeren",
+    ev_print_started: "Druck gestartet: {name}",
+    ev_print_finished: "Druck fertig: {name} ({weight} g, {cost})",
+    ev_print_failed: "Druck fehlgeschlagen: {name}",
+    ev_filament_low: "{what} ist fast leer ({remain} %)",
+    ev_spool_empty: "{spool} ist aufgebraucht und wurde archiviert",
+    ev_spool_imported_created: "Neue Spule aus dem AMS: {spool} ({slot})",
+    ev_spool_imported_assigned: "Spule einem Slot zugeordnet: {spool} ({slot})",
+    ev_spool_imported_adopted: "Spule aus dem AMS übernommen: {spool} ({slot})",
+    ev_spool_imported_synced: "Restmenge aus dem AMS abgeglichen: {spool} ({slot})",
+    ev_spool_insufficient: "Zu wenig Filament für {print}: {spool} fehlen {missing} g",
+    ev_stock_low: "Bestand von {material} ist niedrig: {stock} g (Minimum {minimum} g)",
+    ev_restored: "Sicherung wiederhergestellt: {spools} Spulen, {prints} Drucke",
     set_tare_title: "Leergewicht der Spule pro Hersteller",
     set_tare_hint: "Das Gewicht der leeren Spule wird beim Wiegen abgezogen. Ein leeres Feld nutzt den eingebauten Wert ({builtin}). Eine einzelne Spule kann einen eigenen Wert oder einen der Spulentypen unten bekommen.",
     set_brand_other: "Alle anderen Hersteller",
@@ -363,6 +403,14 @@ const TRANSLATIONS = {
     cat_done: "Katalog aktualisiert: {products} Produkte, {colors} Farben.",
     cat_error: "Katalog nicht aktualisiert, der alte bleibt: {error}",
     cat_auto: "Einmal pro Woche automatisch aktualisieren",
+    backup_title: "Sicherung und Wiederherstellung",
+    backup_hint: "Die Sicherungsdatei enthält Spulen, Slots, Projekte, Einstellungen und die Druckhistorie. Beim Wiederherstellen wird alles ersetzt; der Stand davor bleibt in Home Assistant zur Seite gelegt.",
+    backup_download: "Sicherung herunterladen",
+    restore_button: "Aus Datei wiederherstellen",
+    restore_confirm: "Die Sicherung vom {date} wiederherstellen? Sie enthält {spools} Spulen und {prints} Drucke und ersetzt die aktuellen Spulen, Projekte, Einstellungen und die Historie.",
+    restore_done: "Wiederhergestellt: {spools} Spulen, {prints} Drucke.",
+    restore_skipped: " Nicht wiederhergestellt (Drucker hier nicht eingerichtet): {printers}.",
+    restore_invalid: "Diese Datei ist keine Sicherung des 3D Print Assistant.",
     set_limits_title: "Schwellen",
     set_remind_g: "Wiegen vorschlagen ab so vielen verbrauchten Gramm (außerhalb des AMS)",
     set_diff_points: "Warnen, wenn AMS und Rechnung mehr abweichen als (Punkte)",
@@ -1147,7 +1195,8 @@ class DruckAssistantPanel extends HTMLElement {
       catalogCard.append(btn, this._el("label", { class: "setrow" }, auto, this._el("span", {}, this._t("cat_auto"))));
     }
 
-    main.append(this._el("div", { class: "grid" }, this._el("div", { class: "col" }, tare, types), this._el("div", { class: "col" }, catalogCard, limits)));
+    main.append(this._el("div", { class: "grid" }, this._el("div", { class: "col" }, tare, types),
+      this._el("div", { class: "col" }, catalogCard, limits, admin ? this._renderBackupCard() : "")));
     if (admin) {
       main.append(this._el("button", { class: "primary", onclick: () => {
         const draft = this._draft;
@@ -1160,6 +1209,80 @@ class DruckAssistantPanel extends HTMLElement {
         }, () => this._t("saved"));
       } }, this._t("save")));
     }
+  }
+
+  /** One line of the event log. */
+  _eventText(ev, printers) {
+    const cur = printers.find((p) => p.serial === ev.serial)?.currency || "EUR";
+    const tray = /_tray_(\d+)$/.exec(ev.slot || "");
+    const slot = tray ? `Slot ${tray[1]}` : "";
+    const vars = {
+      name: ev.name || "?", spool: ev.spool || "?", slot, print: ev.print || "?", material: ev.material || "?",
+      weight: this._fmtNum(ev.weight_g ?? 0), cost: this._fmtMoney(ev.cost ?? 0, cur),
+      what: ev.spool || ev.type || "?", remain: this._fmtNum(ev.remain ?? 0, 0),
+      missing: this._fmtNum(ev.missing_g ?? 0, 0), stock: this._fmtNum(ev.stock_g ?? 0, 0), minimum: this._fmtNum(ev.minimum_g ?? 0, 0),
+      spools: ev.spools ?? 0, prints: ev.prints ?? 0,
+    };
+    const key = ev.kind === "spool_imported" ? `ev_spool_imported_${ev.action}` : `ev_${ev.kind}`;
+    return this._t(key, vars).replace(" ()", "");
+  }
+
+  /** Event log tab: what the assistant noticed (prints, low spools, imports), newest first. */
+  _renderEvents(main) {
+    const admin = this._isAdmin();
+    const printers = this._data?.printers || [];
+    const events = this._data?.events || [];
+    const card = this._el("div", { class: "card" }, this._el("div", { class: "hd" }, this._el("h2", {}, this._t("events_title")),
+      admin && events.length ? this._el("button", { onclick: () => this._call({ type: "druck_assistant/events_clear" }) }, this._t("events_clear")) : ""));
+    if (this._notice) card.append(this._el("div", { class: this._noticeOk ? "sub notice" : "error" }, this._notice));
+    if (!events.length) card.append(this._el("div", { class: "empty" }, this._t("events_empty")));
+    const warn = new Set(["print_failed", "filament_low", "spool_empty", "spool_insufficient", "stock_low"]);
+    const lang = this._hass.locale?.language;
+    const list = this._el("div", { class: "history" });
+    for (const ev of events) {
+      const when = new Date(ev.time);
+      list.append(this._el("div", { class: "hrow", style: "grid-template-columns:auto minmax(0,1fr);cursor:default" },
+        this._el("div", { class: "when" },
+          this._el("span", {}, when.toLocaleDateString(lang, { day: "2-digit", month: "short" })),
+          this._el("b", {}, when.toLocaleTimeString(lang, { hour: "2-digit", minute: "2-digit" }))),
+        this._el("div", { class: "what" }, this._el("span", { class: warn.has(ev.kind) ? "warn-text" : "" }, this._eventText(ev, printers)))));
+    }
+    card.append(list);
+    main.append(card);
+  }
+
+  /** Settings tab: download a backup of the inventory and the history, or restore one. */
+  _renderBackupCard() {
+    const lang = this._hass.locale?.language;
+    const fail = (message) => { this._notice = message; this._noticeOk = false; this._render(); };
+    const file = this._el("input", { type: "file", accept: ".json,application/json", style: "display:none" });
+    file.addEventListener("change", async () => {
+      const chosen = file.files[0];
+      file.value = "";
+      if (!chosen) return;
+      let backup;
+      try { backup = JSON.parse(await chosen.text()); } catch (e) { return fail(this._t("restore_invalid")); }
+      if (!backup || backup.format !== "druck_assistant_backup") return fail(this._t("restore_invalid"));
+      const prints = Object.values(backup.printers || {}).reduce((n, p) => n + (p.records?.length || 0), 0);
+      const date = backup.created ? new Date(backup.created).toLocaleString(lang) : "?";
+      if (!window.confirm(this._t("restore_confirm", { date, spools: backup.filament?.spools?.length ?? 0, prints }))) return;
+      this._draft = null;
+      this._call({ type: "druck_assistant/restore", backup }, (res) => this._t("restore_done", { spools: res.spools, prints: res.records })
+        + (res.skipped_printers.length ? this._t("restore_skipped", { printers: res.skipped_printers.join(", ") }) : ""));
+    });
+    const download = this._el("button", { class: "primary", onclick: async () => {
+      try {
+        const data = await this._hass.connection.sendMessagePromise({ type: "druck_assistant/backup" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+        link.download = `druck-assistant-backup-${new Date().toISOString().slice(0, 10)}.json`;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(link.href), 10000);
+      } catch (e) { fail(e && e.message ? e.message : String(e)); }
+    } }, this._t("backup_download"));
+    return this._el("div", { class: "card" }, this._el("h2", {}, this._t("backup_title")),
+      this._el("div", { class: "sub notice" }, this._t("backup_hint")),
+      this._el("div", { class: "toolbar" }, download, this._el("button", { onclick: () => file.click() }, this._t("restore_button")), file));
   }
 
   /** Spools outside the AMS that are worth weighing: an estimated amount, or a lot used since the last weighing. */
@@ -2048,7 +2171,7 @@ class DruckAssistantPanel extends HTMLElement {
       header.append(sel);
     }
     const tabs = this._el("div", { class: "tabs" },
-      ...["overview", "filament", "ams", "stats", "projects", "settings"].map((k) => this._el("button", {
+      ...["overview", "filament", "ams", "stats", "projects", "events", "settings"].map((k) => this._el("button", {
         class: this._tab === k ? "active" : "",
         onclick: () => { this._tab = k; this._editing = null; this._dialog = null; this._draft = null; this._render(); },
       }, this._t(`tab_${k}`))));
@@ -2075,6 +2198,7 @@ class DruckAssistantPanel extends HTMLElement {
     if (this._tab === "ams") { this._renderAms(main, printer); return; }
     if (this._tab === "stats") { this._renderStats(main, printer); return; }
     if (this._tab === "projects") { this._renderProjects(main); return; }
+    if (this._tab === "events") { this._renderEvents(main); return; }
     if (this._tab === "settings") { this._renderSettings(main); return; }
     if (!printer) { main.append(this._el("div", { class: "empty" }, this._t("no_printer"))); return; }
 

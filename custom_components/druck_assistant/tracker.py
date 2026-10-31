@@ -503,6 +503,12 @@ class PrintTracker:
                     },
                 )
 
+    def restore_history(self, records: list[dict[str, Any]]) -> None:
+        """Replace the recorded prints by those of a backup (a print that is running right now goes on)."""
+        self.history.records = list(records)
+        self._store.async_delay_save(lambda: {"records": self.history.records}, 1)
+        async_dispatcher_send(self.hass, self.signal)
+
     def rename(self, started: str, name: str) -> dict[str, Any]:
         """Rename a recorded print."""
         record = self.history.rename(started, name)
@@ -604,6 +610,16 @@ class PrintTracker:
         if session is None or not total_g:
             return []
         end = self._slot_snapshot()
+        for key, start in session.start_slots.items():
+            # A spool reassigned to a slot during the print (a correction) is the one that is charged.
+            spool = self.filament.store.spool_for_slot(key)
+            if spool is not None and spool.id != start.get("spool_id"):
+                start.update(
+                    spool_id=spool.id,
+                    initial_g=spool.initial_weight_g,
+                    capacity_g=spool.remaining_g,
+                    material=spool.material,
+                )
         slots = {
             key: SlotInfo(
                 key,

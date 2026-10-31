@@ -43,6 +43,9 @@ WS_PROJECT_ASSIGN = f"{DOMAIN}/project_assign"
 WS_SPOOL_IMPORT = f"{DOMAIN}/spool_import"
 WS_RECORD_REBOOK = f"{DOMAIN}/record_rebook"
 WS_RECORD_RENAME = f"{DOMAIN}/record_rename"
+WS_BACKUP = f"{DOMAIN}/backup"
+WS_EVENTS_CLEAR = f"{DOMAIN}/events_clear"
+WS_RESTORE = f"{DOMAIN}/restore"
 
 # Raw print_status values reported by ha-bambulab.
 STATUS_RUNNING = "running"
@@ -60,3 +63,15 @@ EVENT_SPOOL_IMPORTED = f"{DOMAIN}_spool_imported"
 EVENT_SPOOL_EMPTY = f"{DOMAIN}_spool_empty"
 EVENT_SPOOL_INSUFFICIENT = f"{DOMAIN}_spool_insufficient"
 EVENT_STOCK_LOW = f"{DOMAIN}_stock_low"
+
+# The bus events that are also written to the event log (the part after the domain is the kind of the entry).
+LOGGED_EVENTS = (
+    EVENT_PRINT_STARTED,
+    EVENT_PRINT_FINISHED,
+    EVENT_PRINT_FAILED,
+    EVENT_FILAMENT_LOW,
+    EVENT_SPOOL_IMPORTED,
+    EVENT_SPOOL_EMPTY,
+    EVENT_SPOOL_INSUFFICIENT,
+    EVENT_STOCK_LOW,
+)
