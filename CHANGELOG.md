@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0-beta.9] - 2026-11-03
+
 ### Added
 
 - Spool labels for Dymo LabelWriter labels: the label button opens a dialog with the label size to pick (11353, 11355, 11352, 99010, 11354 / S0722540, 99012, 99015, 99014, 99017), a preview and a print button. The label is laid out for its size (the smaller the label, the fewer lines) and printed in its real size. The chosen size is remembered.
