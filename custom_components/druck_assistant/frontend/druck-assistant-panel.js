@@ -10,6 +10,20 @@ const ICONS = {
   restore: "M12,3A9,9 0 0,0 3,12H0L4,16L8,12H5A7,7 0 0,1 12,5A7,7 0 0,1 19,12A7,7 0 0,1 12,19C10.5,19 9.09,18.5 7.94,17.7L6.5,19.14C8.04,20.3 9.94,21 12,21A9,9 0 0,0 21,12A9,9 0 0,0 12,3M14,12A2,2 0 0,0 12,10A2,2 0 0,0 10,12A2,2 0 0,0 12,14A2,2 0 0,0 14,12Z",
 };
 
+// Dymo LabelWriter labels: article number, Dymo number, size in mm (the long side first).
+const LABEL_FORMATS = [
+  { id: "S0722530", dymo: "11353", w: 25, h: 13 },
+  { id: "S0722550", dymo: "11355", w: 51, h: 19 },
+  { id: "S0722520", dymo: "11352", w: 54, h: 25 },
+  { id: "S0722370", dymo: "99010", w: 89, h: 28 },
+  { id: "S0722540", dymo: "11354", w: 57, h: 32 },
+  { id: "S0722400", dymo: "99012", w: 89, h: 36 },
+  { id: "S0722440", dymo: "99015", w: 70, h: 54 },
+  { id: "S0722430", dymo: "99014", w: 101, h: 54 },
+  { id: "S0722460", dymo: "99017", w: 50, h: 12 },
+];
+const DEFAULT_LABEL = "S0722540";
+
 const LOW_PERCENT = 15; // same threshold as the red stock bar
 
 const COMMON_MATERIALS = ["PLA", "PLA+", "PETG", "ABS", "ASA", "TPU", "PC", "PA", "PA-CF", "PET-CF", "PVA"];
@@ -95,6 +109,9 @@ const TRANSLATIONS = {
     tare_weight: "Empty spool (g)",
     weigh_preview: "Filament left: {value} g",
     print_label: "Print label",
+    label_format: "Label (Dymo LabelWriter)",
+    label_print: "Print",
+    label_hint: "The label is printed in its real size. In the print dialog pick the Dymo printer, the same label size and no margins.",
     more_details: "More details",
     purchased: "Purchased",
     shop: "Shop",
@@ -332,6 +349,9 @@ const TRANSLATIONS = {
     tare_weight: "Leere Spule (g)",
     weigh_preview: "Restfilament: {value} g",
     print_label: "Etikett drucken",
+    label_format: "Etikett (Dymo LabelWriter)",
+    label_print: "Drucken",
+    label_hint: "Das Etikett wird in Originalgröße gedruckt. Wähle im Druckdialog den Dymo-Drucker, dieselbe Etikettengröße und keine Ränder.",
     more_details: "Weitere Angaben",
     purchased: "Gekauft am",
     shop: "Händler",
@@ -845,7 +865,7 @@ class DruckAssistantPanel extends HTMLElement {
     const archive = this._iconButton("archive", this._t("archive"), () => this._call({ type: "druck_assistant/spool_archive", spool_id: sp.id, archived: true }));
     const del = this._iconButton("delete", this._t("delete"), () => this._confirmDelete(sp), true);
     const weigh = this._iconButton("scale", this._t("weigh"), () => { this._dialog = { kind: "weigh", spool: sp }; this._render(); });
-    const label = this._iconButton("label", this._t("print_label"), () => this._printLabel(sp));
+    const label = this._iconButton("label", this._t("print_label"), () => { this._dialog = { kind: "label", spool: sp }; this._render(); });
     if (this._canEdit(sp, admin, slotOf)) {
       return [this._iconButton("edit", this._t("edit"), () => { this._editing = sp; this._render(); }), weigh, label, archive, del];
     }
@@ -1448,7 +1468,9 @@ class DruckAssistantPanel extends HTMLElement {
     const close = () => { this._dialog = null; this._render(); };
     const d = this._dialog;
     let form;
-    if (d.kind === "weigh") {
+    if (d.kind === "label") {
+      form = this._renderLabelDialog(d.spool, close);
+    } else if (d.kind === "weigh") {
       const sp = d.spool;
       const gross = this._el("input", { type: "number", min: "0", step: "1", placeholder: "g" });
       const tare = this._el("input", { type: "number", min: "0", step: "1", value: String(sp.tare_effective_g ?? 0) });
@@ -1721,22 +1743,68 @@ class DruckAssistantPanel extends HTMLElement {
     main.append(this._el("div", { class: "grid" }, this._el("div", { class: "col" }, mat, mon, acc), this._el("div", { class: "col" }, exp, longest, buys)));
   }
 
-  /** A printable label for a spool (name, type, color, weight, place and id). */
-  _printLabel(sp) {
-    const w = window.open("", "_blank", "width=480,height=360");
-    if (!w) { this._notice = "Pop-up blocked"; this._render(); return; }
+  /**
+   * The page of a spool label for a Dymo label of the given size (a complete document, sized in mm
+   * so that the printer driver takes it as it is). The amount of detail follows the height of the label.
+   */
+  _labelDoc(sp, fmt) {
     const esc = (v) => String(v ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;" })[c]);
     const color = /^#[0-9a-f]{6}/i.test(sp.color || "") ? sp.color.slice(0, 7) : "#808080";
-    w.document.write(`<!doctype html><meta charset="utf-8"><title>${esc(sp.name)}</title>
-      <style>body{font:16px system-ui,sans-serif;margin:0;padding:18px}.l{border:2px solid #000;border-radius:10px;padding:14px;width:380px}
-      .sw{display:inline-block;width:26px;height:26px;border-radius:50%;border:1px solid #000;vertical-align:middle;margin-right:8px;background:${esc(color)}}
-      h1{font-size:22px;margin:0 0 8px}small{color:#444}@media print{button{display:none}}</style>
-      <div class="l"><h1><span class="sw"></span>${esc(sp.name)}</h1>
-      <div>${esc(sp.material)}${sp.brand ? " · " + esc(sp.brand) : ""}</div>
-      <div>${esc(this._fmtNum(sp.initial_weight_g, 0))} g${sp.price_per_kg != null ? " · " + esc(this._fmtNum(sp.price_per_kg, 2)) + " /kg" : ""}</div>
-      ${sp.location ? `<div>${esc(sp.location)}</div>` : ""}${sp.purchased ? `<div>${esc(sp.purchased)}${sp.shop ? " · " + esc(sp.shop) : ""}</div>` : ""}
-      <small>ID ${esc(sp.id)}${sp.rfid ? " · RFID " + esc(sp.rfid.slice(0, 8)) : ""}</small></div><p><button onclick="print()">Print</button></p>`);
-    w.document.close();
+    const { w, h } = fmt;
+    const grams = `${this._fmtNum(sp.initial_weight_g, 0)} g`;
+    const price = sp.price_per_kg != null ? `${this._fmtNum(sp.price_per_kg, 2)} /kg` : "";
+    const type = [sp.material, sp.brand].filter(Boolean).join(" · ");
+    const lines = [];
+    if (h < 16) {
+      if (h >= 12 && w >= 40) lines.push(`${esc(sp.material)} · ${esc(grams)}`);
+    } else if (h < 30) {
+      lines.push(esc(type), esc([grams, h >= 26 ? price : ""].filter(Boolean).join(" · ")));
+      if (sp.location && h >= 25) lines.push(esc(sp.location));
+    } else {
+      lines.push(esc(type), esc([grams, price].filter(Boolean).join(" · ")));
+      if (sp.location) lines.push(esc(sp.location));
+      if (h >= 40 && sp.purchased) lines.push(esc([sp.purchased, sp.shop].filter(Boolean).join(" · ")));
+    }
+    const id = h >= 20 ? `<small>ID ${esc(sp.id)}${sp.rfid ? " · RFID " + esc(sp.rfid.slice(0, 8)) : ""}</small>` : "";
+    const title = Math.max(7, Math.min(h * 0.32, 15));  // pt
+    const body = Math.max(5.5, Math.min(h * 0.2, 10));
+    const swatch = Math.max(3, Math.min(h * 0.26, 9));  // mm
+    return `<!doctype html><meta charset="utf-8"><title>${esc(sp.name)}</title>
+      <style>@page{size:${w}mm ${h}mm;margin:0}*{box-sizing:border-box}
+      html,body{margin:0;background:#fff;color:#000}body{font:${body}pt system-ui,Arial,sans-serif;width:${w}mm;height:${h}mm;padding:1.2mm 1.8mm;overflow:hidden;display:flex;flex-direction:column;justify-content:center;gap:.4mm}
+      h1{font-size:${title}pt;line-height:1.1;margin:0;display:flex;align-items:center;gap:1.4mm;white-space:nowrap;overflow:hidden}
+      h1 span{flex:none;width:${swatch}mm;height:${swatch}mm;border-radius:50%;border:.25mm solid #000;background:${esc(color)}}
+      h1 b{overflow:hidden;text-overflow:ellipsis}
+      div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15}small{font-size:${Math.max(4.5, body - 2)}pt;color:#333}</style>
+      <h1><span></span><b>${esc(sp.name)}</b></h1>${lines.filter(Boolean).map((l) => `<div>${l}</div>`).join("")}${id}`;
+  }
+
+  /** Dialog: pick the label size, see the label as it will be printed, print it. */
+  _renderLabelDialog(sp, close) {
+    let stored = DEFAULT_LABEL;
+    try { stored = localStorage.getItem("druck_assistant_label") || DEFAULT_LABEL; } catch (e) { /* storage may be blocked */ }
+    const sel = this._el("select", {});
+    for (const f of LABEL_FORMATS) sel.append(this._el("option", { value: f.id }, `${f.dymo} · ${f.id} · ${f.w} × ${f.h} mm`));
+    sel.value = LABEL_FORMATS.some((f) => f.id === stored) ? stored : DEFAULT_LABEL;
+    const frame = this._el("iframe", { class: "label-frame", title: this._t("print_label") });
+    const fmt = () => LABEL_FORMATS.find((f) => f.id === sel.value) || LABEL_FORMATS[0];
+    const draw = () => {
+      const f = fmt();
+      frame.style.width = `${f.w}mm`;
+      frame.style.height = `${f.h}mm`;
+      frame.srcdoc = this._labelDoc(sp, f);
+      try { localStorage.setItem("druck_assistant_label", f.id); } catch (e) { /* storage may be blocked */ }
+    };
+    sel.addEventListener("change", draw);
+    draw();
+    return this._el("div", { class: "dialog form", role: "dialog" },
+      this._el("h2", {}, this._t("print_label")),
+      this._field(this._t("label_format"), sel),
+      this._el("div", { class: "label-preview" }, frame),
+      this._el("div", { class: "sub notice" }, this._t("label_hint")),
+      this._el("div", { class: "actions" },
+        this._el("button", { class: "primary", onclick: () => { frame.contentWindow.focus(); frame.contentWindow.print(); } }, this._t("label_print")),
+        this._el("button", { onclick: close }, this._t("cancel"))));
   }
 
   _download(name, text, type = "text/csv") {
@@ -2083,6 +2151,8 @@ class DruckAssistantPanel extends HTMLElement {
       .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; font-size: 12.5px; letter-spacing: .04em; color: var(--muted); }
       .field input, .field select { width: 100%; letter-spacing: 0; font-size: 15px; }
       .field.check { flex-direction: row; align-items: center; gap: 8px; }
+      .label-preview { display: flex; justify-content: center; padding: 14px; margin-bottom: 12px; overflow: auto; background: rgba(128,128,128,.18); border-radius: 8px; }
+      .label-frame { border: 0; background: #fff; box-shadow: 0 1px 6px rgba(0,0,0,.45); flex: none; }
       .usage-row { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
       .usage-row select { flex: 1; min-width: 0; }
       .usage-row input { width: 80px; }

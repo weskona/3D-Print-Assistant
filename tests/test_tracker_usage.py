@@ -325,3 +325,14 @@ def test_saved_print_is_resumed_after_a_restart():
     values.clear()  # the start time is not known yet: trust the saved print
     t._saved_session = saved
     assert t._resume_saved(now) is True
+
+
+def test_failed_print_is_charged_only_for_the_part_it_got_through():
+    used = tracker_mod.PrintTracker._used_grams
+    session = SimpleNamespace(progress=0.0)
+    assert used(session, "failed", 224.0) == 0.0  # never left 0 %
+    session.progress = 25.0
+    assert used(session, "failed", 224.0) == 56.0
+    assert used(session, "finish", 224.0) == 224.0
+    assert used(SimpleNamespace(progress=None), "failed", 224.0) == 224.0  # progress unknown
+    assert used(None, "failed", 224.0) == 224.0
