@@ -689,6 +689,13 @@ class PrintTracker:
                 plan[key] = float(grams)
         return plan
 
+    @staticmethod
+    def _used_grams(session, outcome: str, planned_g: float | None) -> float | None:
+        """Grams a print used: all of it if it finished, else the part it got through (0 if it never left 0 %)."""
+        if outcome != STATUS_FAILED or not planned_g or session is None or session.progress is None:
+            return planned_g
+        return round(planned_g * max(0.0, min(session.progress, 100.0)) / 100, 1)
+
     def _usages(
         self, session, outcome: str, total_g: float | None
     ) -> list[dict[str, Any]]:
@@ -925,10 +932,11 @@ class PrintTracker:
             )
             planned_g = self._float("print_weight")
             usages = self._usages(session, outcome, planned_g)
+            used_g = self._used_grams(session, outcome, planned_g)
             record = self.history.finish(
                 outcome,
                 now,
-                planned_g,
+                used_g,
                 dict(weight_state.attributes) if weight_state else None,
                 price,
                 name,
@@ -949,7 +957,7 @@ class PrintTracker:
                 charged = (
                     [(u["spool_id"], u["weight_g"]) for u in usages if u["spool_id"]]
                     if usages
-                    else ([(spool.id, planned_g)] if spool is not None else [])
+                    else ([(spool.id, used_g)] if spool is not None else [])
                 )
                 for spool_id, grams in charged:
                     used = self.filament.store.consume(spool_id, grams)
