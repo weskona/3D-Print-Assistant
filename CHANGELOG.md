@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0-beta.1] - 2026-11-05
+
+### Added
+
+- Spool labels: the label dialog has an orientation switch (horizontal or vertical). Vertical sends the label as a portrait page (short side as width) with the layout turned by 90 degrees, which is what some Dymo drivers expect; use it when a label comes out turned. The choice is kept per label size. The 11354 (S0722540) label starts vertical because it was reported to print turned in the horizontal layout; every other size starts horizontal.
+
 ## [0.10.0-beta.9] - 2026-11-03
 
 ### Added
@@ -426,7 +432,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Filament prices per type (e.g. `PLA=20`) in the options, sensor for the current filament including price per kg. Cost sensors in euro.
 - GitHub workflow that creates a tag and release after a push to `main`.
 
-[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.7.0-beta.1...HEAD
+[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.11.0-beta.1...HEAD
+[0.11.0-beta.1]: https://github.com/weskona/3D-Print-Assistant/compare/v0.7.0-beta.1...v0.11.0-beta.1
 [0.7.0-beta.1]: https://github.com/weskona/3D-Print-Assistant/compare/v0.6.0-beta.2...v0.7.0-beta.1
 [0.6.0-beta.2]: https://github.com/weskona/3D-Print-Assistant/compare/v0.6.0-beta.1...v0.6.0-beta.2
 [0.6.0-beta.1]: https://github.com/weskona/3D-Print-Assistant/compare/v0.5.0-beta.7...v0.6.0-beta.1
