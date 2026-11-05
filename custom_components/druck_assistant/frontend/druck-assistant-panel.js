@@ -111,6 +111,10 @@ const TRANSLATIONS = {
     print_label: "Print label",
     label_format: "Label (Dymo LabelWriter)",
     label_print: "Print",
+    label_orientation: "Orientation",
+    label_horizontal: "Horizontal",
+    label_vertical: "Vertical",
+    label_orientation_hint: "If the label comes out turned by 90 degrees, switch the orientation: vertical sends the label as a portrait page with the text turned. The choice is remembered per label size.",
     label_hint: "The label is printed in its real size. In the print dialog pick the Dymo printer, the same label size and no margins.",
     more_details: "More details",
     purchased: "Purchased",
@@ -351,6 +355,10 @@ const TRANSLATIONS = {
     print_label: "Etikett drucken",
     label_format: "Etikett (Dymo LabelWriter)",
     label_print: "Drucken",
+    label_orientation: "Ausrichtung",
+    label_horizontal: "Horizontal",
+    label_vertical: "Vertikal",
+    label_orientation_hint: "Kommt das Etikett um 90 Grad gedreht heraus, wechsle die Ausrichtung: Vertikal sendet das Etikett als Hochformat-Seite mit gedrehtem Text. Die Wahl wird pro Etikettengröße gemerkt.",
     label_hint: "Das Etikett wird in Originalgröße gedruckt. Wähle im Druckdialog den Dymo-Drucker, dieselbe Etikettengröße und keine Ränder.",
     more_details: "Weitere Angaben",
     purchased: "Gekauft am",
@@ -1746,8 +1754,10 @@ class DruckAssistantPanel extends HTMLElement {
   /**
    * The page of a spool label for a Dymo label of the given size (a complete document, sized in mm
    * so that the printer driver takes it as it is). The amount of detail follows the height of the label.
+   * With vertical set the page is sent as a portrait page (short side as width) and the layout is
+   * turned by 90 degrees: some Dymo drivers take the label as a portrait page and turn the print.
    */
-  _labelDoc(sp, fmt) {
+  _labelDoc(sp, fmt, vertical = false) {
     const esc = (v) => String(v ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;" })[c]);
     const color = /^#[0-9a-f]{6}/i.test(sp.color || "") ? sp.color.slice(0, 7) : "#808080";
     const { w, h } = fmt;
@@ -1769,39 +1779,64 @@ class DruckAssistantPanel extends HTMLElement {
     const title = Math.max(7, Math.min(h * 0.32, 15));  // pt
     const body = Math.max(5.5, Math.min(h * 0.2, 10));
     const swatch = Math.max(3, Math.min(h * 0.26, 9));  // mm
+    const pageW = vertical ? h : w;
+    const pageH = vertical ? w : h;
+    // Turned by 90 degrees (clockwise) around its top left corner, the layout moves to the left of the page: shift it back.
+    const turn = vertical ? `position:absolute;top:0;left:${h}mm;transform-origin:0 0;transform:rotate(90deg);` : "";
     return `<!doctype html><meta charset="utf-8"><title>${esc(sp.name)}</title>
-      <style>@page{size:${w}mm ${h}mm;margin:0}*{box-sizing:border-box}
-      html,body{margin:0;background:#fff;color:#000}body{font:${body}pt system-ui,Arial,sans-serif;width:${w}mm;height:${h}mm;padding:1.2mm 1.8mm;overflow:hidden;display:flex;flex-direction:column;justify-content:center;gap:.4mm}
+      <style>@page{size:${pageW}mm ${pageH}mm;margin:0}*{box-sizing:border-box}
+      html,body{margin:0;background:#fff;color:#000}body{position:relative;width:${pageW}mm;height:${pageH}mm;overflow:hidden}
+      .label{font:${body}pt system-ui,Arial,sans-serif;width:${w}mm;height:${h}mm;padding:1.2mm 1.8mm;overflow:hidden;display:flex;flex-direction:column;justify-content:center;gap:.4mm;${turn}}
       h1{font-size:${title}pt;line-height:1.1;margin:0;display:flex;align-items:center;gap:1.4mm;white-space:nowrap;overflow:hidden}
       h1 span{flex:none;width:${swatch}mm;height:${swatch}mm;border-radius:50%;border:.25mm solid #000;background:${esc(color)}}
       h1 b{overflow:hidden;text-overflow:ellipsis}
-      div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15}small{font-size:${Math.max(4.5, body - 2)}pt;color:#333}</style>
-      <h1><span></span><b>${esc(sp.name)}</b></h1>${lines.filter(Boolean).map((l) => `<div>${l}</div>`).join("")}${id}`;
+      .label>div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15}small{font-size:${Math.max(4.5, body - 2)}pt;color:#333}</style>
+      <div class="label"><h1><span></span><b>${esc(sp.name)}</b></h1>${lines.filter(Boolean).map((l) => `<div>${l}</div>`).join("")}${id}</div>`;
   }
 
-  /** Dialog: pick the label size, see the label as it will be printed, print it. */
+  /** Dialog: pick the label size and the orientation, see the label as it will be printed, print it. */
   _renderLabelDialog(sp, close) {
     let stored = DEFAULT_LABEL;
-    try { stored = localStorage.getItem("druck_assistant_label") || DEFAULT_LABEL; } catch (e) { /* storage may be blocked */ }
+    let turned = {};
+    try {
+      stored = localStorage.getItem("druck_assistant_label") || DEFAULT_LABEL;
+      turned = JSON.parse(localStorage.getItem("druck_assistant_label_vertical") || "{}");
+    } catch (e) { /* storage may be blocked */ }
     const sel = this._el("select", {});
     for (const f of LABEL_FORMATS) sel.append(this._el("option", { value: f.id }, `${f.dymo} · ${f.id} · ${f.w} × ${f.h} mm`));
     sel.value = LABEL_FORMATS.some((f) => f.id === stored) ? stored : DEFAULT_LABEL;
     const frame = this._el("iframe", { class: "label-frame", title: this._t("print_label") });
     const fmt = () => LABEL_FORMATS.find((f) => f.id === sel.value) || LABEL_FORMATS[0];
+    // Orientation is kept per label size; the 11354 (S0722540) is known to come out turned on landscape, so it starts vertical.
+    const isVertical = () => (fmt().id in turned ? !!turned[fmt().id] : fmt().id === DEFAULT_LABEL);
+    const horizontal = this._el("button", { type: "button" }, this._t("label_horizontal"));
+    const vertical = this._el("button", { type: "button" }, this._t("label_vertical"));
     const draw = () => {
       const f = fmt();
-      frame.style.width = `${f.w}mm`;
-      frame.style.height = `${f.h}mm`;
-      frame.srcdoc = this._labelDoc(sp, f);
+      const v = isVertical();
+      horizontal.classList.toggle("active", !v);
+      vertical.classList.toggle("active", v);
+      frame.style.width = `${v ? f.h : f.w}mm`;
+      frame.style.height = `${v ? f.w : f.h}mm`;
+      frame.srcdoc = this._labelDoc(sp, f, v);
       try { localStorage.setItem("druck_assistant_label", f.id); } catch (e) { /* storage may be blocked */ }
     };
+    const pick = (v) => {
+      turned[fmt().id] = v;
+      try { localStorage.setItem("druck_assistant_label_vertical", JSON.stringify(turned)); } catch (e) { /* storage may be blocked */ }
+      draw();
+    };
+    horizontal.addEventListener("click", () => pick(false));
+    vertical.addEventListener("click", () => pick(true));
     sel.addEventListener("change", draw);
     draw();
     return this._el("div", { class: "dialog form", role: "dialog" },
       this._el("h2", {}, this._t("print_label")),
       this._field(this._t("label_format"), sel),
+      this._field(this._t("label_orientation"), this._el("div", { class: "seg" }, horizontal, vertical)),
       this._el("div", { class: "label-preview" }, frame),
       this._el("div", { class: "sub notice" }, this._t("label_hint")),
+      this._el("div", { class: "sub notice" }, this._t("label_orientation_hint")),
       this._el("div", { class: "actions" },
         this._el("button", { class: "primary", onclick: () => { frame.contentWindow.focus(); frame.contentWindow.print(); } }, this._t("label_print")),
         this._el("button", { onclick: close }, this._t("cancel"))));
@@ -2151,6 +2186,9 @@ class DruckAssistantPanel extends HTMLElement {
       .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; font-size: 12.5px; letter-spacing: .04em; color: var(--muted); }
       .field input, .field select { width: 100%; letter-spacing: 0; font-size: 15px; }
       .field.check { flex-direction: row; align-items: center; gap: 8px; }
+      .seg { display: inline-flex; gap: 2px; padding: 4px; border-radius: 14px; border: 1px solid var(--line); background: rgba(255,255,255,.03); }
+      .seg button { margin: 0; height: 32px; border: 0; background: transparent; }
+      .seg button.active { background: rgba(255,255,255,.1); color: var(--text); }
       .label-preview { display: flex; justify-content: center; padding: 14px; margin-bottom: 12px; overflow: auto; background: rgba(128,128,128,.18); border-radius: 8px; }
       .label-frame { border: 0; background: #fff; box-shadow: 0 1px 6px rgba(0,0,0,.45); flex: none; }
       .usage-row { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
