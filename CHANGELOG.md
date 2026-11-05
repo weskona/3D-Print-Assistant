@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0-beta.2] - 2026-11-05
+
+### Changed
+
+- Spool labels: the single horizontal/vertical switch did not change the print on a Dymo 11354 (Chrome or the driver turned the page again, and the print came out turned, cut off and on one end of the label). The dialog now has two settings: the page shape (horizontal = landscape page, vertical = portrait page) and the rotation of the layout inside it (0, 90, 180 or 270 degrees). All eight combinations fill the page exactly, so one of them fits whatever the driver does with the page. A layout that is turned by 90 or 270 degrees is laid out for the other shape first; in a narrow layout (for example a portrait 11354) the lines wrap instead of being cut off and the type size follows the short side. Both settings are kept per label size; a choice saved by the previous version carries over (vertical = vertical page, 90 degrees). Every size now starts horizontal at 0 degrees, the assumption that the 11354 starts vertical is gone.
+
 ## [0.11.0-beta.1] - 2026-11-05
 
 ### Added
@@ -432,7 +438,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Filament prices per type (e.g. `PLA=20`) in the options, sensor for the current filament including price per kg. Cost sensors in euro.
 - GitHub workflow that creates a tag and release after a push to `main`.
 
-[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.11.0-beta.1...HEAD
+[Unreleased]: https://github.com/weskona/3D-Print-Assistant/compare/v0.11.0-beta.2...HEAD
+[0.11.0-beta.2]: https://github.com/weskona/3D-Print-Assistant/compare/v0.11.0-beta.1...v0.11.0-beta.2
 [0.11.0-beta.1]: https://github.com/weskona/3D-Print-Assistant/compare/v0.7.0-beta.1...v0.11.0-beta.1
 [0.7.0-beta.1]: https://github.com/weskona/3D-Print-Assistant/compare/v0.6.0-beta.2...v0.7.0-beta.1
 [0.6.0-beta.2]: https://github.com/weskona/3D-Print-Assistant/compare/v0.6.0-beta.1...v0.6.0-beta.2

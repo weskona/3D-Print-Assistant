@@ -111,10 +111,11 @@ const TRANSLATIONS = {
     print_label: "Print label",
     label_format: "Label (Dymo LabelWriter)",
     label_print: "Print",
-    label_orientation: "Orientation",
+    label_orientation: "Page",
+    label_rotation: "Rotation",
+    label_orientation_hint: "Dymo drivers and Chrome do not always feed the label the way the page is drawn. If the print comes out turned, cut off or on one end of the label, try another page shape (horizontal = landscape, vertical = portrait) and rotation until it fits. Each choice is shown in the preview and remembered per label size.",
     label_horizontal: "Horizontal",
     label_vertical: "Vertical",
-    label_orientation_hint: "If the label comes out turned by 90 degrees, switch the orientation: vertical sends the label as a portrait page with the text turned. The choice is remembered per label size.",
     label_hint: "The label is printed in its real size. In the print dialog pick the Dymo printer, the same label size and no margins.",
     more_details: "More details",
     purchased: "Purchased",
@@ -355,10 +356,11 @@ const TRANSLATIONS = {
     print_label: "Etikett drucken",
     label_format: "Etikett (Dymo LabelWriter)",
     label_print: "Drucken",
-    label_orientation: "Ausrichtung",
+    label_orientation: "Seite",
+    label_rotation: "Drehung",
+    label_orientation_hint: "Dymo-Treiber und Chrome ziehen das Etikett nicht immer so ein, wie die Seite gezeichnet ist. Kommt der Druck gedreht, abgeschnitten oder nur an einem Ende des Etiketts heraus, probiere eine andere Seitenform (horizontal = Querformat, vertikal = Hochformat) und Drehung, bis es passt. Jede Wahl ist in der Vorschau zu sehen und wird pro Etikettengröße gemerkt.",
     label_horizontal: "Horizontal",
     label_vertical: "Vertikal",
-    label_orientation_hint: "Kommt das Etikett um 90 Grad gedreht heraus, wechsle die Ausrichtung: Vertikal sendet das Etikett als Hochformat-Seite mit gedrehtem Text. Die Wahl wird pro Etikettengröße gemerkt.",
     label_hint: "Das Etikett wird in Originalgröße gedruckt. Wähle im Druckdialog den Dymo-Drucker, dieselbe Etikettengröße und keine Ränder.",
     more_details: "Weitere Angaben",
     purchased: "Gekauft am",
@@ -1753,14 +1755,23 @@ class DruckAssistantPanel extends HTMLElement {
 
   /**
    * The page of a spool label for a Dymo label of the given size (a complete document, sized in mm
-   * so that the printer driver takes it as it is). The amount of detail follows the height of the label.
-   * With vertical set the page is sent as a portrait page (short side as width) and the layout is
-   * turned by 90 degrees: some Dymo drivers take the label as a portrait page and turn the print.
+   * so that the printer driver takes it as it is). The amount of detail follows the height of the layout.
+   *
+   * Dymo drivers and Chrome do not agree on which way a label page is fed, so two things can be set:
+   * `vertical` sends the page as a portrait page (short side as the width) instead of a landscape one,
+   * and `rot` (0, 90, 180 or 270 degrees, clockwise) turns the layout inside the page. A layout that is
+   * turned by 90 or 270 degrees is laid out for the other shape (long side as the width) and then turned
+   * so that it fills the page exactly.
    */
-  _labelDoc(sp, fmt, vertical = false) {
+  _labelDoc(sp, fmt, vertical = false, rot = 0) {
     const esc = (v) => String(v ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;" })[c]);
     const color = /^#[0-9a-f]{6}/i.test(sp.color || "") ? sp.color.slice(0, 7) : "#808080";
-    const { w, h } = fmt;
+    const pageW = vertical ? fmt.h : fmt.w;
+    const pageH = vertical ? fmt.w : fmt.h;
+    const sideways = rot === 90 || rot === 270;
+    // The box the layout is drawn in (before it is turned).
+    const w = sideways ? pageH : pageW;
+    const h = sideways ? pageW : pageH;
     const grams = `${this._fmtNum(sp.initial_weight_g, 0)} g`;
     const price = sp.price_per_kg != null ? `${this._fmtNum(sp.price_per_kg, 2)} /kg` : "";
     const type = [sp.material, sp.brand].filter(Boolean).join(" · ");
@@ -1776,64 +1787,74 @@ class DruckAssistantPanel extends HTMLElement {
       if (h >= 40 && sp.purchased) lines.push(esc([sp.purchased, sp.shop].filter(Boolean).join(" · ")));
     }
     const id = h >= 20 ? `<small>ID ${esc(sp.id)}${sp.rfid ? " · RFID " + esc(sp.rfid.slice(0, 8)) : ""}</small>` : "";
-    const title = Math.max(7, Math.min(h * 0.32, 15));  // pt
-    const body = Math.max(5.5, Math.min(h * 0.2, 10));
-    const swatch = Math.max(3, Math.min(h * 0.26, 9));  // mm
-    const pageW = vertical ? h : w;
-    const pageH = vertical ? w : h;
-    // Turned by 90 degrees (clockwise) around its top left corner, the layout moves to the left of the page: shift it back.
-    const turn = vertical ? `position:absolute;top:0;left:${h}mm;transform-origin:0 0;transform:rotate(90deg);` : "";
+    // The type size follows the short side of the layout box, so a tall, narrow layout does not get oversized text.
+    const small = Math.min(w, h);
+    const title = Math.max(7, Math.min(small * 0.32, 15));  // pt
+    const body = Math.max(5.5, Math.min(small * 0.2, 10));
+    const swatch = Math.max(3, Math.min(small * 0.26, 9));  // mm
+    // In a narrow box the lines wrap instead of being cut off.
+    const wrap = w < 45 ? "white-space:normal;overflow-wrap:anywhere;" : "white-space:nowrap;";
+    // Turned around the top left corner, the box moves out of the page: shift it back in.
+    const turn = {
+      0: "",
+      90: `position:absolute;top:0;left:${pageW}mm;transform-origin:0 0;transform:rotate(90deg);`,
+      180: "position:absolute;top:0;left:0;transform-origin:50% 50%;transform:rotate(180deg);",
+      270: `position:absolute;top:${pageH}mm;left:0;transform-origin:0 0;transform:rotate(270deg);`,
+    }[rot] ?? "";
     return `<!doctype html><meta charset="utf-8"><title>${esc(sp.name)}</title>
       <style>@page{size:${pageW}mm ${pageH}mm;margin:0}*{box-sizing:border-box}
       html,body{margin:0;background:#fff;color:#000}body{position:relative;width:${pageW}mm;height:${pageH}mm;overflow:hidden}
       .label{font:${body}pt system-ui,Arial,sans-serif;width:${w}mm;height:${h}mm;padding:1.2mm 1.8mm;overflow:hidden;display:flex;flex-direction:column;justify-content:center;gap:.4mm;${turn}}
-      h1{font-size:${title}pt;line-height:1.1;margin:0;display:flex;align-items:center;gap:1.4mm;white-space:nowrap;overflow:hidden}
+      h1{font-size:${title}pt;line-height:1.1;margin:0;display:flex;align-items:center;gap:1.4mm;${wrap}overflow:hidden}
       h1 span{flex:none;width:${swatch}mm;height:${swatch}mm;border-radius:50%;border:.25mm solid #000;background:${esc(color)}}
       h1 b{overflow:hidden;text-overflow:ellipsis}
-      .label>div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15}small{font-size:${Math.max(4.5, body - 2)}pt;color:#333}</style>
+      .label>div{${wrap}overflow:hidden;text-overflow:ellipsis;line-height:1.15}small{font-size:${Math.max(4.5, body - 2)}pt;color:#333}</style>
       <div class="label"><h1><span></span><b>${esc(sp.name)}</b></h1>${lines.filter(Boolean).map((l) => `<div>${l}</div>`).join("")}${id}</div>`;
   }
 
-  /** Dialog: pick the label size and the orientation, see the label as it will be printed, print it. */
+  /** Dialog: pick the label size, the page shape and the rotation, see the label as it will be printed, print it. */
   _renderLabelDialog(sp, close) {
     let stored = DEFAULT_LABEL;
-    let turned = {};
+    let setups = {};
     try {
       stored = localStorage.getItem("druck_assistant_label") || DEFAULT_LABEL;
-      turned = JSON.parse(localStorage.getItem("druck_assistant_label_vertical") || "{}");
+      setups = JSON.parse(localStorage.getItem("druck_assistant_label_setup") || "{}");
+      // The first version only knew horizontal/vertical: vertical was a portrait page with the layout turned by 90 degrees.
+      const old = JSON.parse(localStorage.getItem("druck_assistant_label_vertical") || "{}");
+      for (const id of Object.keys(old)) if (!(id in setups)) setups[id] = old[id] ? { v: true, r: 90 } : { v: false, r: 0 };
     } catch (e) { /* storage may be blocked */ }
     const sel = this._el("select", {});
     for (const f of LABEL_FORMATS) sel.append(this._el("option", { value: f.id }, `${f.dymo} · ${f.id} · ${f.w} × ${f.h} mm`));
     sel.value = LABEL_FORMATS.some((f) => f.id === stored) ? stored : DEFAULT_LABEL;
     const frame = this._el("iframe", { class: "label-frame", title: this._t("print_label") });
     const fmt = () => LABEL_FORMATS.find((f) => f.id === sel.value) || LABEL_FORMATS[0];
-    // Orientation is kept per label size; the 11354 (S0722540) is known to come out turned on landscape, so it starts vertical.
-    const isVertical = () => (fmt().id in turned ? !!turned[fmt().id] : fmt().id === DEFAULT_LABEL);
-    const horizontal = this._el("button", { type: "button" }, this._t("label_horizontal"));
-    const vertical = this._el("button", { type: "button" }, this._t("label_vertical"));
+    const setup = () => setups[fmt().id] || { v: false, r: 0 };
+    const pageButtons = [[false, "label_horizontal"], [true, "label_vertical"]].map(([v, key]) => ({ v, el: this._el("button", { type: "button" }, this._t(key)) }));
+    const rotButtons = [0, 90, 180, 270].map((r) => ({ r, el: this._el("button", { type: "button" }, `${r}°`) }));
     const draw = () => {
       const f = fmt();
-      const v = isVertical();
-      horizontal.classList.toggle("active", !v);
-      vertical.classList.toggle("active", v);
+      const { v, r } = setup();
+      for (const b of pageButtons) b.el.classList.toggle("active", b.v === v);
+      for (const b of rotButtons) b.el.classList.toggle("active", b.r === r);
       frame.style.width = `${v ? f.h : f.w}mm`;
       frame.style.height = `${v ? f.w : f.h}mm`;
-      frame.srcdoc = this._labelDoc(sp, f, v);
+      frame.srcdoc = this._labelDoc(sp, f, v, r);
       try { localStorage.setItem("druck_assistant_label", f.id); } catch (e) { /* storage may be blocked */ }
     };
-    const pick = (v) => {
-      turned[fmt().id] = v;
-      try { localStorage.setItem("druck_assistant_label_vertical", JSON.stringify(turned)); } catch (e) { /* storage may be blocked */ }
+    const change = (patch) => {
+      setups[fmt().id] = { ...setup(), ...patch };
+      try { localStorage.setItem("druck_assistant_label_setup", JSON.stringify(setups)); } catch (e) { /* storage may be blocked */ }
       draw();
     };
-    horizontal.addEventListener("click", () => pick(false));
-    vertical.addEventListener("click", () => pick(true));
+    for (const b of pageButtons) b.el.addEventListener("click", () => change({ v: b.v }));
+    for (const b of rotButtons) b.el.addEventListener("click", () => change({ r: b.r }));
     sel.addEventListener("change", draw);
     draw();
     return this._el("div", { class: "dialog form", role: "dialog" },
       this._el("h2", {}, this._t("print_label")),
       this._field(this._t("label_format"), sel),
-      this._field(this._t("label_orientation"), this._el("div", { class: "seg" }, horizontal, vertical)),
+      this._field(this._t("label_orientation"), this._el("div", { class: "seg" }, ...pageButtons.map((b) => b.el))),
+      this._field(this._t("label_rotation"), this._el("div", { class: "seg" }, ...rotButtons.map((b) => b.el))),
       this._el("div", { class: "label-preview" }, frame),
       this._el("div", { class: "sub notice" }, this._t("label_hint")),
       this._el("div", { class: "sub notice" }, this._t("label_orientation_hint")),
